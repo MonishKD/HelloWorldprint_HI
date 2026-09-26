@@ -1,0 +1,121 @@
+@startuml Domain Model 
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2.2
+skinparam ArrowColor #black
+
+class "User" as User {
+    roles: UserRoles
+}
+
+'id could be GUID so TBD??'
+'TBC if lat/long are double'
+class "Customer" as Customer {
+    id: int
+    name: String
+    latAddress: double
+    longAddress: double
+}
+
+'TBC if lat/long are double'
+'menu: ?? could be another class that connects to Menu Item'
+class "Restaurant" as Restaurant {
+    name: String
+    status: RestaurantStatus
+    latPosition: double
+    longPosition: double
+}
+
+class "Restaurant Personnel" as RestPers {
+
+}
+
+class "Restaurant Owner" as RestOw {
+
+}
+
+class "Restaurant Staff" as RestStaff{
+
+}
+
+'id could be GUID so TBD??'
+'TBC if lat/long are double'
+class "Courier" as Courier {
+    id: int
+    latPosition: double
+    longPosition: double
+    status: CourierState
+}
+
+class "Platform Operator" as PlatOp {
+
+}
+
+'Could be association class between Customer and Restaurant, or Menu or Menu Item'
+class "Order" as Order {
+
+}
+
+'One Menu item and qty'
+class "Order Line" as OrderLine {
+
+}
+
+'id could be a string/int mix like GUID so TBD??'
+class "Menu Item" as MenuItem {
+    id: int
+    name: String
+    price: double
+    status: MenuItemStatus
+}
+
+class "Delivery" as Delivery {
+
+}
+
+'TBC if it's a class'
+class "Preparation Queue" as PQ {
+
+}
+'Note to self: Assignment (Order to Courier) and Handoff (Restaurant to Courier) : relationship names??'
+
+
+
+'-----List of possible enum classes: capitalize them??-------'
+enum "UserRoles" as UserRoles {
+    customer
+    restaurant
+    courier
+    operator
+}
+
+enum "OrderStatus" as OrderStatus {
+    placed
+    accepted
+    preparing
+    ready
+    picked_up
+    delivered
+}
+
+'Or we can create a boolean attribute in Menu Item, or derived based on qty'
+enum "MenuItemStatus" as MenuItemStatus {
+    available
+    sold_out
+}
+
+enum "RestaurantStatus" as RestaurantStatus {
+    open
+    paused
+    closed
+}
+
+enum "CourierState" as CourierState {
+    offline
+    idle
+    assigned
+    carrying
+}
+
+@enduml
