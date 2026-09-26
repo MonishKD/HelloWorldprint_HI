@@ -28,15 +28,7 @@ class "Restaurant" as Restaurant {
 }
 
 class "Restaurant Personnel" as RestPers {
-
-}
-
-class "Restaurant Owner" as RestOw {
-
-}
-
-class "Restaurant Staff" as RestStaff{
-
+    isOwner: bool
 }
 
 'id could be GUID so TBD??'
@@ -52,13 +44,16 @@ class "Platform Operator" as PlatOp {
 
 }
 
-'Could be association class between Customer and Restaurant, or Menu or Menu Item'
 class "Order" as Order {
-
+    status: OrderStatus
 }
 
 'One Menu item and qty'
 class "Order Line" as OrderLine {
+    quantity: int
+}
+
+class "Menu" as Menu {
 
 }
 
@@ -74,11 +69,40 @@ class "Delivery" as Delivery {
 
 }
 
-'TBC if it's a class'
+
 class "Preparation Queue" as PQ {
 
 }
-'Note to self: Assignment (Order to Courier) and Handoff (Restaurant to Courier) : relationship names??'
+
+'---------- List of associations/relationships -----------'
+User <|-- Courier
+User <|-- Customer
+User <|-- PlatOp
+User <|-- RestPers
+Restaurant o- RestPers
+RestPers "1 owner" -- "* staff" RestPers: "manages"
+
+PQ *-- Order
+Order *--  OrderLine 
+OrderLine "1..*" -- "1" MenuItem
+Customer "1" -- "*" Order: "places >"
+Restaurant "1" -- "1" PQ: "handles >"
+
+Restaurant "1" -- "1" Menu : "owns >"
+Menu *-- MenuItem
+
+' Courier "1" -- "0..1" Order : Is-assigned >
+
+
+'Handoff??'
+
+
+' (Customer, Restaurant) .. Order
+
+
+
+
+
 
 
 
