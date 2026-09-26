@@ -110,13 +110,13 @@ Restaurant "1" -- "1" DQ: "[placeholder]"
 RestPers "*" -- "*" Order: "manages >"
 'Not sure if we need two associations for submit and delete or if there is a word for both'
 Customer "1" -- "*" Order: "requests >" 
-DQ "1" -- "*" Order: "holds >"
+DQ *-- Order
 
 
 'Courier-Assignment related ====================''
 'Not sure about the two below, do we need an Assignment class? or just do Courier to Order'
 Courier "1" -- "*" Assignment: "can-take-on >"
-Courier "1" -- "1" Assignment: "is-assigned <" 
+Courier "1" -- "1" Assignment: "is-offered >" 
 Assignment "1" -- "1" Order
 
 'Order-History related ====================''
