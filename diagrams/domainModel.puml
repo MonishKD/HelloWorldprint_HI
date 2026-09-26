@@ -2,7 +2,7 @@
 skinparam DefaultFontName Arial
 skinparam DefaultFontSize 16
 skinparam DefaultFontStyle bold
-skinparam ArrowThickness 2.2
+skinparam ArrowThickness 2.0
 skinparam ArrowColor #black
 
 class "User" as User {
@@ -65,45 +65,62 @@ class "Menu Item" as MenuItem {
     status: MenuItemStatus
 }
 
-class "Delivery" as Delivery {
-
-}
-
 
 class "Preparation Queue" as PQ {
 
 }
 
+'Talks about "Records two handoffs that close a delivery...", not sure if they're talking about time or what
+class "Order Assignment" as Assignment {
+    pickupTime: Time
+    deliveryTime: Time
+}
+
+class "Dispatch Queue" as DQ {
+
+}
+
+class "Order History" as OrderHistory {
+    /charges: double
+    date: Date
+    time: Time
+}
+
+
+
 '---------- List of associations/relationships -----------'
 User <|-- Courier
 User <|-- Customer
-User <|-- PlatOp
 User <|-- RestPers
-Restaurant o- RestPers
+User <|-- PlatOp
+
+'Restaurant, MenuItem related ===================='
+Restaurant o-- RestPers
 RestPers "1 owner" -- "* staff" RestPers: "manages"
-
+Restaurant "1" -- "1" Menu : "publishes"
+Menu *-- MenuItem 
+(MenuItem, Order) .. OrderLine
 PQ *-- Order
-Order *--  OrderLine 
-OrderLine "1..*" -- "1" MenuItem
-Customer "1" -- "*" Order: "places >"
 Restaurant "1" -- "1" PQ: "handles >"
+'Not sure about the one below either, it's subtly implied. [placeholder] = find verbPhrase
+Restaurant "1" -- "1" DQ: "[placeholder]"
 
-Restaurant "1" -- "1" Menu : "owns >"
-Menu *-- MenuItem
-
-' Courier "1" -- "0..1" Order : Is-assigned >
-
-
-'Handoff??'
-
-
-' (Customer, Restaurant) .. Order
+'Order related ===================='
+'Not sure about the one below'
+RestPers "*" -- "*" Order: "manages >"
+'Not sure if we need two associations for submit and delete or if there is a word for both'
+Customer "1" -- "*" Order: "requests >" 
+DQ "1" -- "*" Order: "holds >"
 
 
+'Courier-Assignment related ====================''
+'Not sure about the two below, do we need an Assignment class? or just do Courier to Order'
+Courier "1" -- "*" Assignment: "can-take-on >"
+Courier "1" -- "1" Assignment: "is-assigned <" 
+Assignment "1" -- "1" Order
 
-
-
-
+'Order-History related ====================''
+OrderHistory "1" -- "1" Order
 
 
 '-----List of possible enum classes: capitalize them??-------'
