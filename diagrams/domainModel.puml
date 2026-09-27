@@ -5,12 +5,28 @@ skinparam DefaultFontStyle bold
 skinparam ArrowThickness 2.0
 skinparam ArrowColor #black
 
-class "User" as User {
-    roles: UserRoles
+'----------- List of Catalogs -------------------
+class "User Catalog" as UserCatalog {
+
 }
 
-'id could be GUID so TBD??'
-'TBC if lat/long are double'
+class "Restaurant Catalog" as RestCatalog {
+
+}
+
+class "Order Catalog" as OrderCatalog {
+
+}
+
+'---------- List of Entities ------------------
+class "User" as User {
+    username: String
+    password: String
+    phoneNumber: String
+    email: String
+    role: UserRoles
+}
+
 class "Customer" as Customer {
     id: int
     name: String
@@ -18,9 +34,8 @@ class "Customer" as Customer {
     longAddress: double
 }
 
-'TBC if lat/long are double'
-'menu: ?? could be another class that connects to Menu Item'
 class "Restaurant" as Restaurant {
+    id: int
     name: String
     status: RestaurantStatus
     latPosition: double
@@ -31,10 +46,10 @@ class "Restaurant Personnel" as RestPers {
     isOwner: bool
 }
 
-'id could be GUID so TBD??'
-'TBC if lat/long are double'
+'vehicleType like uber eats??'
 class "Courier" as Courier {
     id: int
+    name: String
     latPosition: double
     longPosition: double
     status: CourierState
@@ -45,10 +60,12 @@ class "Platform Operator" as PlatOp {
 }
 
 class "Order" as Order {
+    id: int
     status: OrderStatus
+    /totalCharges: double
+    specialInstructions: String
 }
 
-'One Menu item and qty'
 class "Order Line" as OrderLine {
     quantity: int
 }
@@ -57,7 +74,6 @@ class "Menu" as Menu {
 
 }
 
-'id could be a string/int mix like GUID so TBD??'
 class "Menu Item" as MenuItem {
     id: int
     name: String
@@ -65,15 +81,8 @@ class "Menu Item" as MenuItem {
     status: MenuItemStatus
 }
 
-
 class "Preparation Queue" as PQ {
 
-}
-
-'Talks about "Records two handoffs that close a delivery...", not sure if they're talking about time or what
-class "Order Assignment" as Assignment {
-    pickupTime: Time
-    deliveryTime: Time
 }
 
 class "Dispatch Queue" as DQ {
@@ -81,11 +90,22 @@ class "Dispatch Queue" as DQ {
 }
 
 class "Order History" as OrderHistory {
-    /charges: double
-    date: Date
-    time: Time
+    finalStatus: OrderStatus
+    pickup: DateTime
+    delivery: DateTime
 }
 
+class "Order State Transitions" as OST {
+    eventId: int
+    currentStatus: OrderStatus
+    newStatus: OrderStatus
+    timestamp: DateTime
+}
+
+class "Offer" as Offer {
+    isPickedUp: boolean
+    isDelivered: boolean
+}
 
 
 '---------- List of associations/relationships -----------'
@@ -93,35 +113,42 @@ User <|-- Courier
 User <|-- Customer
 User <|-- RestPers
 User <|-- PlatOp
+UserCatalog *-- User
+RestCatalog *-- Restaurant
+OrderCatalog *-- Order
 
-'Restaurant, MenuItem related ===================='
+'Restaurant -> MenuItem -> Order ===================='
 Restaurant o-- RestPers
-RestPers "1 owner" -- "* staff" RestPers: "manages"
-Restaurant "1" -- "1" Menu : "publishes"
+RestPers "1 owner" -- "~* staff" RestPers: "manages >"
+Restaurant "1" -- "1" Menu : "has >"
 Menu *-- MenuItem 
-(MenuItem, Order) .. OrderLine
-PQ *-- Order
-Restaurant "1" -- "1" PQ: "handles >"
-'Not sure about the one below either, it's subtly implied. [placeholder] = find verbPhrase
-Restaurant "1" -- "1" DQ: "[placeholder]"
+MenuItem "1" <-- "~*" OrderLine: "references <"
+OrderLine "1..~*" -- "1" Order: "contains <"
+' MenuItem "1..~*" -- "~*" Order: "is-composed-of <"
+' (MenuItem, Order) .. OrderLine
 
-'Order related ===================='
-'Not sure about the one below'
-RestPers "*" -- "*" Order: "manages >"
-'Not sure if we need two associations for submit and delete or if there is a word for both'
-Customer "1" -- "*" Order: "requests >" 
-DQ *-- Order
+'Restaurant -> PQ -> Order ========================='
+PQ *-- "~*" Order: "holds >"
+Restaurant *-- "1" PQ: "handles >"
 
 
-'Courier-Assignment related ====================''
-'Not sure about the two below, do we need an Assignment class? or just do Courier to Order'
-Courier "1" -- "*" Assignment: "can-take-on >"
-Courier "1" -- "1" Assignment: "is-offered >" 
-Assignment "1" -- "1" Order
+'Customer, DQ -> Order ===================='
+Customer "1" -- "~*" Order: "requests >" 
+DQ *-- "~*" Order: "holds >"
 
-'Order-History related ====================''
-OrderHistory "1" -- "1" Order
 
+'Courier -> Offer -> Order ====================''
+Courier "1" -- "~*" Order: "accepts >"
+(Courier, Order) .. Offer
+
+
+'Order-> History, State Transition ====================''
+OrderHistory "1" -- "1" Order: "maintains <"
+Order "1" -- "1..~*" OST: "holds >"
+
+'Restaurant-Order =================='
+Restaurant "1" -- "~*" Order: "receives >"
+RestPers "1..*" --> "*" Order: "manages >"
 
 '-----List of possible enum classes: capitalize them??-------'
 enum "UserRoles" as UserRoles {
@@ -138,6 +165,9 @@ enum "OrderStatus" as OrderStatus {
     ready
     picked_up
     delivered
+    rejected
+    cancelled
+    refunded
 }
 
 'Or we can create a boolean attribute in Menu Item, or derived based on qty'
