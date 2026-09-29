@@ -91,18 +91,17 @@ class "Dispatch Queue" as DQ {
 
 class "Order History" as OrderHistory {
     finalStatus: OrderStatus
-    pickup: DateTime
-    delivery: DateTime
+    totalCharges: double
 }
 
 class "Order State Transitions" as OST {
     eventId: int
-    currentStatus: OrderStatus
+    prevStatus: OrderStatus
     newStatus: OrderStatus
     timestamp: DateTime
 }
 
-class "Offer" as Offer {
+class "Assignment" as Offer {
     isPickedUp: boolean
     isDelivered: boolean
 }
@@ -113,12 +112,12 @@ User <|-- Courier
 User <|-- Customer
 User <|-up- RestPers
 User <|-- PlatOp
-UserCatalog *-down- "~*  " User: "contains >"
+UserCatalog *-down- "~*" User: "contains >"
 RestCatalog *-- "~*  " Restaurant : "contains >"
 OrderCatalog *-up- "~*     " Order: "contains >"
 
 'Restaurant -> MenuItem -> Order ===================='
-Restaurant o-right- "~*" RestPers
+Restaurant o-right- "~*" RestPers: "works for <"
 RestPers "1 owner" -- "~* staff" RestPers: "manages >"
 Restaurant "1" -left- "1" Menu : "has >"
 Menu *-down- "~*  " MenuItem 
@@ -128,13 +127,13 @@ OrderLine "1..~* " -right- "1" Order: "contains <"
 ' (MenuItem, Order) .. OrderLine
 
 'Restaurant -> PQ -> Order ========================='
-PQ *-down- "~*   " Order: "holds >"
+PQ "1 "-down- "~*   " Order: "holds >"
 Restaurant *-down- "1 " PQ: "handles >"
 
 
 'Customer, DQ -> Order ===================='
 Customer "1" -left- "~*" Order: "requests >" 
-DQ *-right- "~*" Order: "holds >"
+DQ "1 " -right- "~*" Order: "holds >"
 
 
 'Courier -> Offer -> Order ====================''
@@ -144,11 +143,16 @@ Courier "1   " -- "~*" Order: "accepts >"
 
 'Order-> History, State Transition ====================''
 OrderHistory "1 " -up- "1 " Order: "maintains <"
-Order "1" -down- "1..~*" OST: "holds >"
+Order "1" -down- "1..  ~*" OST: "records >"
 
 'Restaurant-Order =================='
 Restaurant "1" -down- "~*  " Order: "receives >"
-RestPers "1..*  " --> "*" Order: "manages >"
+'RestPers "1..*  " --> "*" Order: "manages >"
+
+'Platform Operator ====================='
+PlatOp "~*   " -up- "~*" Restaurant: "controls >"
+PlatOp "~*  " -down- "~*" Order: "oversees >" 
+
 
 '-----List of possible enum classes: capitalize them??-------'
 enum "UserRoles" as UserRoles {
