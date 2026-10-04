@@ -1,0 +1,196 @@
+@startuml Domain Model 
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 16
+skinparam DefaultFontStyle bold
+skinparam ArrowThickness 2.0
+skinparam ArrowColor #black
+
+'----------- List of Catalogs -------------------
+class "User Catalog" as UserCatalog {
+
+}
+
+class "Restaurant Catalog" as RestCatalog {
+
+}
+
+class "Order Catalog" as OrderCatalog {
+
+}
+
+'---------- List of Entities ------------------
+class "User" as User {
+    username: String
+    password: String
+    phoneNumber: String
+    email: String
+    role: UserRoles
+}
+
+class "Customer" as Customer {
+    id: int
+    name: String
+    latAddress: double
+    longAddress: double
+}
+
+class "Restaurant" as Restaurant {
+    id: int
+    name: String
+    status: RestaurantStatus
+    latPosition: double
+    longPosition: double
+}
+
+class "Restaurant Personnel" as RestPers {
+    isOwner: bool
+}
+
+'vehicleType like uber eats??'
+class "Courier" as Courier {
+    id: int
+    name: String
+    latPosition: double
+    longPosition: double
+    status: CourierState
+}
+
+class "Platform Operator" as PlatOp {
+
+}
+
+class "Order" as Order {
+    id: int
+    status: OrderStatus
+    /totalCharges: double
+    specialInstructions: String
+}
+
+class "Order Line" as OrderLine {
+    quantity: int
+}
+
+class "Menu" as Menu {
+
+}
+
+class "Menu Item" as MenuItem {
+    id: int
+    name: String
+    price: double
+    status: MenuItemStatus
+}
+
+class "Preparation Queue" as PQ {
+
+}
+
+class "Dispatch Queue" as DQ {
+
+}
+
+class "Order History" as OrderHistory {
+    finalStatus: OrderStatus
+    totalCharges: double
+}
+
+class "Order State Transitions" as OST {
+    eventId: int
+    prevStatus: OrderStatus
+    newStatus: OrderStatus
+    timestamp: DateTime
+}
+
+class "Assignment" as Offer {
+    isPickedUp: boolean
+    isDelivered: boolean
+}
+
+
+'---------- List of associations/relationships -----------'
+User <|-- Courier
+User <|-- Customer
+User <|-up- RestPers
+User <|-- PlatOp
+UserCatalog *-down- "~*" User: "contains >"
+RestCatalog *-- "~*  " Restaurant : "contains >"
+OrderCatalog *-up- "~*     " Order: "contains >"
+
+'Restaurant -> MenuItem -> Order ===================='
+Restaurant o-right- "~*" RestPers: "works for <"
+RestPers "1 owner" -- "~* staff" RestPers: "manages >"
+Restaurant "1" -left- "1" Menu : "has >"
+Menu *-down- "~*  " MenuItem 
+MenuItem "1  " <-down- "~*  " OrderLine: "references <"
+OrderLine "1..~* " -right- "1" Order: "contains <"
+' MenuItem "1..~*" -- "~*" Order: "is-composed-of <"
+' (MenuItem, Order) .. OrderLine
+
+'Restaurant -> PQ -> Order ========================='
+PQ "1 "-down- "~*   " Order: "holds >"
+Restaurant *-down- "1 " PQ: "handles >"
+
+
+'Customer, DQ -> Order ===================='
+Customer "1" -left- "~*" Order: "requests >" 
+DQ "1 " -right- "~*" Order: "holds >"
+
+
+'Courier -> Offer -> Order ====================''
+Courier "1   " -- "~*" Order: "accepts >"
+(Courier, Order) .. Offer
+
+
+'Order-> History, State Transition ====================''
+OrderHistory "1 " -up- "1 " Order: "maintains <"
+Order "1" -down- "1..  ~*" OST: "records >"
+
+'Restaurant-Order =================='
+Restaurant "1" -down- "~*  " Order: "receives >"
+'RestPers "1..*  " --> "*" Order: "manages >"
+
+'Platform Operator ====================='
+PlatOp "~*   " -up- "~*" Restaurant: "controls >"
+PlatOp "~*  " -down- "~*" Order: "oversees >" 
+
+
+'-----List of possible enum classes: capitalize them??-------'
+enum "UserRoles" as UserRoles {
+    customer
+    restaurant
+    courier
+    operator
+}
+
+enum "OrderStatus" as OrderStatus {
+    placed
+    accepted
+    preparing
+    ready
+    picked_up
+    delivered
+    rejected
+    cancelled
+    refunded
+}
+
+'Or we can create a boolean attribute in Menu Item, or derived based on qty'
+enum "MenuItemStatus" as MenuItemStatus {
+    available
+    sold_out
+}
+
+enum "RestaurantStatus" as RestaurantStatus {
+    open
+    paused
+    closed
+}
+
+enum "CourierState" as CourierState {
+    offline
+    idle
+    assigned
+    carrying
+}
+
+@enduml
