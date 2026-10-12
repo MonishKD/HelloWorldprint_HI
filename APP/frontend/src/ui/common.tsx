@@ -1,4 +1,6 @@
-import { useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type DependencyList, type ReactNode } from 'react';
+import type { Order } from '../mockData';
+import { errorMessage, logError } from './dashboard/dashboardApi';
 
 export const money = (n: number) => n.toLocaleString('en-CA', { style: 'currency', currency: 'CAD' });
 
@@ -59,5 +61,63 @@ export function ConfirmButton({
         No
       </button>
     </span>
+  );
+}
+
+/** Loads data on mount (and when deps change); load errors are logged to the console panel. */
+export function useLoad<T>(load: () => Promise<T>, deps: DependencyList) {
+  const [data, setData] = useState<T | null>(null);
+  const [error, setError] = useState('');
+  const reload = useCallback(() => {
+    load().then(
+      (result) => {
+        setData(result);
+        setError('');
+      },
+      (e) => {
+        logError(errorMessage(e));
+        setError(errorMessage(e));
+      },
+    );
+  }, deps);
+  useEffect(reload, [reload]);
+  return { data, error, reload };
+}
+
+export function LoadError({ what, message, onRetry }: { what: string; message: string; onRetry: () => void }) {
+  return (
+    <div className="empty" role="alert">
+      <p>
+        We couldn't load {what}: {message}
+      </p>
+      <button className="btn btn-secondary btn-sm" onClick={onRetry}>
+        Try again
+      </button>
+    </div>
+  );
+}
+
+export function OrderCard({ order, title, children }: { order: Order; title: string; children?: ReactNode }) {
+  return (
+    <article className="card order">
+      <div className="order-head">
+        <strong>#{order.id}</strong>
+        <span>{title}</span>
+        <StatusBadge status={order.status} />
+        <span className="meta">
+          {timeOf(order.createdAt)} · {money(order.total)}
+        </span>
+      </div>
+      <ul>
+        {order.lines.map((l) => (
+          <li key={l.itemId}>
+            {l.quantity} × {l.name}
+          </li>
+        ))}
+      </ul>
+      {order.specialInstructions && <p className="note">📝 {order.specialInstructions}</p>}
+      {order.rejectReason && <p className="alert alert-error">Rejected: {order.rejectReason}</p>}
+      {children && <div className="order-actions">{children}</div>}
+    </article>
   );
 }

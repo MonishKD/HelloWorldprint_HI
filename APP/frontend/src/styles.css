@@ -221,7 +221,7 @@ textarea { resize: vertical; min-height: 4rem; }
 .menu-item .row { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 0.25rem; }
 .price { font-weight: 800; color: var(--brand-dark); }
 .price s { color: var(--muted); font-weight: 400; margin-left: 0.35rem; font-size: 0.85rem; }
-.save { color: var(--accent); font-size: 0.75rem; font-weight: 700; }
+.save { display: block; color: var(--accent); font-size: 0.75rem; font-weight: 700; }
 
 .cart { position: sticky; top: 5rem; display: grid; gap: 0.9rem; }
 .cart-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
@@ -280,3 +280,5 @@ textarea { resize: vertical; min-height: 4rem; }
   .role-picker { grid-template-columns: 1fr; }
   .auth-card { padding: 1.5rem; }
 }
+.grid > .empty { grid-column: 1 / -1; }
+.back { display: inline-block; margin-bottom: 0.75rem; text-decoration: none; }
