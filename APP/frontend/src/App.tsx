@@ -1,7 +1,9 @@
 import { Route, Routes } from 'react-router-dom';
 import { SessionProvider } from './session';
+import CourierDashboardPage from './ui/dashboard/CourierDashboardPage';
 import CustomerDashboardPage from './ui/dashboard/CustomerDashboardPage';
-import DashboardRouter, { ComingSoonPage, RequireRole } from './ui/dashboard/DashboardRouter';
+import DashboardRouter, { RequireRole } from './ui/dashboard/DashboardRouter';
+import OperatorDashboardPage from './ui/dashboard/OperatorDashboardPage';
 import RestaurantDashboardPage from './ui/dashboard/RestaurantDashboardPage';
 import LoginPage from './ui/reg/LoginPage';
 import RegisterPage from './ui/reg/RegisterPage';
@@ -15,7 +17,7 @@ export default function App() {
         <Route
           path="/customer/*"
           element={
-            <RequireRole roles={['customer']}>
+            <RequireRole role="customer">
               <CustomerDashboardPage />
             </RequireRole>
           }
@@ -23,16 +25,24 @@ export default function App() {
         <Route
           path="/restaurant"
           element={
-            <RequireRole roles={['restaurant']}>
+            <RequireRole role="restaurant">
               <RestaurantDashboardPage />
             </RequireRole>
           }
         />
         <Route
-          path="/coming-soon"
+          path="/courier"
           element={
-            <RequireRole roles={['courier', 'operator']}>
-              <ComingSoonPage />
+            <RequireRole role="courier">
+              <CourierDashboardPage />
+            </RequireRole>
+          }
+        />
+        <Route
+          path="/operator"
+          element={
+            <RequireRole role="operator">
+              <OperatorDashboardPage />
             </RequireRole>
           }
         />

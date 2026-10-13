@@ -1,31 +1,59 @@
-import { db, type MenuItem, type MenuItemStatus, type Order, type OrderLine, type OrderStatus, type Restaurant } from '../../mockData';
+import { db } from '../../mockData';
+import type { CourierLocation, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus } from '../../domain';
 
-export type RestaurantSummary = Restaurant & { itemCount: number; availableCount: number };
+export type RestaurantSummary = Restaurant & { itemCount: number; availableCount: number; bestDiscount: number };
 
 // Callers get copies so React state never aliases the in-memory db.
 const copy = <T>(value: T): T => structuredClone(value);
 
-// TODO: replace with fetch() to the real backend
+const ACTIVE: OrderStatus[] = ['placed', 'accepted', 'preparing', 'ready', 'picked_up'];
+
+/** Mock-only: mirrors what the backend will do to a courier's state when their orders change. */
+function syncCourierState(courierId: string) {
+  const courier = db.users.find((u) => u.id === courierId);
+  if (!courier) return;
+  const active = db.orders.filter((o) => o.courierId === courierId && ACTIVE.includes(o.status));
+  courier.courierState = active.some((o) => o.status === 'picked_up') ? 'carrying' : active.length ? 'assigned' : 'idle';
+}
+
+// TODO: replace with fetch() to the real backend: GET /restaurants
 export async function listRestaurants(): Promise<RestaurantSummary[]> {
   return db.restaurants.map((r) => {
     const items = db.menuItems.filter((m) => m.restaurantId === r.id);
-    return { ...copy(r), itemCount: items.length, availableCount: items.filter((m) => m.status === 'available').length };
+    const bestDiscount = Math.max(0, ...items.map((m) => Math.round((1 - m.price / m.originalPrice) * 100)));
+    return { ...copy(r), itemCount: items.length, availableCount: items.filter((m) => m.status === 'available').length, bestDiscount };
   });
 }
 
-// TODO: replace with fetch() to the real backend
+// City map data (R-ORD-01): where every courier is and what they're doing.
+// TODO: replace with fetch() to the real backend: GET /couriers/locations
+export async function listCourierLocations(): Promise<CourierLocation[]> {
+  return db.users
+    .filter((u) => u.role === 'courier' && u.lat !== undefined && u.lng !== undefined)
+    .map((u) => ({ id: u.id, name: u.name, lat: u.lat!, lng: u.lng!, courierState: u.courierState ?? 'offline' }));
+}
+
+// TODO: replace with fetch() to the real backend: GET /restaurants/{id}
 export async function getRestaurant(id: string): Promise<Restaurant> {
   const restaurant = db.restaurants.find((r) => r.id === id);
   if (!restaurant) throw new Error('Restaurant not found.');
   return copy(restaurant);
 }
 
-// TODO: replace with fetch() to the real backend
+// TODO: replace with fetch() to the real backend: PATCH /restaurants/{id}/status
+export async function setRestaurantStatus(id: string, status: RestaurantStatus): Promise<Restaurant> {
+  const restaurant = db.restaurants.find((r) => r.id === id);
+  if (!restaurant) throw new Error('Restaurant not found.');
+  restaurant.status = status;
+  return copy(restaurant);
+}
+
+// TODO: replace with fetch() to the real backend: GET /restaurants/{id}/menu
 export async function listMenu(restaurantId: string): Promise<MenuItem[]> {
   return copy(db.menuItems.filter((m) => m.restaurantId === restaurantId));
 }
 
-// TODO: replace with fetch() to the real backend
+// TODO: replace with fetch() to the real backend: PATCH /menu-items/{id}/status
 export async function setMenuItemStatus(itemId: string, status: MenuItemStatus): Promise<MenuItem> {
   const item = db.menuItems.find((m) => m.id === itemId);
   if (!item) throw new Error('Menu item not found.');
@@ -33,10 +61,13 @@ export async function setMenuItemStatus(itemId: string, status: MenuItemStatus):
   return copy(item);
 }
 
-// TODO: replace with fetch() to the real backend
+// TODO: replace with fetch() to the real backend: POST /orders
 export async function placeOrder(input: {
   customerId: string;
   customerName: string;
+  deliveryAddress: string;
+  deliveryLat: number;
+  deliveryLng: number;
   restaurant: Restaurant;
   lines: OrderLine[];
   specialInstructions: string;
@@ -45,6 +76,9 @@ export async function placeOrder(input: {
     id: String(1001 + db.orders.length),
     customerId: input.customerId,
     customerName: input.customerName,
+    deliveryAddress: input.deliveryAddress.trim(),
+    deliveryLat: input.deliveryLat,
+    deliveryLng: input.deliveryLng,
     restaurantId: input.restaurant.id,
     restaurantName: input.restaurant.name,
     lines: input.lines,
@@ -57,21 +91,45 @@ export async function placeOrder(input: {
   return copy(order);
 }
 
-// TODO: replace with fetch() to the real backend
-export async function listCustomerOrders(customerId: string): Promise<Order[]> {
-  return copy(db.orders.filter((o) => o.customerId === customerId));
+// TODO: replace with fetch() to the real backend: GET /orders  (operator)
+export async function listAllOrders(): Promise<Order[]> {
+  return copy(db.orders);
 }
 
-// TODO: replace with fetch() to the real backend
+// TODO: replace with fetch() to the real backend: GET /restaurants/{id}/orders
 export async function listRestaurantOrders(restaurantId: string): Promise<Order[]> {
   return copy(db.orders.filter((o) => o.restaurantId === restaurantId));
 }
 
-// TODO: replace with fetch() to the real backend
+// TODO: replace with fetch() to the real backend: GET /couriers/{id}/orders
+export async function listCourierOrders(courierId: string): Promise<Order[]> {
+  return copy(db.orders.filter((o) => o.courierId === courierId));
+}
+
+/** Orders being prepared or ready that no courier has claimed yet (the dispatch queue). */
+// TODO: replace with fetch() to the real backend: GET /dispatch-queue
+export async function listDispatchQueue(): Promise<Order[]> {
+  return copy(db.orders.filter((o) => (o.status === 'preparing' || o.status === 'ready') && !o.courierId));
+}
+
+// TODO: replace with fetch() to the real backend: POST /orders/{id}/assignment
+export async function assignCourier(orderId: string, courier: { id: string; name: string }): Promise<Order> {
+  const order = db.orders.find((o) => o.id === orderId);
+  if (!order) throw new Error('Order not found.');
+  if (order.courierId) throw new Error('Another courier already took this delivery.');
+  order.courierId = courier.id;
+  order.courierName = courier.name;
+  syncCourierState(courier.id);
+  return copy(order);
+}
+
+// TODO: replace with fetch() to the real backend: POST /orders/{id}/transitions  { status, reason? }
 export async function updateOrderStatus(orderId: string, status: OrderStatus, rejectReason?: string): Promise<Order> {
   const order = db.orders.find((o) => o.id === orderId);
   if (!order) throw new Error('Order not found.');
   order.status = status;
   if (rejectReason) order.rejectReason = rejectReason.trim();
+  if (status === 'picked_up') order.pickedUpAt = new Date().toISOString();
+  if (order.courierId) syncCourierState(order.courierId);
   return copy(order);
 }

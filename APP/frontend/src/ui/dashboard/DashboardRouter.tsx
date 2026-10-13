@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import { Navigate, NavLink } from 'react-router-dom';
-import type { Role } from '../../mockData';
+import { Navigate, NavLink, useLocation } from 'react-router-dom';
+import type { Role } from '../../domain';
 import { dashboardPath, useSession, useUser } from '../../session';
-import { Logo } from '../common';
-import { clearLogs, logSent } from './dashboardApi';
+import { initials, Logo, ThemeToggle } from '../common';
+import { logout as logoutApi } from '../reg/regApi';
+import { clearLogs, send } from './dashboardApi';
+import OutputConsolePanel from './OutputConsolePanel';
 
 /** Catch-all route: send users to their own dashboard, or to login when signed out. */
 export default function DashboardRouter() {
@@ -12,75 +14,73 @@ export default function DashboardRouter() {
 }
 
 /** Guards a dashboard: signed-out users go to login, other roles go back to their own dashboard. */
-export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
+export function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
   const { user } = useSession();
   if (!user) return <Navigate to="/login" replace />;
-  if (!roles.includes(user.role)) return <Navigate to={dashboardPath(user.role)} replace />;
+  if (user.role !== role) return <Navigate to={dashboardPath(user.role)} replace />;
   return <>{children}</>;
 }
 
-function useLogout() {
-  const { user, setUser } = useSession();
-  return () => {
-    logSent(`Log out ${user?.email}`);
-    setUser(null);
-    clearLogs();
-  };
+export interface NavItem {
+  to: string;
+  label: string;
+  /** Overrides NavLink's prefix matching when a tab should own several paths. */
+  activeFor?: (pathname: string) => boolean;
 }
 
-export function DashboardLayout({
-  title,
-  nav = [],
-  children,
-}: {
-  title: string;
-  nav?: { to: string; label: string; end?: boolean }[];
-  children: ReactNode;
-}) {
+export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; children: ReactNode }) {
+  const { setUser } = useSession();
   const user = useUser();
-  const logout = useLogout();
+  const { pathname } = useLocation();
+
+  async function logout() {
+    // Goes through send() like every other action; the session ends even if the backend call fails.
+    try {
+      await send('Log out', () => logoutApi(user.id));
+    } catch {
+      // already shown in the output console
+    }
+    setUser(null);
+    clearLogs();
+  }
+
   return (
     <div className="app">
       <header className="topbar">
-        <Logo />
-        <nav className="tabs">
-          {nav.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.end} className="tab">
-              {n.label}
-            </NavLink>
-          ))}
-        </nav>
+        <NavLink to={dashboardPath(user.role)} className="topbar-logo" aria-label="Home">
+          <Logo />
+        </NavLink>
+        {nav.length > 0 && (
+          <nav className="tabs" aria-label="Sections">
+            {nav.map((n) => (
+              <NavLink
+                key={n.to}
+                to={n.to}
+                className={({ isActive }) => ((n.activeFor ? n.activeFor(pathname) : isActive) ? 'tab active' : 'tab')}
+              >
+                {n.label}
+              </NavLink>
+            ))}
+          </nav>
+        )}
         <div className="who">
-          <span>
-            {user.name} <small className="muted">· {title}</small>
+          <ThemeToggle />
+          <span className="avatar" aria-hidden="true">
+            {initials(user.name)}
           </span>
-          <button className="btn btn-sm btn-ghost" onClick={logout}>
+          <span className="who-text">
+            <strong>{user.name}</strong>
+            <small>{user.role}</small>
+          </span>
+          <button className="btn btn-ghost btn-sm" onClick={logout}>
             Log out
           </button>
         </div>
       </header>
       <div className="dash">
         <main className="dash-main">{children}</main>
+        <OutputConsolePanel />
       </div>
     </div>
-  );
-}
-
-export function ComingSoonPage() {
-  const user = useUser();
-  const logout = useLogout();
-  return (
-    <main className="auth">
-      <div className="card auth-card center">
-        <Logo />
-        <h1>Coming soon</h1>
-        <p className="muted">
-          Hi {user.name}! The {user.role} dashboard isn't part of this version yet. Thanks for helping reduce food waste.
-        </p>
-        <button className="btn btn-secondary btn-block" onClick={logout}>
-          Log out
-        </button>
-      </div>
-    </main>
   );
 }

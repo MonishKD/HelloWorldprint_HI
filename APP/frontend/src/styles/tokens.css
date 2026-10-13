@@ -1,0 +1,189 @@
+/* =============================================================================
+   FortunateGoods design tokens: the ONLY place colours are defined.
+
+   Brand idea: deep teal + highlighter lime (food-waste / "rescue"), coral for deals and alerts.
+
+   1. Raw palette   (:root)                 named colours, never used directly in components
+   2. Semantic      (:root = light,         what components use: --bg, --surface, --ink, --brand ...
+                     [data-theme='dark'])
+   3. Map           (same two blocks)       --map-* values read by src/ui/map/mapStyle.ts
+
+   Theme is chosen by the data-theme attribute on <html> (set by index.html + ThemeToggle).
+   To re-skin the app, change values here; do not hard-code hex values in other files.
+   ============================================================================= */
+
+/* ---------- 1. Raw palette ---------- */
+:root {
+  --teal-950: #00302e;
+  --teal-900: #00403e;
+  --teal-800: #004643;
+  --teal-700: #00615f; /* brand */
+  --teal-500: #3cc4a8;
+  --teal-300: #6ed8c0;
+  --teal-100: #d8ebe4;
+
+  --lime-400: #d4f46e; /* highlighter */
+  --coral-500: #ff5b37; /* deals, home pin, urgent */
+  --coral-300: #ff9c83;
+
+  --sage-200: #d5dbcf;
+  --sage-300: #bfc4b4;
+  --sage-400: #9da492;
+  --stone-50: #f6f4ec;
+  --stone-100: #e5e6da;
+
+  --white: #ffffff;
+  --cream: #f4f1e6; /* text on dark teal surfaces (hero, courier banner, auth panel) */
+  --on-lime: #10201b; /* text on --lime-400 */
+
+  --ink-900: #0f1f1c;
+  --forest-950: #0a1210;
+  --forest-900: #111b18;
+  --forest-850: #17231f;
+}
+
+/* ---------- 2. Semantic tokens: light ("sage stone", mid-tone so cards visibly lift off the page) ---------- */
+:root {
+  color-scheme: light;
+
+  --bg: var(--sage-200);
+  --surface: var(--stone-50);
+  --surface-2: var(--stone-100);
+  --ink: var(--ink-900);
+  --ink-2: #2b3a36;
+  --muted: #526158;
+  --line: var(--sage-300);
+  --line-strong: var(--sage-400);
+
+  --brand: var(--teal-700);
+  --brand-ink: #ffffff; /* text on --brand */
+  --brand-strong: var(--teal-800);
+  --brand-soft: var(--teal-100);
+  --brand-text: #00534f; /* brand-coloured text on --surface */
+  --accent: var(--coral-500);
+  --accent-soft: #ffe0d4;
+  --accent-text: #b8341a;
+  --pop: var(--lime-400);
+  --hl: #c9ee74; /* highlighter under <em> */
+  --dark: #111a17; /* inverted button / active tab */
+  --dark-ink: #ffffff;
+
+  /* status chips: -bg / -fg pairs */
+  --ok-bg: var(--teal-100);      --ok-fg: #00534f;
+  --warn-bg: #ffe9b8;            --warn-fg: #7a4d00;
+  --info-bg: #d3e3f4;            --info-fg: #1a4f80;
+  --route-bg: #e1dbfa;           --route-fg: #43319c;
+  --bad-bg: #fbd9d1;             --bad-fg: #a22d16;
+  --neutral-bg: #dedfd3;         --neutral-fg: #4f5a54;
+
+  /* restaurant cover gradients: lightness of the per-restaurant hue */
+  --cover-l: 74%;
+  --cover-l2: 86%;
+  --letter-l: 26%;
+  --letter-a: 0.3;
+  --tile-ink: 22%;
+  --hue: 168;
+
+  /* Logo lockup: identical in both themes and on every screen */
+  --logo-bg: var(--teal-950);
+  --logo-mark-bg: #ffffff;
+  --logo-mark-ink: var(--teal-900);
+  --logo-text: #ffffff;
+  --logo-accent: var(--lime-400);
+
+  /* Output console: always a dark terminal, in both themes */
+  --console-bg: #0c1513;
+  --console-line: #1d2b27;
+  --console-ink: #cfe3d8;
+  --console-muted: #7f978c;
+  --console-faint: #64796f;
+  --console-ok: #5fe0a8;
+  --console-err: #ff9b8a;
+  --console-btn-line: #2b3d37;
+  --console-btn-ink: #b9cfc4;
+
+  /* Map: high-contrast so land / water / parks / roads separate clearly */
+  --map-land: #e2dfcd;
+  --map-park: #b7d4a0;
+  --map-water: #8bbfc7;
+  --map-building: #cfcab3;
+  --map-road: #ffffff;
+  --map-road-casing: #aaa48b;
+  --map-major: #fbf0b8;
+  --map-major-casing: #a39a76;
+  --map-route: var(--teal-700);
+  --map-route-casing: #ffffff;
+
+  --shadow-sm: 0 1px 2px rgb(15 31 28 / 0.12), 0 1px 1px rgb(15 31 28 / 0.06);
+  --shadow-md: 0 2px 6px rgb(15 31 28 / 0.1), 0 10px 24px rgb(15 31 28 / 0.12);
+  --shadow-lg: 0 4px 10px rgb(15 31 28 / 0.1), 0 22px 44px rgb(15 31 28 / 0.2);
+
+  --radius: 18px;
+  --display: 'Bricolage Grotesque', 'Figtree', system-ui, sans-serif;
+  --body: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  font-family: var(--body);
+  font-size: 15.5px;
+  color: var(--ink);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- 2b. Semantic tokens: dark ---------- */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: var(--forest-950);
+  --surface: var(--forest-900);
+  --surface-2: #1b2a25;
+  --ink: #ecf2ee;
+  --ink-2: #c3cfca;
+  --muted: #92a39c;
+  --line: #2b3c36;
+  --line-strong: #3b514a;
+
+  --brand: var(--teal-500);
+  --brand-ink: #03201b;
+  --brand-strong: #6ad8c0;
+  --brand-soft: #12322c;
+  --brand-text: var(--teal-300);
+  --accent: #ff7a5c;
+  --accent-soft: #3a1c14;
+  --accent-text: var(--coral-300);
+  --pop: #c9ef62;
+  --hl: rgb(201 239 98 / 0.22);
+  --dark: #ecf2ee;
+  --dark-ink: var(--forest-950);
+
+  --ok-bg: #12322c;      --ok-fg: var(--teal-300);
+  --warn-bg: #36290b;    --warn-fg: #f1c35a;
+  --info-bg: #122638;    --info-fg: #80b9e8;
+  --route-bg: #221c44;   --route-fg: #b4a8ff;
+  --bad-bg: #3a1610;     --bad-fg: #ff9a84;
+  --neutral-bg: #1d2724; --neutral-fg: #a1aea9;
+
+  --cover-l: 24%;
+  --cover-l2: 32%;
+  --letter-l: 75%;
+  --letter-a: 0.22;
+  --tile-ink: 82%;
+
+  --console-bg: #060c0b;
+
+  --map-land: #0f1a17;
+  --map-park: #143426;
+  --map-water: #0b3b42;
+  --map-building: #1a2a25;
+  --map-road: #2d443d;
+  --map-road-casing: #0a1210;
+  --map-major: #3f5f55;
+  --map-major-casing: #0a1210;
+  --map-route: var(--teal-500);
+  --map-route-casing: #0a1210;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-md: 0 2px 6px rgb(0 0 0 / 0.25), 0 10px 24px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 4px 10px rgb(0 0 0 / 0.3), 0 22px 44px rgb(0 0 0 / 0.45);
+}

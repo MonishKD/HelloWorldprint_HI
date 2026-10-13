@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import type { Role } from './mockData';
+import type { Role } from './domain';
+import { setAuthToken } from './ui/http';
 import type { SessionUser } from './ui/reg/regApi';
 
 // Fake session: held in React state only, so a page reload logs you out.
@@ -11,7 +12,12 @@ interface Session {
 const SessionContext = createContext<Session | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<SessionUser | null>(null);
+  const [user, setUserState] = useState<SessionUser | null>(null);
+  // Keeps the HTTP helper's Authorization header in step with the session (R-REG-02).
+  const setUser = (next: SessionUser | null) => {
+    setAuthToken(next?.token ?? null);
+    setUserState(next);
+  };
   return <SessionContext.Provider value={{ user, setUser }}>{children}</SessionContext.Provider>;
 }
 
@@ -29,7 +35,5 @@ export function useUser(): SessionUser {
 }
 
 export function dashboardPath(role: Role): string {
-  if (role === 'customer') return '/customer';
-  if (role === 'restaurant') return '/restaurant';
-  return '/coming-soon';
+  return `/${role}`;
 }
