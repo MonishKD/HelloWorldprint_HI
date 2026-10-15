@@ -6,12 +6,13 @@ import java.util.List;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fortunategoods.domain.restaurant.MenuItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 
-// Finds restaurants and changes their status in the database (#24, #149).
+// Adds and finds restaurants and changes their status in the database (#24, #149).
 //
 // How every method works:
 //   1. write the SQL, with a ? for each value
@@ -44,6 +45,21 @@ public class RestaurantRepository {
             return null;
         }
         return found.get(0);
+    }
+
+    // Saves a new restaurant with an empty menu, and returns its new id. Used by seeding (#26) and restaurant sign-up (#143).
+    // cuisine and address are passed separately because the Restaurant class does not have them yet.
+    // address is required, cuisine can be null.
+    // @Transactional means: if one of the two inserts fails, neither is saved.
+    @Transactional
+    public String add(Restaurant restaurant, String cuisine, String address) {
+        // RETURNING id gives us back the id the database just made for this restaurant.
+        String sql = "INSERT INTO restaurants (name, status, latitude, longitude, cuisine, address) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+        Integer id = jdbc.queryForObject(sql, Integer.class, restaurant.getName(), restaurant.getStatus().name(),
+                restaurant.getLatitude(), restaurant.getLongitude(), cuisine, address);
+
+        jdbc.update("INSERT INTO menus (restaurant_id) VALUES (?)", id);
+        return String.valueOf(id);
     }
 
     // Changes the restaurant's status to OPEN, PAUSED or CLOSED.

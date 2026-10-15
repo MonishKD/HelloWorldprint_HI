@@ -65,9 +65,26 @@ public class UserRepository {
         if (user.role().equals("OPERATOR")) {
             jdbc.update("INSERT INTO operators (user_id) VALUES (?)", id);
         }
-        // RESTAURANT users are linked to their restaurant later (#144).
+        // RESTAURANT users are linked to their restaurant with addRestaurantPersonnel() below.
 
         return String.valueOf(id);
+    }
+
+    // Links a RESTAURANT user to the one restaurant they work for. isOwner = true for the owner (#144).
+    public void addRestaurantPersonnel(String userId, String restaurantId, boolean isOwner) {
+        String sql = "INSERT INTO restaurant_personnel (user_id, restaurant_id, is_owner) VALUES (?, ?, ?)";
+        jdbc.update(sql, Integer.parseInt(userId), Integer.parseInt(restaurantId), isOwner);
+    }
+
+    // Returns the id of the restaurant this RESTAURANT user works for, or null if they have none.
+    // This is how a restaurant account only ever sees its own restaurant (#144, #105).
+    public String findRestaurantIdByUserId(String userId) {
+        String sql = "SELECT restaurant_id FROM restaurant_personnel WHERE user_id = ?";
+        List<String> found = jdbc.queryForList(sql, String.class, Integer.parseInt(userId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
     }
 
     // Turns one row of the users table into a UserAccount.
