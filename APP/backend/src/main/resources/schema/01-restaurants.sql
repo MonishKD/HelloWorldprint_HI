@@ -1,0 +1,3 @@
+-- Restaurant table
+-- For Issue #24
+-- Runs for every startup but uses CREATE TABLE IF NOT EXISTS so it doesnt drop. This would be our default setting so that it saves what the local computers of devs have setup instead of restarting from scratch all the time. (Seeding at issue #25/#26)
