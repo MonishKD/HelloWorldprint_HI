@@ -29,25 +29,38 @@ public class MenuItemRepository {
     }
 
     // Returns the items on this restaurant's menu, without the hidden ones.
+    // If the restaurant does not exist, it returns an empty list.
     public List<MenuItem> findByRestaurantId(String restaurantId) {
-        int menuId = findMenuId(restaurantId);
+        Integer menuId = findMenuId(restaurantId);
+        if (menuId == null) {
+            return List.of();
+        }
         String sql = "SELECT * FROM menu_items WHERE menu_id = ? AND removed = FALSE ORDER BY id";
         return jdbc.query(sql, (row, rowNumber) -> toMenuItem(row), menuId);
     }
 
-    // Adds a new item to this restaurant's menu and returns its new id.
-    public String add(String restaurantId, MenuItem item) {
-        int menuId = findMenuId(restaurantId);
+    // Adds a new item to this restaurant's menu and returns its new id. The restaurant must exist.
+    // description and originalPrice are passed separately because the MenuItem class does not have them yet. They can be null.
+    public String add(String restaurantId, MenuItem item, String description, Double originalPrice) {
+        Integer menuId = findMenuId(restaurantId);
         // RETURNING id gives us back the id the database just made for this item.
-        String sql = "INSERT INTO menu_items (menu_id, name, status, price) VALUES (?, ?, ?, ?) RETURNING id";
-        Integer id = jdbc.queryForObject(sql, Integer.class, menuId, item.getName(), item.getStatus().name(), item.getPrice());
+        String sql = "INSERT INTO menu_items (menu_id, name, description, price, original_price, status) VALUES (?, ?, ?, ?, ?, ?) RETURNING id";
+        Integer id = jdbc.queryForObject(sql, Integer.class,
+                menuId, item.getName(), description, item.getPrice(), originalPrice, item.getStatus().name());
         return String.valueOf(id);
     }
 
-    // Saves the item's new name, status and price.
-    public void update(MenuItem item) {
-        String sql = "UPDATE menu_items SET name = ?, status = ?, price = ? WHERE id = ?";
-        jdbc.update(sql, item.getName(), item.getStatus().name(), item.getPrice(), Integer.parseInt(item.getId()));
+    // Saves the item's new name, description, price, original price and status. Used when editing an item (#146).
+    public void update(MenuItem item, String description, Double originalPrice) {
+        String sql = "UPDATE menu_items SET name = ?, description = ?, price = ?, original_price = ?, status = ? WHERE id = ?";
+        jdbc.update(sql, item.getName(), description, item.getPrice(), originalPrice, item.getStatus().name(),
+                Integer.parseInt(item.getId()));
+    }
+
+    // Only changes the item to AVAILABLE or SOLD_OUT, everything else stays the same (#85).
+    public void updateStatus(String id, MenuItemStatus status) {
+        String sql = "UPDATE menu_items SET status = ? WHERE id = ?";
+        jdbc.update(sql, status.name(), Integer.parseInt(id));
     }
 
     // Hides the item from the menu (it stays in the database for old orders).
@@ -56,10 +69,14 @@ public class MenuItemRepository {
         jdbc.update(sql, Integer.parseInt(id));
     }
 
-    // Each restaurant has one menu. This returns the id of that menu.
-    private int findMenuId(String restaurantId) {
+    // Each restaurant has one menu. This returns the id of that menu, or null if the restaurant does not exist.
+    private Integer findMenuId(String restaurantId) {
         String sql = "SELECT id FROM menus WHERE restaurant_id = ?";
-        return jdbc.queryForObject(sql, Integer.class, Integer.parseInt(restaurantId));
+        List<Integer> found = jdbc.queryForList(sql, Integer.class, Integer.parseInt(restaurantId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
     }
 
     // Turns one row of the menu_items table into a MenuItem.
