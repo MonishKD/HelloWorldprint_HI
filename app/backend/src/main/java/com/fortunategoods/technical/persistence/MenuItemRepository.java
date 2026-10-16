@@ -99,6 +99,7 @@ public class MenuItemRepository {
                 restaurantId,
                 row.getString("name"),
                 MenuItemStatus.valueOf(row.getString("status")),
-                row.getDouble("price"));
+                row.getDouble("price"),
+                row.getObject("original_price", Double.class));
     }
 }
