@@ -1,5 +1,7 @@
 package com.fortunategoods.application.ord;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /*
     This class represents error/failure commands/errors, which is
     sent back to the frontend/controller.
@@ -23,6 +25,7 @@ public final class CommandError {
         return code;
     }
 
+    @JsonProperty("message")
     public String getMsg(){
         return msg;
     }

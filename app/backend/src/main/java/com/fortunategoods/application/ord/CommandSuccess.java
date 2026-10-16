@@ -1,5 +1,7 @@
 package com.fortunategoods.application.ord;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /*
     This class is used for returning successful actions that were executed
     back to the frontend/controller
@@ -19,6 +21,7 @@ public final class CommandSuccess<T>{
         return data;
     }
 
+    @JsonProperty("message") // Sent as message in the frontend, instead of msg
     public String getMsg(){
         return msg;
     }
