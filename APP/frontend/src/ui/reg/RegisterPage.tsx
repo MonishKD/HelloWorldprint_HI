@@ -15,6 +15,7 @@ const ROLES: { value: RegisterRole; label: string; hint: string; icon: IconName 
 export default function RegisterPage() {
   const { user, setUser } = useSession();
   const [role, setRole] = useState<RegisterRole>('customer');
+  const [username, setUsername] = useState('');
   const [name, setName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [address, setAddress] = useState('');
@@ -30,7 +31,7 @@ export default function RegisterPage() {
     setBusy(true);
     setError('');
     try {
-      setUser(await send(`Register ${role} ${email}`, () => register({ name, email, password, role, restaurantName, address })));
+      setUser(await send(`Register ${role} ${email}`, () => register({ username, name: role === 'restaurant' ? restaurantName : name, email, password, role, restaurantName, address })));
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -60,13 +61,27 @@ export default function RegisterPage() {
         </fieldset>
 
         <label className="field">
-          <span>Your name</span>
-          <input required pattern=".*\S.*" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+          <span>Username</span>
+          <input
+            required
+            pattern="\S{3,}"
+            title="At least 3 characters, no spaces"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
         </label>
-        {role === 'restaurant' && (
+        {role === 'restaurant' ? (
           <label className="field">
             <span>Restaurant name</span>
             <input required pattern=".*\S.*" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
+          </label>
+        ) : (
+          <label className="field">
+            <span>Your name</span>
+            <input required pattern=".*\S.*" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
           </label>
         )}
         {role !== 'courier' && (
@@ -79,6 +94,9 @@ export default function RegisterPage() {
           <span>Email</span>
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
+        {role === 'restaurant' && (
+          <p className="muted small">Your restaurant starts closed. Add your menu items, then open it from your dashboard.</p>
+        )}
         <label className="field">
           <span>
             Password <small className="muted">· at least 6 characters</small>

@@ -40,10 +40,14 @@ export async function getRestaurant(id: string): Promise<Restaurant> {
   return copy(restaurant);
 }
 
-// TODO: replace with fetch() to the real backend: PATCH /restaurants/{id}/status
+// TODO: replace with fetch() to the real backend: PATCH /restaurants/{id}/status  { status }
+// The backend refuses (409) opening a restaurant that has no menu items; the mock mirrors that so the UI's refusal path is real.
 export async function setRestaurantStatus(id: string, status: RestaurantStatus): Promise<Restaurant> {
   const restaurant = db.restaurants.find((r) => r.id === id);
   if (!restaurant) throw new Error('Restaurant not found.');
+  if (status === 'open' && !db.menuItems.some((m) => m.restaurantId === id)) {
+    throw new Error('Add at least one menu item before opening your restaurant.');
+  }
   restaurant.status = status;
   return copy(restaurant);
 }
@@ -51,6 +55,40 @@ export async function setRestaurantStatus(id: string, status: RestaurantStatus):
 // TODO: replace with fetch() to the real backend: GET /restaurants/{id}/menu
 export async function listMenu(restaurantId: string): Promise<MenuItem[]> {
   return copy(db.menuItems.filter((m) => m.restaurantId === restaurantId));
+}
+
+/** `originalPrice` is only set for discounted items. */
+export type MenuItemInput = Pick<MenuItem, 'name' | 'description' | 'price' | 'status'> & { originalPrice?: number };
+
+/** Mock-only: the backend refuses invalid items (400) with a reason; the owning restaurant comes from the session. */
+function checkMenuItem(input: MenuItemInput) {
+  if (!input.name.trim()) throw new Error('Give the item a name.');
+  if (!(input.price > 0)) throw new Error('The price must be above zero.');
+}
+
+// TODO: replace with fetch() to the real backend: POST /restaurants/{restaurantId}/menu
+export async function addMenuItem(restaurantId: string, input: MenuItemInput): Promise<MenuItem> {
+  checkMenuItem(input);
+  const item: MenuItem = { id: `m-${Date.now().toString(36)}`, restaurantId, ...input, originalPrice: input.originalPrice ?? input.price, name: input.name.trim(), description: input.description.trim() };
+  db.menuItems.push(item);
+  return copy(item);
+}
+
+// TODO: replace with fetch() to the real backend: PATCH /restaurants/{restaurantId}/menu/{itemId}
+export async function updateMenuItem(restaurantId: string, itemId: string, input: MenuItemInput): Promise<MenuItem> {
+  const item = db.menuItems.find((m) => m.id === itemId && m.restaurantId === restaurantId);
+  if (!item) throw new Error('Menu item not found.');
+  checkMenuItem(input);
+  Object.assign(item, input, { originalPrice: input.originalPrice ?? input.price, name: input.name.trim(), description: input.description.trim() });
+  return copy(item);
+}
+
+// TODO: replace with fetch() to the real backend: DELETE /restaurants/{restaurantId}/menu/{itemId}
+// The backend hides the item but keeps past orders intact (order lines carry their own name and price).
+export async function removeMenuItem(restaurantId: string, itemId: string): Promise<void> {
+  const index = db.menuItems.findIndex((m) => m.id === itemId && m.restaurantId === restaurantId);
+  if (index === -1) throw new Error('Menu item not found.');
+  db.menuItems.splice(index, 1);
 }
 
 // TODO: replace with fetch() to the real backend: PATCH /menu-items/{id}/status

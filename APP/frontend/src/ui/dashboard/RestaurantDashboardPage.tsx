@@ -73,6 +73,19 @@ function RestaurantDashboard() {
         </div>
       </header>
 
+      {menu.length === 0 ? (
+        <p className="alert alert-warn banner">
+          <strong>Welcome to FortunateGoods!</strong> Your restaurant is closed until you add your first menu item. Add one in "Today's menu" below, then open your restaurant above.
+        </p>
+      ) : (
+        restaurant.status === 'closed' &&
+        orders.length === 0 && (
+          <p className="alert alert-warn banner">
+            <strong>Your menu is ready.</strong> Customers can see your restaurant but can't order until you open it.
+          </p>
+        )
+      )}
+
       {actionError && (
         <p className="alert alert-error" role="alert">
           {actionError}

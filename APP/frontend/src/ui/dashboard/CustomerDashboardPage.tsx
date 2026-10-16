@@ -5,7 +5,7 @@ import { useUser } from '../../session';
 import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, TERMINAL, useLoad } from '../common';
 import MenuPage from '../ord/MenuPage';
 import MapView from '../map/MapView';
-import { deliveryProgress, etaMinutes, useNow } from '../map/geo';
+import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { listRestaurants, updateOrderStatus } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
 import { errorMessage, getCustomerOrderStatuses, send } from './dashboardApi';
@@ -33,11 +33,13 @@ export default function CustomerDashboardPage() {
 function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) {
   if (o.status === 'picked_up') {
     const progress = deliveryProgress(o.pickedUpAt, now);
-    const eta = restaurant && etaMinutes([restaurant.lat, restaurant.lng], [o.deliveryLat, o.deliveryLng], progress);
+    const from = point(restaurant?.lat, restaurant?.lng);
+    const to = point(o.deliveryLat, o.deliveryLng);
+    const eta = from && to ? etaMinutes(from, to, progress) : undefined;
     return (
       <>
         <Icon name="bike" size={16} /> {o.courierName ?? 'Your courier'}{' '}
-        {progress >= 1 ? 'is at your door' : `is on the way · arriving in about ${eta} min`}
+        {progress >= 1 ? 'is at your door' : eta === undefined ? 'is on the way' : `is on the way · arriving in about ${eta} min`}
       </>
     );
   }
@@ -151,17 +153,19 @@ function MyOrders() {
 }
 
 function OrderMap({ order, restaurant }: { order: Order; restaurant?: Restaurant }) {
-  if (!restaurant) return null;
+  const from = point(restaurant?.lat, restaurant?.lng);
+  const to = point(order.deliveryLat, order.deliveryLng);
+  if (!restaurant || !from || !to) return null; // no coordinates yet (not geocoded): no map for this order
   return (
     <MapView
       height={290}
       deliveries={[
         {
           id: order.id,
-          from: [restaurant.lat, restaurant.lng],
+          from,
           fromLabel: restaurant.name,
           hue: restaurantHue(restaurant),
-          to: [order.deliveryLat, order.deliveryLng],
+          to,
           toLabel: 'You',
           courierName: order.courierName,
           pickedUpAt: order.status === 'picked_up' ? order.pickedUpAt : undefined,

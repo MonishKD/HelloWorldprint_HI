@@ -1,24 +1,29 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Role } from './domain';
-import { setAuthToken } from './ui/http';
+import { setUnauthorizedHandler } from './ui/http';
 import type { SessionUser } from './ui/reg/regApi';
 
 // Fake session: held in React state only, so a page reload logs you out.
+// With the real backend the session is Spring Security's cookie (see ui/http.ts); this only remembers who is signed in.
 interface Session {
   user: SessionUser | null;
-  setUser: (user: SessionUser | null) => void;
+  /** Message for the login page after signing out or losing the session. */
+  notice: string;
+  setUser: (user: SessionUser | null, notice?: string) => void;
 }
 
 const SessionContext = createContext<Session | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<SessionUser | null>(null);
-  // Keeps the HTTP helper's Authorization header in step with the session (R-REG-02).
-  const setUser = (next: SessionUser | null) => {
-    setAuthToken(next?.token ?? null);
+  const [notice, setNotice] = useState('');
+  const setUser = (next: SessionUser | null, message = '') => {
     setUserState(next);
+    setNotice(message);
   };
-  return <SessionContext.Provider value={{ user, setUser }}>{children}</SessionContext.Provider>;
+  // A 401 from the backend means the session is gone (R-REG-02): back to the login page with a reason.
+  useEffect(() => setUnauthorizedHandler(() => setUser(null, 'Your session expired. Please log in again.')), []);
+  return <SessionContext.Provider value={{ user, notice, setUser }}>{children}</SessionContext.Provider>;
 }
 
 export function useSession(): Session {

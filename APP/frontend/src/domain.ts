@@ -18,6 +18,8 @@ export type OrderStatus =
 
 export interface User {
   id: string;
+  /** Login name (domain model: User.username). `name` is the display name (Customer.name, Courier.name). */
+  username: string;
   name: string;
   email: string;
   password: string;
@@ -44,8 +46,9 @@ export interface Restaurant {
   cuisine: string;
   address: string;
   status: RestaurantStatus;
-  lat: number;
-  lng: number;
+  /** Empty until the restaurant is geocoded: sign-up doesn't ask for coordinates, so a new restaurant has none. */
+  lat?: number;
+  lng?: number;
   /** Hue (0-360) for the card cover gradient. */
   hue?: number;
   rating?: number;
@@ -76,8 +79,9 @@ export interface Order {
   customerId: string;
   customerName: string;
   deliveryAddress: string;
-  deliveryLat: number;
-  deliveryLng: number;
+  /** Empty when the address hasn't been geocoded; the order is then shown without a map. */
+  deliveryLat?: number;
+  deliveryLng?: number;
   restaurantId: string;
   restaurantName: string;
   lines: OrderLine[];

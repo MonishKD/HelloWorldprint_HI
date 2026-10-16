@@ -4,7 +4,7 @@ import { useUser } from '../../session';
 import { ConfirmButton, ConfirmChange, Empty, LoadError, Loading, minutesSince, money, restaurantHue, stagger, Stat, StatusBadge, Switch, TERMINAL, useLoad } from '../common';
 import { Icon } from '../icons';
 import MapView, { type MapDelivery, type MapPin } from '../map/MapView';
-import { deliveryProgress, etaMinutes, useNow } from '../map/geo';
+import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { assignCourier, listCourierOrders, listDispatchQueue, listRestaurants, updateOrderStatus } from '../ord/ordApi';
 import { listCouriers, setCourierOnline } from '../reg/regApi';
 import { errorMessage, logError, send } from './dashboardApi';
@@ -19,6 +19,13 @@ export default function CourierDashboardPage() {
       <CourierDashboard />
     </DashboardLayout>
   );
+}
+
+/** ETA text for a picked-up order; without coordinates (not geocoded yet) there is no estimate. */
+function minutesLeft(r: Restaurant, o: Order, progress: number) {
+  const from = point(r.lat, r.lng);
+  const to = point(o.deliveryLat, o.deliveryLng);
+  return from && to ? `About ${etaMinutes(from, to, progress)} min to drop-off` : 'On the way to drop-off';
 }
 
 function DeliveryRoute({ order, restaurant }: { order: Order; restaurant?: Restaurant }) {
@@ -78,14 +85,16 @@ function CourierDashboard() {
 
   const mapDeliveries: MapDelivery[] = active.flatMap((o) => {
     const r = restaurantOf(o);
-    if (!r) return [];
+    const from = point(r?.lat, r?.lng);
+    const to = point(o.deliveryLat, o.deliveryLng);
+    if (!r || !from || !to) return []; // no coordinates yet (not geocoded): the order is listed, just not drawn
     return [
       {
         id: o.id,
-        from: [r.lat, r.lng],
+        from,
         fromLabel: r.name,
         hue: restaurantHue(r),
-        to: [o.deliveryLat, o.deliveryLng],
+        to,
         toLabel: `#${o.id} · ${o.customerName}`,
         courierName: 'You',
         pickedUpAt: o.status === 'picked_up' ? o.pickedUpAt : undefined,
@@ -96,7 +105,8 @@ function CourierDashboard() {
     ? [...new Set(queue.map((o) => o.restaurantId))].flatMap((id) => {
         const r = restaurants.find((x) => x.id === id);
         const count = queue.filter((o) => o.restaurantId === id).length;
-        return r ? [{ id: `req-${id}`, at: [r.lat, r.lng], label: `${r.name} · ${count} request${count > 1 ? 's' : ''}`, hue: restaurantHue(r) }] : [];
+        const at = point(r?.lat, r?.lng);
+        return r && at ? [{ id: `req-${id}`, at, label: `${r.name} · ${count} request${count > 1 ? 's' : ''}`, hue: restaurantHue(r) }] : [];
       })
     : [];
 
@@ -182,7 +192,7 @@ function CourierDashboard() {
                   {o.status === 'picked_up' && r && (
                     <p className="eta">
                       <Icon name="clock" size={16} />
-                      {progress >= 1 ? 'You’ve arrived' : `About ${etaMinutes([r.lat, r.lng], [o.deliveryLat, o.deliveryLng], progress)} min to drop-off`}
+                      {progress >= 1 ? 'You’ve arrived' : minutesLeft(r, o, progress)}
                     </p>
                   )}
                   <ul className="order-lines">

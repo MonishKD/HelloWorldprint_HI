@@ -40,7 +40,7 @@ export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; child
     } catch {
       // already shown in the output console
     }
-    setUser(null);
+    setUser(null, 'You have been logged out.');
     clearLogs();
   }
 

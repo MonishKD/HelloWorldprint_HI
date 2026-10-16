@@ -1,10 +1,16 @@
-import maplibregl, { type GeoJSONSource } from 'maplibre-gl';
+import * as maplibregl from 'maplibre-gl';
+import type { Feature, FeatureCollection } from 'geojson';
+import type { GeoJSONSource } from 'maplibre-gl';
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useRef, useState } from 'react';
 import { initials } from '../common';
 import { iconSvg } from '../icons';
 import { deliveryProgress, fetchRoute, pointAlong, type LatLng } from './geo';
 import { buildStyle, routeColors } from './mapStyle';
+
+// MapLibre 6 loads its worker from a separate file; Vite has to be told where it is, or the map shows pins but no tiles.
+maplibregl.setWorkerUrl(workerUrl);
 
 export interface MapDelivery {
   id: string;
@@ -84,7 +90,7 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
   const couriers = useRef(new Map<string, maplibregl.Marker>());
-  const lines = useRef<GeoJSON.FeatureCollection>({ type: 'FeatureCollection', features: [] });
+  const lines = useRef<FeatureCollection>({ type: 'FeatureCollection', features: [] });
   const fittedFor = useRef('');
   const fittedBounds = useRef<maplibregl.LngLatBounds | null>(null);
   const [paths, setPaths] = useState<Record<string, LatLng[]>>({});
@@ -168,7 +174,7 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
     markers.current = [];
     couriers.current.clear();
     const bounds = new maplibregl.LngLatBounds();
-    const features: GeoJSON.Feature[] = [];
+    const features: Feature[] = [];
     const add = (mk: maplibregl.Marker) => {
       mk.addTo(m);
       markers.current.push(mk);

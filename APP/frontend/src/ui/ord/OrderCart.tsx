@@ -40,9 +40,11 @@ export default function OrderCart({
   const blockedReason =
     restaurant.status !== 'open'
       ? `Ordering is unavailable while ${restaurant.name} is ${restaurant.status}.`
-      : menu.every((m) => m.status === 'sold_out')
-        ? 'Everything is sold out right now. Check back later!'
-        : '';
+      : menu.length === 0
+        ? `${restaurant.name} hasn't added any items yet.`
+        : menu.every((m) => m.status === 'sold_out')
+          ? 'Everything is sold out right now. Check back later!'
+          : '';
 
   async function confirmOrder() {
     setBusy(true);

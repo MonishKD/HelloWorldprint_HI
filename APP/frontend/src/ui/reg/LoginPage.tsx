@@ -15,8 +15,8 @@ const DEMO_ACCOUNTS: { label: string; icon: IconName; email: string }[] = [
 ];
 
 export default function LoginPage() {
-  const { user, setUser } = useSession();
-  const [email, setEmail] = useState('');
+  const { user, notice, setUser } = useSession();
+  const [email, setEmail] = useState(''); // username or email
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -43,9 +43,15 @@ export default function LoginPage() {
           <p className="muted">Log in to keep rescuing good food.</p>
         </div>
 
+        {notice && !error && (
+          <p className="alert alert-success" role="status">
+            {notice}
+          </p>
+        )}
+
         <label className="field">
-          <span>Email</span>
-          <input type="email" required autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <span>Username or email</span>
+          <input required autoComplete="username" autoCapitalize="none" spellCheck={false} placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
         </label>
         <label className="field">
           <span>Password</span>

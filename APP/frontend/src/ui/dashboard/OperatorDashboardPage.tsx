@@ -87,7 +87,7 @@ function OperatorDashboard() {
         couriers={courierLocations}
         homes={orders
           .filter((o) => !TERMINAL.includes(o.status))
-          .map((o) => ({ id: o.id, lat: o.deliveryLat, lng: o.deliveryLng, label: `#${o.id} · ${o.customerName}` }))}
+          .flatMap((o) => (o.deliveryLat === undefined || o.deliveryLng === undefined ? [] : [{ id: o.id, lat: o.deliveryLat, lng: o.deliveryLng, label: `#${o.id} · ${o.customerName}` }]))}
         height={360}
       />
 

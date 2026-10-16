@@ -2,15 +2,16 @@ import { useState, type CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { MenuItem } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmChange, DiscountTile, Empty, LoadError, Loading, money, restaurantHue, stagger, StatusBadge, Switch, useLoad } from '../common';
+import { ConfirmButton, ConfirmChange, DiscountTile, Empty, LoadError, Loading, money, restaurantHue, stagger, StatusBadge, Switch, useLoad } from '../common';
 import { errorMessage, send } from '../dashboard/dashboardApi';
 import { Icon } from '../icons';
 import OrderCart, { type Cart } from './OrderCart';
-import { getRestaurant, listMenu, setMenuItemStatus } from './ordApi';
+import MenuItemForm from './MenuItemForm';
+import { addMenuItem, getRestaurant, listMenu, removeMenuItem, setMenuItemStatus, updateMenuItem } from './ordApi';
 
 /**
  * One MenuPage, two views (a2: ui.ord): a customer browses a restaurant's menu and adds items to the cart,
- * a restaurant manages its own items' availability. A restaurant can only ever see its own menu.
+ * a restaurant manages its own menu (add, edit, remove, availability). A restaurant can only ever see its own menu.
  * `onChanged` lets a parent (the restaurant dashboard) refresh its own numbers after a change.
  */
 export default function MenuPage({ onChanged }: { onChanged?: () => void }) {
@@ -22,18 +23,29 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
   const restaurantId = useUser().restaurantId ?? '';
   const { data, error, reload } = useLoad(() => Promise.all([getRestaurant(restaurantId), listMenu(restaurantId)]), [restaurantId]);
   const [actionError, setActionError] = useState('');
+  const [adding, setAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
 
-  async function toggle(item: MenuItem) {
-    const status = item.status === 'available' ? 'sold_out' : 'available';
+  /** Sends one confirmed change; on success `done` closes the form, on refusal the form stays open so nothing typed is lost. */
+  async function run(action: string, call: () => Promise<unknown>, done?: () => void) {
     setActionError('');
+    setBusy(true);
     try {
-      await send(`Mark "${item.name}" ${status.replace('_', ' ')}`, () => setMenuItemStatus(item.id, status));
+      await send(action, call);
+      done?.();
     } catch (e) {
       setActionError(errorMessage(e));
     }
+    setBusy(false);
     reload();
     onChanged?.();
   }
+
+  const toggle = (item: MenuItem) => {
+    const status = item.status === 'available' ? 'sold_out' : 'available';
+    return run(`Mark "${item.name}" ${status.replace('_', ' ')}`, () => setMenuItemStatus(item.id, status));
+  };
 
   if (error) return <LoadError what="your menu" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your menu" />;
@@ -44,31 +56,72 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
       <div className="page-head">
         <div>
           <h2>Today's menu</h2>
-          <p className="muted">Flip items off the moment they run out so nobody orders something you can't serve.</p>
+          <p className="muted">Add what you have left, and flip items off the moment they run out so nobody orders something you can't serve.</p>
         </div>
+        {!adding && menu.length > 0 && (
+          <button className="btn btn-secondary btn-sm" onClick={() => setAdding(true)}>
+            + Add item
+          </button>
+        )}
       </div>
       {actionError && (
         <p className="alert alert-error" role="alert">
           {actionError}
         </p>
       )}
+      {adding && (
+        <MenuItemForm
+          busy={busy}
+          onCancel={() => setAdding(false)}
+          onSubmit={(input) => run(`Add menu item "${input.name.trim()}"`, () => addMenuItem(restaurantId, input), () => setAdding(false))}
+        />
+      )}
       {menu.length === 0 ? (
-        <Empty icon="utensils" title="No menu items yet" />
+        !adding && (
+          <Empty icon="utensils" title="Your menu is empty">
+            Add your first item: a name, its normal price and the discounted price. Once it's on the menu, open your restaurant from the status control at the top.
+            <button className="btn btn-primary" onClick={() => setAdding(true)}>
+              Add your first item
+            </button>
+          </Empty>
+        )
       ) : (
         <ul className="menu-admin">
           {menu.map((item) => (
-            <li key={item.id} className={item.status === 'sold_out' ? 'off' : ''}>
-              <DiscountTile small price={item.price} originalPrice={item.originalPrice} soldOut={item.status === 'sold_out'} />
-              <span className="menu-admin-name">
-                <strong>{item.name}</strong>
-                <small className="muted">
-                  {money(item.price)} <s>{money(item.originalPrice)}</s>
-                </small>
-              </span>
-              <StatusBadge status={item.status} />
-              <ConfirmChange question={`Mark "${item.name}" ${item.status === 'available' ? 'sold out' : 'available'}?`} onConfirm={() => toggle(item)}>
-                {(ask) => <Switch checked={item.status === 'available'} label={`${item.name} available`} onChange={ask} />}
-              </ConfirmChange>
+            <li key={item.id} className={`${item.status === 'sold_out' ? 'off' : ''} ${editingId === item.id ? 'editing' : ''}`}>
+              {editingId === item.id ? (
+                <MenuItemForm
+                  item={item}
+                  busy={busy}
+                  onCancel={() => setEditingId(null)}
+                  onSubmit={(input) => run(`Edit menu item "${item.name}"`, () => updateMenuItem(restaurantId, item.id, input), () => setEditingId(null))}
+                />
+              ) : (
+                <>
+                  <DiscountTile small price={item.price} originalPrice={item.originalPrice} soldOut={item.status === 'sold_out'} />
+                  <span className="menu-admin-name">
+                    <strong>{item.name}</strong>
+                    <small className="muted">
+                      {money(item.price)} {item.originalPrice > item.price && <s>{money(item.originalPrice)}</s>}
+                    </small>
+                  </span>
+                  <StatusBadge status={item.status} />
+                  <span className="menu-admin-actions">
+                    <ConfirmChange question={`Mark "${item.name}" ${item.status === 'available' ? 'sold out' : 'available'}?`} onConfirm={() => toggle(item)}>
+                      {(ask) => <Switch checked={item.status === 'available'} label={`${item.name} available`} onChange={ask} />}
+                    </ConfirmChange>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setEditingId(item.id)}>
+                      Edit
+                    </button>
+                    <ConfirmButton
+                      variant="danger"
+                      label="Remove"
+                      question={`Remove "${item.name}" from your menu?`}
+                      onConfirm={() => run(`Remove menu item "${item.name}"`, () => removeMenuItem(restaurantId, item.id))}
+                    />
+                  </span>
+                </>
+              )}
             </li>
           ))}
         </ul>
@@ -123,7 +176,7 @@ function CustomerMenu() {
                 <Icon name="star" size={12} filled /> {restaurant.rating.toFixed(1)}
               </span>
             )}
-            <span>{restaurant.cuisine}</span>
+            <span>{restaurant.cuisine || 'New on FortunateGoods'}</span>
             {restaurant.distanceKm !== undefined && <span>{restaurant.distanceKm} km</span>}
             {restaurant.address && <span>{restaurant.address}</span>}
           </p>
@@ -160,7 +213,7 @@ function CustomerMenu() {
                       <p className="muted">{item.description}</p>
                       <div className="price-row">
                         <span className="price">{money(item.price)}</span>
-                        <s className="muted">{money(item.originalPrice)}</s>
+                        {item.originalPrice > item.price && <s className="muted">{money(item.originalPrice)}</s>}
                       </div>
                     </div>
                     <div className="menu-thumb">

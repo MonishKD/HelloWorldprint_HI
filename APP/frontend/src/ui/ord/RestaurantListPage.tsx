@@ -31,7 +31,7 @@ export default function RestaurantListPage() {
   const meals = rescued.reduce((n, l) => n + l.quantity, 0);
   const saved = rescued.reduce((n, l) => n + (l.originalPrice - l.price) * l.quantity, 0);
 
-  const cuisines = ['All', ...new Set(restaurants.map((r) => r.cuisine))];
+  const cuisines = ['All', ...new Set(restaurants.map((r) => r.cuisine).filter(Boolean))]; // cuisine can be empty
   const q = query.trim().toLowerCase();
   const shown = restaurants
     .filter((r) => cuisine === 'All' || r.cuisine === cuisine)
@@ -92,9 +92,15 @@ export default function RestaurantListPage() {
       />
 
       {shown.length === 0 ? (
-        <Empty icon="search" title="No restaurants match">
-          Try another search or clear the filters.
-        </Empty>
+        restaurants.length === 0 ? (
+          <Empty icon="store" title="No restaurants yet">
+            Restaurants will show up here as soon as they join FortunateGoods.
+          </Empty>
+        ) : (
+          <Empty icon="search" title="No restaurants match">
+            Try another search or clear the filters.
+          </Empty>
+        )
       ) : (
         <div className="r-grid">
           {shown.map((r, i) => (
@@ -129,7 +135,7 @@ export default function RestaurantListPage() {
                     </span> : <span className="rating">New</span>}
                 </div>
                 <span className="muted">
-                  {r.cuisine}
+                  {r.cuisine || 'New on FortunateGoods'}
                   {r.distanceKm !== undefined && ` · ${r.distanceKm} km`}
                 </span>
                 {r.pickupWindow && (

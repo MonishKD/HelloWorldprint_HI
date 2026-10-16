@@ -1,9 +1,10 @@
 import { db } from '../../mockData';
 import type { Role, User } from '../../domain';
 
-/** What the UI keeps after login (a2: Session = user, role, token). `token` comes from the backend's login response. */
-export type SessionUser = Omit<User, 'password'> & { token?: string };
+/** What the UI keeps after login (a2: Session = user and role). The backend keeps the session itself in a cookie. */
+export type SessionUser = Omit<User, 'password'>;
 export type RegisterRole = Exclude<Role, 'operator'>;
+const PUBLIC_ROLES: Role[] = ['customer', 'restaurant', 'courier'];
 
 // ponytail: no geocoding, new accounts are dropped near downtown Montreal.
 // The real backend should geocode the address (e.g. with Nominatim) instead.
@@ -15,15 +16,18 @@ function toSession({ password: _password, ...user }: User): SessionUser {
   return { ...user };
 }
 
-// TODO: replace with fetch() to the real backend: POST /auth/login
-export async function login(email: string, password: string): Promise<SessionUser> {
-  const user = db.users.find((u) => u.email === email.trim().toLowerCase() && u.password === password);
-  if (!user) throw new Error('Invalid email or password.');
+// TODO: replace with fetch() to the real backend: POST /auth/login  { usernameOrEmail, password }
+export async function login(usernameOrEmail: string, password: string): Promise<SessionUser> {
+  const id = usernameOrEmail.trim().toLowerCase();
+  const user = db.users.find((u) => (u.email === id || u.username.toLowerCase() === id) && u.password === password);
+  if (!user) throw new Error('Invalid username/email or password.');
   return toSession(user);
 }
 
 // TODO: replace with fetch() to the real backend: POST /auth/register
+// { username, email, password, role, restaurantName?, address? }. A restaurant is created together with its owner account.
 export async function register(input: {
+  username: string;
   name: string;
   email: string;
   password: string;
@@ -31,20 +35,24 @@ export async function register(input: {
   restaurantName?: string;
   address?: string;
 }): Promise<SessionUser> {
+  // The operator is seeded, never registered (R-REG-01). The form doesn't offer it; the backend must refuse it too.
+  if (!PUBLIC_ROLES.includes(input.role)) throw new Error('That role cannot be registered.');
   const email = input.email.trim().toLowerCase();
+  const username = input.username.trim();
+  if (db.users.some((u) => u.username.toLowerCase() === username.toLowerCase())) throw new Error('That username is already taken.');
   if (db.users.some((u) => u.email === email)) throw new Error('An account with this email already exists.');
 
   const id = `u-${Date.now().toString(36)}`;
-  const user: User = { id, name: input.name.trim(), email, password: input.password, role: input.role };
+  const user: User = { id, username, name: input.name.trim(), email, password: input.password, role: input.role };
   if (input.role === 'restaurant') {
     user.restaurantId = `r-${id}`;
     db.restaurants.push({
       id: user.restaurantId,
       name: input.restaurantName!.trim(),
-      cuisine: 'New on FortunateGoods',
+      cuisine: '', // sign-up doesn't ask for it
       address: input.address?.trim() ?? '',
-      status: 'open',
-      ...roughLocation(),
+      status: 'closed', // a new restaurant has no menu yet, so customers see it but can't order (R-ORD-02)
+      // no lat/lng: the real sign-up doesn't ask for coordinates, so a new restaurant has no map pin until it is geocoded
     });
   }
   if (input.role === 'customer') Object.assign(user, { address: input.address?.trim() }, roughLocation());

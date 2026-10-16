@@ -5,6 +5,7 @@ import { useSyncExternalStore } from 'react';
 // TODO: if the backend exposes CommandLog (OutputConsoleFeed), the console can read it instead of this client-side log.
 import { db } from '../../mockData';
 import type { Order } from '../../domain';
+import { ApiError, takeResponseNote } from '../http';
 
 export interface LogEntry {
   id: number;
@@ -56,15 +57,47 @@ export function errorMessage(e: unknown): string {
  */
 export async function send<T>(action: string, run: () => Promise<T>): Promise<T> {
   logSent(action);
+  takeResponseNote(); // forget anything left over from an earlier request
   try {
     const result = await run();
-    logOk(action);
+    // With the real backend, show what it answered ("Order accepted") and the transition's event id (R-ORD-05).
+    const note = takeResponseNote();
+    const detail = [note?.message, note?.eventId != null ? `event #${note.eventId}` : ''].filter(Boolean).join(' · ');
+    logOk(detail ? `${action}: ${detail}` : action);
     return result;
   } catch (e) {
-    logError(`${action}: ${errorMessage(e)}`);
+    const code = e instanceof ApiError && e.code ? ` [${e.status} ${e.code}]` : '';
+    logError(`${action}: ${errorMessage(e)}${code}`);
     throw e;
   }
 }
+
+// ---------- Console feed from the backend (a2: CommandLog -> OutputConsoleFeed, #140) ----------
+
+/** One row of the backend's command log table (`command_log`). */
+export interface CommandLogRow {
+  id: number | string;
+  createdAt: string;
+  commandName: string;
+  result: 'SUCCESS' | 'REFUSED' | 'ERROR';
+  status: number;
+  statusCode: string;
+  statusMessage?: string | null;
+  eventId?: number | null;
+}
+
+/** Turns a backend log row into a console line: SUCCESS is OK, REFUSED and ERROR are shown as errors. */
+export function toLogEntry(row: CommandLogRow): LogEntry {
+  const text = row.statusMessage || row.statusCode;
+  return {
+    id: Number(row.id),
+    at: new Date(row.createdAt),
+    kind: row.result === 'SUCCESS' ? 'ok' : 'error',
+    message: `${row.commandName}: ${text}${row.eventId != null ? ` (event #${row.eventId})` : ''}`,
+  };
+}
+// TODO: when #140 exposes the feed, load it with request<CommandLogRow[]>('/console') and show it in OutputConsolePanel
+// next to (or instead of) the client-side log above.
 
 // ---------- Dashboard data ----------
 

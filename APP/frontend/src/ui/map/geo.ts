@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 
 export type LatLng = [number, number];
 
+/** `[lat, lng]` when both are known, otherwise undefined (e.g. a restaurant that hasn't been geocoded yet). */
+export const point = (lat?: number, lng?: number): LatLng | undefined => (typeof lat === 'number' && typeof lng === 'number' ? [lat, lng] : undefined);
+
 /** Demo only: once picked up, a delivery takes this long to cross the map. */
 export const SIM_DELIVERY_MS = 3 * 60_000;
 const BIKE_KMH = 16;

@@ -5,15 +5,15 @@ import type { MenuItem, Order, Restaurant, User } from './domain';
 const minutesAgo = (n: number) => new Date(Date.now() - n * 60_000).toISOString();
 
 const users: User[] = [
-  { id: 'u-alice', name: 'Alice Martin', email: 'alice@demo.com', password: 'demo123', role: 'customer', address: '4100 Rue Saint-Denis, Apt 4', lat: 45.5206, lng: -73.5786 },
-  { id: 'u-bob', name: 'Bob Nguyen', email: 'bob@demo.com', password: 'demo123', role: 'customer', address: '1000 Rue Wellington', lat: 45.4935, lng: -73.5575 },
-  { id: 'u-green', name: 'Green Leaf Bakery', email: 'greenleaf@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-green' },
-  { id: 'u-sushi', name: 'Sakura Sushi', email: 'sakura@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-sushi' },
-  { id: 'u-taco', name: 'Taco Verde', email: 'tacoverde@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-taco' },
-  { id: 'u-carl', name: 'Carl Courier', email: 'courier@demo.com', password: 'demo123', role: 'courier', courierState: 'offline', lat: 45.4988, lng: -73.5712 },
-  { id: 'u-dina', name: 'Dina Dasher', email: 'dina@demo.com', password: 'demo123', role: 'courier', courierState: 'carrying', lat: 45.5105, lng: -73.5648 },
-  { id: 'u-eli', name: 'Eli Express', email: 'eli@demo.com', password: 'demo123', role: 'courier', courierState: 'offline', lat: 45.5032, lng: -73.5848 },
-  { id: 'u-olga', name: 'Olga Operator', email: 'operator@demo.com', password: 'demo123', role: 'operator' },
+  { id: 'u-alice', username: 'alice', name: 'Alice Martin', email: 'alice@demo.com', password: 'demo123', role: 'customer', address: '4100 Rue Saint-Denis, Apt 4', lat: 45.5206, lng: -73.5786 },
+  { id: 'u-bob', username: 'bob', name: 'Bob Nguyen', email: 'bob@demo.com', password: 'demo123', role: 'customer', address: '1000 Rue Wellington', lat: 45.4935, lng: -73.5575 },
+  { id: 'u-green', username: 'greenleaf', name: 'Green Leaf Bakery', email: 'greenleaf@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-green' },
+  { id: 'u-sushi', username: 'sakura', name: 'Sakura Sushi', email: 'sakura@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-sushi' },
+  { id: 'u-taco', username: 'tacoverde', name: 'Taco Verde', email: 'tacoverde@demo.com', password: 'demo123', role: 'restaurant', restaurantId: 'r-taco' },
+  { id: 'u-carl', username: 'carl', name: 'Carl Courier', email: 'courier@demo.com', password: 'demo123', role: 'courier', courierState: 'offline', lat: 45.4988, lng: -73.5712 },
+  { id: 'u-dina', username: 'dina', name: 'Dina Dasher', email: 'dina@demo.com', password: 'demo123', role: 'courier', courierState: 'carrying', lat: 45.5105, lng: -73.5648 },
+  { id: 'u-eli', username: 'eli', name: 'Eli Express', email: 'eli@demo.com', password: 'demo123', role: 'courier', courierState: 'offline', lat: 45.5032, lng: -73.5848 },
+  { id: 'u-olga', username: 'operator', name: 'Olga Operator', email: 'operator@demo.com', password: 'demo123', role: 'operator' },
 ];
 
 const restaurants: Restaurant[] = [

@@ -1,6 +1,7 @@
 import type { CourierLocation } from '../../domain';
 import type { RestaurantSummary } from '../ord/ordApi';
 import { restaurantHue } from '../common';
+import { point } from './geo';
 import MapView, { type MapPin } from './MapView';
 
 /** Customer address to show (a home pin), e.g. "You" or "#1003 Alice Martin". */
@@ -31,10 +32,11 @@ export default function CityMap({
   height?: number;
 }) {
   const pins: MapPin[] = [
-    ...restaurants.map((r) => ({
+    // A restaurant without coordinates (new sign-up, not geocoded yet) simply has no pin.
+    ...restaurants.filter((r) => point(r.lat, r.lng)).map((r) => ({
       id: `r-${r.id}`,
       kind: 'restaurant' as const,
-      at: [r.lat, r.lng] as [number, number],
+      at: point(r.lat, r.lng)!,
       label: r.name,
       hue: restaurantHue(r),
       status: r.status,

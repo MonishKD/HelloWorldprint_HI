@@ -263,18 +263,22 @@ export function Monogram({ name, hue, size = 'md' }: { name: string; hue: number
   );
 }
 
-/** Menu item thumbnail: the discount is the hero, not a food picture. */
+/** Menu item thumbnail: the discount is the hero, not a food picture. Items without a discount get a neutral tile. */
 export function DiscountTile({ price, originalPrice, soldOut, small }: { price: number; originalPrice: number; soldOut?: boolean; small?: boolean }) {
-  const off = Math.round((1 - price / originalPrice) * 100);
+  const off = originalPrice > price ? Math.round((1 - price / originalPrice) * 100) : 0;
   return (
     <span className={`discount-tile ${small ? 'is-small' : ''} ${soldOut ? 'is-out' : ''}`} aria-hidden="true">
       {soldOut ? (
         <span className="discount-out">Sold out</span>
       ) : (
-        <>
-          <span className="discount-num">−{off}%</span>
-          {!small && <span className="discount-off">off</span>}
-        </>
+        off > 0 ? (
+          <>
+            <span className="discount-num">−{off}%</span>
+            {!small && <span className="discount-off">off</span>}
+          </>
+        ) : (
+          <span className="discount-num">Deal</span>
+        )
       )}
     </span>
   );
