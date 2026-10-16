@@ -36,11 +36,11 @@ public class MenuItemRepository {
             return List.of();
         }
         String sql = "SELECT * FROM menu_items WHERE menu_id = ? AND removed = FALSE ORDER BY id";
-        return jdbc.query(sql, (row, rowNumber) -> toMenuItem(row), menuId);
+        return jdbc.query(sql, (row, rowNumber) -> toMenuItem(row, restaurantId), menuId);
     }
 
     // Adds a new item to this restaurant's menu and returns its new id. The restaurant must exist.
-    // description and originalPrice are passed separately because the MenuItem class does not have them yet. They can be null.
+    // description and originalPrice are passed separately because the MenuItem class does not have them yet.
     public String add(String restaurantId, MenuItem item, String description, Double originalPrice) {
         Integer menuId = findMenuId(restaurantId);
         // RETURNING id gives us back the id the database just made for this item.
@@ -79,10 +79,11 @@ public class MenuItemRepository {
         return found.get(0);
     }
 
-    // Turns one row of the menu_items table into a MenuItem.
-    private MenuItem toMenuItem(ResultSet row) throws SQLException {
+    // Turns one row of the menu_items table into a MenuItem of this restaurant.
+    private MenuItem toMenuItem(ResultSet row, String restaurantId) throws SQLException {
         return new MenuItem(
                 row.getString("id"),
+                restaurantId,
                 row.getString("name"),
                 MenuItemStatus.valueOf(row.getString("status")),
                 row.getDouble("price"));
