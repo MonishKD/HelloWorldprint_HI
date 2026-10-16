@@ -41,4 +41,19 @@ public class OrdModulePermissions {
         return Set.of(UserRole.RESTAURANT);
     }
 
+    public static Set<UserRole> addMenuItemRoles(){
+        return Set.of(UserRole.RESTAURANT);
+    }
+
+    public static Set<UserRole> editMenuItemRoles(){
+        return Set.of(UserRole.RESTAURANT);
+    }
+
+    public static Set<UserRole> removeMenuItemRoles(){
+        return Set.of(UserRole.RESTAURANT);
+    }
+
+    public static Set<UserRole> setRestaurantStatusRoles(){
+        return Set.of(UserRole.RESTAURANT);
+    }
 }
