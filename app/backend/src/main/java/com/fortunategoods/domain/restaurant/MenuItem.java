@@ -8,7 +8,7 @@ public final class MenuItem {
     private final String id;
     private final String restaurantId; // the restaurant this item belongs to
     private final String name;
-    private final MenuItemStatus status;
+    private MenuItemStatus status;
     private final double price;
 
     // Refuses bad data: blank id / restaurantId / name, missing status, negative or NaN price.
@@ -59,6 +59,10 @@ public final class MenuItem {
             throw new IllegalArgumentException(field + " must not be blank");
         }
         return value;
+    }
+
+    public void setStatus(MenuItemStatus status) {
+        this.status = status;
     }
 
 }

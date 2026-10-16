@@ -19,5 +19,9 @@ public class RestaurantStatusHandler extends BaseOrderHandler {
             return true;
         } 
     }
-    
+
+    public void setNextHandler(BaseOrderHandler nextHandler){
+        this.nextHandler = nextHandler;
+    }
+
 }
