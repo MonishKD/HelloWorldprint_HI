@@ -7,6 +7,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -60,10 +61,13 @@ public class Login implements UserDetailsService {
         passwordChecker.authenticate(typedIn);
 
         // 2. Who is logged in: the account's id and role, as the LoggedInUser that SessionValidator reads (#27).
-        //    List.of() is the user's authorities (what Spring Security lets them do). #29 puts the role in it.
         User user = findByUsernameOrEmail(usernameOrEmail);
         LoggedInUser loggedInUser = new LoggedInUser(Long.parseLong(user.getId()), user.getRole());
-        Authentication loggedIn = UsernamePasswordAuthenticationToken.authenticated(loggedInUser, null, List.of());
+
+        //    The role is also saved as the user's "authority": the label Spring Security checks to decide
+        //    what they may do (#29). Spring's role labels start with "ROLE_", e.g. ROLE_CUSTOMER.
+        SimpleGrantedAuthority roleAuthority = new SimpleGrantedAuthority("ROLE_" + user.getRole().name());
+        Authentication loggedIn = UsernamePasswordAuthenticationToken.authenticated(loggedInUser, null, List.of(roleAuthority));
 
         SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
         securityContext.setAuthentication(loggedIn);

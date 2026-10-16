@@ -2,7 +2,6 @@ package com.fortunategoods.technical.security.session;
 
 import java.util.Set;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.security.SessionValidator;
+import com.fortunategoods.technical.security.role.RoleCheck;
 
 // The real SessionValidator (#27). Answers "valid session, which role?" from the Spring Security session.
 // CommandInvoker (#68) calls it before every command, and GET /api/auth/me (#66) will use currentSession().
@@ -30,6 +30,13 @@ import com.fortunategoods.technical.security.SessionValidator;
 public class SpringSecuritySessionValidator implements SessionValidator {
 
     private static final String NOT_LOGGED_IN_MESSAGE = "Sign-in again to perform this action";
+
+    private final RoleCheck roleCheck;
+
+    // Spring gives us the RoleCheck (#29), which is a @Component too.
+    public SpringSecuritySessionValidator(RoleCheck roleCheck) {
+        this.roleCheck = roleCheck;
+    }
 
     // Returns the logged-in user's id and role as a Session.
     // Throws (401) when nobody is logged in, or the session expired.
@@ -56,9 +63,12 @@ public class SpringSecuritySessionValidator implements SessionValidator {
         }
     }
 
-    // The role check is #29. Until it's built, every command is refused (403), so nothing runs unchecked.
+    // Checks that the logged-in user's role is one of the command's allowed roles (#29).
+    // Throws (403) when it isn't. RoleCheck does the comparison.
+    // The Session itself was already checked by requireValid(), which CommandInvoker calls first.
     @Override
     public void requireRoles(Session session, Set<UserRole> allowedRoles) {
-        throw new AccessDeniedException("Role check not built yet (#29)");
+        Authentication springSession = SecurityContextHolder.getContext().getAuthentication();
+        roleCheck.requireOneOf(springSession, allowedRoles);
     }
 }
