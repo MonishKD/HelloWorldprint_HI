@@ -39,6 +39,19 @@ public class MenuItemRepository {
         return jdbc.query(sql, (row, rowNumber) -> toMenuItem(row, restaurantId), menuId);
     }
 
+    // Returns the item with this id, or null if there is none. Hidden items are found too,
+    // because past order lines still point to them (#24, #146).
+    public MenuItem findById(String id) {
+        String sql = "SELECT menu_items.*, menus.restaurant_id FROM menu_items "
+                + "JOIN menus ON menus.id = menu_items.menu_id WHERE menu_items.id = ?";
+        List<MenuItem> found = jdbc.query(sql, (row, rowNumber) -> toMenuItem(row, row.getString("restaurant_id")),
+                Integer.parseInt(id));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     // Adds a new item to this restaurant's menu and returns its new id. The restaurant must exist.
     // description and originalPrice are passed separately because the MenuItem class does not have them yet.
     public String add(String restaurantId, MenuItem item, String description, Double originalPrice) {

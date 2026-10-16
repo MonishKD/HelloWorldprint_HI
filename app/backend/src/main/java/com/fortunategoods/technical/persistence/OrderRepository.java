@@ -20,10 +20,13 @@ public class OrderRepository {
 
     private final JdbcTemplate jdbc;
     private final OrderEventRepository orderEventRepository;
+    private final MenuItemRepository menuItemRepository;
 
-    public OrderRepository(JdbcTemplate jdbc, OrderEventRepository orderEventRepository) {
+    // Spring gives us these. We use menuItemRepository to give each order line its MenuItem.
+    public OrderRepository(JdbcTemplate jdbc, OrderEventRepository orderEventRepository, MenuItemRepository menuItemRepository) {
         this.jdbc = jdbc;
         this.orderEventRepository = orderEventRepository;
+        this.menuItemRepository = menuItemRepository;
     }
 
     // Saves the order as PLACED, its lines, and its first event. Returns the new order id.
@@ -100,14 +103,18 @@ public class OrderRepository {
                 findLines(id));
     }
 
-    // Turns one row of the order_lines table into an OrderLine.
+    // Turns one row of the order_lines table into an OrderLine, with the MenuItem it points to (#97).
+    // name, price and original_price stay the copy saved when the order was placed.
+    // original_price is empty when the item was not on discount. getObject keeps it null (getDouble would give 0.0).
     private OrderLine toOrderLine(ResultSet row) throws SQLException {
+        String menuItemId = row.getString("menu_item_id");
         return new OrderLine(
                 row.getString("id"),
-                row.getString("menu_item_id"),
+                menuItemId,
                 row.getInt("quantity"),
                 row.getString("name"),
                 row.getDouble("price"),
-                row.getDouble("original_price"));
+                row.getObject("original_price", Double.class),
+                menuItemRepository.findById(menuItemId));
     }
 }
