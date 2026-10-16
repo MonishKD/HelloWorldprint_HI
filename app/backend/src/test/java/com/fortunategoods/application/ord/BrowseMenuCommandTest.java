@@ -29,6 +29,12 @@ class BrowseMenuCommandTest {
 
     // Fake SessionValidator with the same behaviour as the real one: no session or a wrong role is refused.
     private final SessionValidator validator = new SessionValidator() {
+        // Not used by these tests: they pass the Session in themselves.
+        @Override
+        public Session currentSession() {
+            return null;
+        }
+
         @Override
         public void requireValid(Session session) {
             if (session == null) {
