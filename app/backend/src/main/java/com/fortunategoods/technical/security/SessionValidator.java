@@ -10,6 +10,10 @@ import java.util.Set;
 */
 public interface SessionValidator {
 
+    // Returns the logged-in user's Session (id and role), read from the Spring session.
+    // If nobody is logged in, throws AuthenticationException. Used to fill the Session and by GET /api/auth/me (#66).
+    Session currentSession();
+
     // Checks session against Spring session, if it fails throws AuthenticationException
     void requireValid(Session session);
 
