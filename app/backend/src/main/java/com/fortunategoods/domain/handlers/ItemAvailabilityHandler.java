@@ -7,10 +7,11 @@ public class ItemAvailabilityHandler extends BaseOrderHandler {
     public boolean handle(OrderRequest orderRequest){
         for (OrderLine order: orderRequest.getOrderLines()){
             if(order.getMenuItem().getStatus() == com.fortunategoods.domain.restaurant.MenuItemStatus.SOLD_OUT){
-                throw new IllegalStateException("Item "+order.getMenuItem().getName()+ " is sold out");
+              //changed to get name from orderLine instead just to make it more clean
+                throw new IllegalStateException("Item "+order.getName()+ " is sold out");
             }
             if(order.getQuantity()<=0){
-                throw new IllegalStateException("Item "+order.getMenuItem().getName()+ " quantity invalid");
+                throw new IllegalStateException("Item "+order.getName()+ " quantity invalid");
             }
 
         }
