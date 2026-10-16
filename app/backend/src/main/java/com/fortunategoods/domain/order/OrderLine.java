@@ -1,17 +1,19 @@
 package com.fortunategoods.domain.order;
-
+import com.fortunategoods.domain.restaurant.MenuItem;
 public class OrderLine {
 
     private String id;
     private String menuItemId;
+    private MenuItem menuItem;
     private int quantity;
     private String name;
     private double price;
     private Double originalPrice;
 
-    public OrderLine(String id, String menuItemId, int quantity, String name, double price, Double originalPrice) {
+    public OrderLine(String id, String menuItemId, int quantity, String name, double price, Double originalPrice, MenuItem menuItem) {
         this.id = id;
         this.menuItemId = menuItemId;
+        this.menuItem = menuItem;
         this.quantity = quantity;
         this.name = name;
         this.price = price;
@@ -42,4 +44,7 @@ public class OrderLine {
         return originalPrice;
     }
 
+    public MenuItem getMenuItem() {
+        return menuItem;
+    }
 }

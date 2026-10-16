@@ -10,6 +10,6 @@ public abstract class BaseOrderHandler implements OrderHandler {
     }
 
     //concrete will deal with implementation
-    public abstract boolean handler(OrderRequest orderRequest);
+    public abstract boolean handle(OrderRequest orderRequest);
     
 }
