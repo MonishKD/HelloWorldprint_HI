@@ -1,24 +1,27 @@
 package com.fortunategoods.application.ord;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 import com.fortunategoods.application.reg.Session;
+import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.restaurant.MenuService;
 import com.fortunategoods.domain.restaurant.RestaurantMenu;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
@@ -27,6 +30,21 @@ import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.SessionValidator;
 
+
+/*
+    This class is used to test the command invoker on various of Authentication/Unauthorized exceptions:
+    - Customer can browse a menu
+    - Users w/o accounts or unauthenticated users cannot browse menus
+    - Couriers cannot browse menu
+    - Restaurant staff cannot browse the menu of another restaurant
+    - State transition with the wrong user role
+    We compare the results sent after executing process() to the result obtained
+    from the domain layer's appropriate method that is executed.
+
+    This class also tests DomainRuleViolation Exceptions (400, 404, 409)
+
+    This class also tests RuntimeExceptions (500)
+*/
 class CommandInvokerTest {
 
     private SessionValidator validator;
@@ -65,6 +83,11 @@ class CommandInvokerTest {
         assertSame(menu, result.getData()); 
         assertEquals(1, savedLogs.size());
         assertEquals(CommandLog.Result.SUCCESS,savedLogs.get(0).getResult());
+
+        // Verifications
+        verify(validator).requireValid(customer);
+        verify(validator).requireRoles(customer, Set.of(UserRole.CUSTOMER, UserRole.RESTAURANT));
+        verify(menuService).browseMenu("1", "7", UserRole.CUSTOMER);
     }
 
     @Test
@@ -184,9 +207,107 @@ class CommandInvokerTest {
         CommandLog log = savedLogs.get(0);
         assertEquals(CommandLog.Result.REFUSED, log.getResult());
         assertEquals(403, log.getStatus());
-        
+
         assertEquals("FORBIDDEN", log.getStatusCode());
         assertFalse(log.getStatusMessage().isBlank());
+        assertNull(log.getEventId());
+    }
+    
+    @Test
+    void rejectedSessionCannotExecute (){
+        Session customer = new Session(20, UserRole.CUSTOMER);
+        doThrow(new AuthenticationCredentialsNotFoundException("Session expired.")).when(validator).requireValid(customer);
+
+        BrowseMenuCommand command = new BrowseMenuCommand(menuService, customer, "3");
+        assertThrows(AuthenticationCredentialsNotFoundException.class, ()-> invoker.process(command, customer));
+
+        verifyNoInteractions(menuService);
+        assertEquals(1, savedLogs.size());
+
+        CommandLog log = savedLogs.get(0);
+
+        assertEquals(CommandLog.Result.REFUSED, log.getResult());
+        assertEquals(401, log.getStatus());
+        assertEquals("UNAUTHENTICATED", log.getStatusCode());
+        assertNull(log.getSession());
+        assertNull(log.getEventId());
+    }
+
+    // Domain failure tests ----------
+    @Test 
+    void invalidDomain400(){
+        checkDomainFailure(DomainRuleViolation.Reason.INVALID, 400);
+    }
+
+    @Test 
+    void notFoundDomain404(){
+        checkDomainFailure(DomainRuleViolation.Reason.NOT_FOUND, 404);
+    }
+
+    @Test 
+    void conflictDomain409(){
+        checkDomainFailure(DomainRuleViolation.Reason.CONFLICT, 409);
+    }
+
+    private void checkDomainFailure(DomainRuleViolation.Reason reason, int expectedStatus) {
+        Session customer = new Session(7, UserRole.CUSTOMER);
+
+        // Will be thrown by one of the domain services
+        DomainRuleViolation failure = new DomainRuleViolation(reason, "Action was refused.");
+
+        // Make the service throw a domain rule violation
+        when(menuService.browseMenu("1", "7", UserRole.CUSTOMER)).thenThrow(failure);
+
+        BrowseMenuCommand command = new BrowseMenuCommand(menuService, customer, "1");
+
+        CommandExecutionException e = assertThrows(CommandExecutionException.class,() -> invoker.process(command, customer));
+
+        // Check what the invoker passed to the HTTP layer.
+        assertEquals(expectedStatus, e.getStatus());
+        assertEquals(reason.name(), e.getCode());
+        assertEquals("Action was refused.", e.getMessage());
+        assertSame(failure, e.getCause());
+
+        // Check the saved refusal.
+        assertEquals(1, savedLogs.size());
+
+        CommandLog log = savedLogs.get(0);
+
+        assertEquals(CommandLog.Result.REFUSED, log.getResult());
+        assertEquals(expectedStatus, log.getStatus());
+        assertEquals(reason.name(), log.getStatusCode());
+        assertEquals("Action was refused.", log.getStatusMessage());
+        assertNull(log.getEventId()); // No state transitions happened
+    }
+
+    @Test
+    void unexpectedFailureProducesSafe500Error() {
+        Session customer = new Session(7, UserRole.CUSTOMER);
+
+        // Random RuntimeException to simulate
+        RuntimeException failure = new IllegalStateException("Private database connection details");
+
+        when(menuService.browseMenu("1", "7", UserRole.CUSTOMER)).thenThrow(failure);
+
+        BrowseMenuCommand command = new BrowseMenuCommand(menuService, customer, "1");
+
+        CommandExecutionException exception = assertThrows(CommandExecutionException.class, () -> invoker.process(command, customer));
+
+        assertEquals(500, exception.getStatus());
+        assertEquals("COMMAND_FAILED", exception.getCode());
+        assertSame(failure, exception.getCause());
+
+        assertFalse(exception.getMessage().contains("Private database connection details"));
+
+        assertEquals(1, savedLogs.size());
+
+        CommandLog log = savedLogs.get(0);
+        assertEquals(CommandLog.Result.ERROR, log.getResult());
+        assertEquals(500, log.getStatus());
+        assertEquals("COMMAND_FAILED", log.getStatusCode());
+
+        assertFalse(log.getStatusMessage().contains("Private database connection details"));
+
         assertNull(log.getEventId());
     }
 }
