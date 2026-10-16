@@ -1,25 +1,33 @@
 package com.fortunategoods.application.ord;
 import java.util.List;
 import com.fortunategoods.domain.order.OrderLine;
+import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.restaurant.MenuItem;
 public class OrderRequest {
     
 
-    private String restaurantID;
+    private Restaurant restaurant;
     private String customerID;
+    private MenuItem menuItem;
     private List<OrderLine> orderLines;
 
-    public OrderRequest(String restaurantID, String customerID, List<OrderLine> orderLines) {
-        this.restaurantID = restaurantID;
+    public OrderRequest(Restaurant restaurant, String customerID, MenuItem menuItem, List<OrderLine> orderLines) {
+        this.restaurant = restaurant;
         this.customerID = customerID;
+        this.menuItem = menuItem;
         this.orderLines = orderLines;
     }
 
-    public String getRestaurantID() {
-        return restaurantID;
+    public Restaurant getRestaurant() {
+        return restaurant;
     }
 
     public String getCustomerID() {
         return customerID;
+    }
+
+    public MenuItem getMenuItem() {
+        return menuItem;
     }
 
     public List<OrderLine> getOrderLines() {
