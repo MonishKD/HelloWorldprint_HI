@@ -8,6 +8,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fortunategoods.domain.user.User;
+import com.fortunategoods.domain.user.UserRole;
+
 // Saves and finds user accounts in the database (#24).
 //
 // How every method works:
@@ -27,9 +30,9 @@ public class UserRepository {
     }
 
     // Returns the user with this username, or null if there is none.
-    public UserAccount findByUsername(String username) {
+    public User findByUsername(String username) {
         String sql = "SELECT * FROM users WHERE username = ?";
-        List<UserAccount> found = jdbc.query(sql, (row, rowNumber) -> toUserAccount(row), username);
+        List<User> found = jdbc.query(sql, (row, rowNumber) -> toUser(row), username);
         if (found.isEmpty()) {
             return null;
         }
@@ -37,9 +40,9 @@ public class UserRepository {
     }
 
     // Returns the user with this email, or null if there is none.
-    public UserAccount findByEmail(String email) {
+    public User findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
-        List<UserAccount> found = jdbc.query(sql, (row, rowNumber) -> toUserAccount(row), email.toLowerCase());
+        List<User> found = jdbc.query(sql, (row, rowNumber) -> toUser(row), email.toLowerCase());
         if (found.isEmpty()) {
             return null;
         }
@@ -50,19 +53,20 @@ public class UserRepository {
     // It also adds a row in the table of its role (customers, couriers or operators).
     // @Transactional means: if one of the two inserts fails, neither is saved.
     @Transactional
-    public String add(UserAccount user) {
+    public String add(User user) {
         // RETURNING id gives us back the id the database just made for this user.
         String sql = "INSERT INTO users (username, email, phone_number, password_hash, role) VALUES (?, ?, ?, ?, ?) RETURNING id";
         Integer id = jdbc.queryForObject(sql, Integer.class,
-                user.username(), user.email().toLowerCase(), user.phoneNumber(), user.passwordHash(), user.role());
+                user.getUsername(), user.getEmail().toLowerCase(), user.getPhoneNumber(), user.getPasswordHash(),
+                user.getRole().name());
 
-        if (user.role().equals("CUSTOMER")) {
+        if (user.getRole() == UserRole.CUSTOMER) {
             jdbc.update("INSERT INTO customers (user_id) VALUES (?)", id);
         }
-        if (user.role().equals("COURIER")) {
+        if (user.getRole() == UserRole.COURIER) {
             jdbc.update("INSERT INTO couriers (user_id) VALUES (?)", id);
         }
-        if (user.role().equals("OPERATOR")) {
+        if (user.getRole() == UserRole.OPERATOR) {
             jdbc.update("INSERT INTO operators (user_id) VALUES (?)", id);
         }
         // RESTAURANT users are linked to their restaurant with addRestaurantPersonnel() below.
@@ -87,14 +91,14 @@ public class UserRepository {
         return found.get(0);
     }
 
-    // Turns one row of the users table into a UserAccount.
-    private UserAccount toUserAccount(ResultSet row) throws SQLException {
-        return new UserAccount(
+    // Turns one row of the users table into a User.
+    private User toUser(ResultSet row) throws SQLException {
+        return new User(
                 row.getString("id"),
                 row.getString("username"),
                 row.getString("email"),
                 row.getString("phone_number"),
                 row.getString("password_hash"),
-                row.getString("role"));
+                UserRole.valueOf(row.getString("role")));
     }
 }
