@@ -1,4 +1,4 @@
-package com.fortunategoods.technical.security;
+package com.fortunategoods.technical.security.session;
 
 import java.util.Set;
 
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.security.SessionValidator;
 
 // The real SessionValidator (#27). Answers "valid session, which role?" from the Spring Security session.
 // CommandInvoker (#68) calls it before every command, and GET /api/auth/me (#66) will use currentSession().

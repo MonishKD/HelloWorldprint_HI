@@ -1,4 +1,4 @@
-package com.fortunategoods.technical.security;
+package com.fortunategoods.technical.security.session;
 
 import com.fortunategoods.domain.user.UserRole;
 
