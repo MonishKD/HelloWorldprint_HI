@@ -2,17 +2,19 @@ package com.fortunategoods.domain.restaurant;
 
 import java.util.Objects;
 
-// One item on a restaurant's menu. Every field is final, so an item cannot change after it is created.
+// One item on a restaurant's menu. Most fields are final, so they cannot change. 
+// MenuItem's availability status is the only field that can change
 public final class MenuItem {
 
     private final String id;
     private final String restaurantId; // the restaurant this item belongs to
     private final String name;
-    private MenuItemStatus status;
+    private MenuItemStatus status; // not final since status can change
     private final double price;
+    private final Double originalPrice; // Double wrapper to save it in-memory
 
-    // Refuses bad data: blank id / restaurantId / name, missing status, negative or NaN price.
-    public MenuItem(String id, String restaurantId, String name, MenuItemStatus status, double price) {
+    // Existing code will use this constructor until appropriate changes are applied, to use the other constructor
+    public MenuItem(String id, String restaurantId, String name, MenuItemStatus status, double price){
         this.id = requireNonBlank(id, "id");
         this.restaurantId = requireNonBlank(restaurantId, "restaurantId");
         this.name = requireNonBlank(name, "name");
@@ -21,6 +23,23 @@ public final class MenuItem {
             throw new IllegalArgumentException("price must be a non-negative number");
         }
         this.price = price;
+        this.originalPrice = null;
+    }
+
+    // Refuses bad data: blank id / restaurantId / name, missing status, negative or NaN price.
+    public MenuItem(String id, String restaurantId, String name, MenuItemStatus status, double price, Double originalPrice) {
+        this.id = requireNonBlank(id, "id");
+        this.restaurantId = requireNonBlank(restaurantId, "restaurantId");
+        this.name = requireNonBlank(name, "name");
+        this.status = Objects.requireNonNull(status, "status must not be null");
+        if (!Double.isFinite(price) || price < 0) {
+            throw new IllegalArgumentException("price must be a non-negative number");
+        }
+        if (originalPrice != null && (!Double.isFinite(originalPrice) || originalPrice < 0)){
+            throw new IllegalArgumentException("originalPrice must be non-negative");
+        }
+        this.price = price;
+        this.originalPrice = originalPrice;
     }
 
     public String getId() {
@@ -43,6 +62,10 @@ public final class MenuItem {
         return price;
     }
 
+    public Double getOriginalPrice(){
+        return originalPrice;
+    }
+
     // true when the item can be ordered
     public boolean isAvailable() {
         return status == MenuItemStatus.AVAILABLE;
@@ -61,8 +84,9 @@ public final class MenuItem {
         return value;
     }
 
+    // Setter for status
     public void setStatus(MenuItemStatus status) {
-        this.status = status;
+        this.status = Objects.requireNonNull(status, "Status can not be null");
     }
 
 }
