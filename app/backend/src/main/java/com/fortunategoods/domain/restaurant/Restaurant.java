@@ -2,12 +2,13 @@ package com.fortunategoods.domain.restaurant;
 
 import java.util.List;
 public class Restaurant {
-    private String id;
-    private String name;
-    private RestaurantStatus status;
-    private double latitude;
-    private double longitude;
-    private List<MenuItem> menu;
+    // set as final to make variales immutable, and to ensure that they are initialized in the constructor
+    private final String id;
+    private final String name;
+    private final RestaurantStatus status;
+    private final double latitude;
+    private final double longitude;
+    private final List<MenuItem> menu;
 
 
     public Restaurant(String id, String name, RestaurantStatus status, double latitude, double longitude, List<MenuItem> menu) {
@@ -16,7 +17,13 @@ public class Restaurant {
         this.status = status;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.menu = menu;
+        this.menu = List.copyOf(menu);
+        for (MenuItem item : this.menu) {
+            if (!item.getRestaurantId().equals(id)) {
+                throw new IllegalArgumentException(
+                        "menu item " + item.getId() + " belongs to restaurant " + item.getRestaurantId() + ", not " + id);
+            }
+        }
     }
 
     public String getId() {

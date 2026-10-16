@@ -1,21 +1,34 @@
 package com.fortunategoods.domain.restaurant;
 
-public class MenuItem {
-    
-    private String id;
-    private String name;
-    private MenuItemStatus status;
-    private double price;
+import java.util.Objects;
 
-    public MenuItem(String id, String name, MenuItemStatus status, double price) {
-        this.id = id;
-        this.name = name;
-        this.status = status;
+// One item on a restaurant's menu. Every field is final, so an item cannot change after it is created.
+public final class MenuItem {
+
+    private final String id;
+    private final String restaurantId; // the restaurant this item belongs to
+    private final String name;
+    private final MenuItemStatus status;
+    private final double price;
+
+    // Refuses bad data: blank id / restaurantId / name, missing status, negative or NaN price.
+    public MenuItem(String id, String restaurantId, String name, MenuItemStatus status, double price) {
+        this.id = requireNonBlank(id, "id");
+        this.restaurantId = requireNonBlank(restaurantId, "restaurantId");
+        this.name = requireNonBlank(name, "name");
+        this.status = Objects.requireNonNull(status, "status must not be null");
+        if (!Double.isFinite(price) || price < 0) {
+            throw new IllegalArgumentException("price must be a non-negative number");
+        }
         this.price = price;
     }
 
     public String getId() {
         return id;
+    }
+
+    public String getRestaurantId() {
+        return restaurantId;
     }
 
     public String getName() {
@@ -28,6 +41,24 @@ public class MenuItem {
 
     public double getPrice() {
         return price;
+    }
+
+    // true when the item can be ordered
+    public boolean isAvailable() {
+        return status == MenuItemStatus.AVAILABLE;
+    }
+
+    // true when the item is sold out
+    public boolean isSoldOut() {
+        return status == MenuItemStatus.SOLD_OUT;
+    }
+
+    // Returns the value, or throws if it is null or only spaces.
+    private static String requireNonBlank(String value, String field) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
+        return value;
     }
 
 }
