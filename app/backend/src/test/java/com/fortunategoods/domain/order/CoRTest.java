@@ -1,17 +1,22 @@
 package com.fortunategoods.domain.order;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fortunategoods.domain.handlers.*;
-import com.fortunategoods.domain.restaurant.*;
-import com.fortunategoods.application.ord.OrderRequest;
-import com.fortunategoods.domain.order.*;
-
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.fortunategoods.application.ord.OrderRequest;
+import com.fortunategoods.domain.handlers.BaseOrderHandler;
+import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
+import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
+import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.restaurant.RestaurantStatus;
 
 public class CoRTest {
     private BaseOrderHandler restaurantHandler;
@@ -94,7 +99,7 @@ public class CoRTest {
         //making it sold out after
         menu.get(0).setStatus(MenuItemStatus.SOLD_OUT);
 
-        OrderLine orderLine = new OrderLine("1", "m1", 0, "name", 0.0, 0.0, menu.get(0));
+        OrderLine orderLine = new OrderLine("1", "m1", 1, "name", 0.0, 0.0, menu.get(0));
         List<OrderLine> orderLines = new ArrayList<>();
         orderLines.add(orderLine);
         OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), orderLines);
