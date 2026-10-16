@@ -40,9 +40,6 @@ class "Restaurant" as Restaurant {
     status: RestaurantStatus
     latPosition: double
     longPosition: double
-    ' proposed by frontend, see APP/frontend/docs/BACKEND_INTEGRATION.md section 4b
-    cuisine: String
-    address: String
 }
 
 class "Restaurant Personnel" as RestPers {
@@ -67,18 +64,10 @@ class "Order" as Order {
     status: OrderStatus
     /totalCharges: double
     specialInstructions: String
-    ' proposed by frontend: drop-off point typed in the cart (snapshot, Customer keeps the saved address)
-    deliveryAddress: String
-    deliveryLat: double
-    deliveryLong: double
 }
 
 class "Order Line" as OrderLine {
     quantity: int
-    ' proposed by frontend: snapshot of the item at order time (needed for /totalCharges and the savings shown)
-    name: String
-    price: double
-    originalPrice: double
 }
 
 class "Menu" as Menu {
@@ -90,9 +79,6 @@ class "Menu Item" as MenuItem {
     name: String
     price: double
     status: MenuItemStatus
-    ' proposed by frontend: price before the surplus discount, and the dish description
-    originalPrice: double
-    description: String
 }
 
 class "Preparation Queue" as PQ {
