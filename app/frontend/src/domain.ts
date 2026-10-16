@@ -1,6 +1,6 @@
 // Domain types shared by the whole frontend.
 // Names and enums follow the domain model (diagrams/domainModel.puml); these are the shapes the real
-// backend should return. See docs/BACKEND_INTEGRATION.md.
+// backend should return. Each *Api.ts stub has a TODO naming the endpoint that returns them.
 export type Role = 'customer' | 'restaurant' | 'courier' | 'operator';
 export type RestaurantStatus = 'open' | 'paused' | 'closed';
 export type MenuItemStatus = 'available' | 'sold_out';

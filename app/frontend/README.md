@@ -4,9 +4,9 @@ Surplus-food delivery: restaurants sell unsold food at a discount, customers ord
 operators keep an eye on the whole platform.
 
 This is the frontend only. All data is mock data held in memory, and the `*Api.ts` files are stubs that will be swapped
-for `fetch()` calls to the real backend. Backend developers should start with
-[docs/BACKEND_INTEGRATION.md](docs/BACKEND_INTEGRATION.md). Where the Phase 1 and Phase 2 documents disagree, the
-frontend follows Phase 2.
+for `fetch()` calls to the real backend. Each stub has a TODO comment naming the endpoint it should call, and
+`src/ui/adapters.ts` shows how the backend's JSON maps to the types the screens use. Where the Phase 1 and Phase 2
+documents disagree, the frontend follows Phase 2.
 
 ## Run
 
@@ -80,8 +80,6 @@ src/
     dashboard/     DashboardRouter (route guards + layout), Customer / Restaurant / Courier / Operator pages,
                    OutputConsolePanel, dashboardApi (console log, send() wrapper, preparation queue and customer order status data)
     map/           MapView (MapLibre engine), CityMap (R-ORD-01), mapStyle (reads --map-* tokens), geo (distance, ETA, routes)
-docs/BACKEND_INTEGRATION.md   endpoint table, order lifecycle, what is mock-only
-docs/DEMO_CHECKS.md           repeatable by-hand demo checks for the seeded accounts
 ```
 
 Rules of thumb: pages never touch `mockData` directly, they call the `*Api.ts` functions; every user action goes through
@@ -105,5 +103,5 @@ POIs). Street routes come from the public OSRM demo server. Both need internet, 
 a straight line. Once picked up, a delivery takes 3 minutes to cross the map in the demo (`SIM_DELIVERY_MS` in
 `ui/map/geo.ts`). Seed coordinates are approximate. New customers get a random spot downtown. New restaurants get no coordinates at all, like the real sign-up, so they show in the list but not on the map until someone geocodes them.
 
-No business rules live here; the backend will own validation and order state rules. The mock-only helpers are listed in
-the integration guide.
+No business rules live here; the backend will own validation and order state rules. The code that only exists because the
+data is mocked is in `src/mockData.ts` and the `*Api.ts` stubs, and goes away when the backend is connected.

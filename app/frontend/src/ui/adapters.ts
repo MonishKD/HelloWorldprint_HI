@@ -2,7 +2,7 @@
 // about backend naming. When a *Api stub becomes a real call, map the response through these, for example:
 //   export const listMenu = (id: string) => request<unknown>(`/restaurants/${id}/menu`).then(toMenuItems);
 //
-// What differs from the frontend types (see docs/BACKEND_INTEGRATION.md):
+// What differs from the frontend types:
 //   - enums are UPPERCASE on the backend (OPEN, PICKED_UP, SOLD_OUT), lowercase here
 //   - coordinates are `latitude` / `longitude` (and `deliveryLatitude` / `deliveryLongitude`), `lat` / `lng` here
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
