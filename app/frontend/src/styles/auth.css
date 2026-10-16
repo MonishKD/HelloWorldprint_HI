@@ -72,26 +72,7 @@
 .auth-form { width: 100%; max-width: 420px; margin: auto; display: grid; gap: 1.1rem; padding-top: 1.5rem; }
 .auth-form h1 { margin-bottom: 0.35rem; }
 
-.demo { display: grid; gap: 0.6rem; border-top: 1px solid var(--line); padding-top: 1.1rem; }
-.demo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-.demo-chip {
-  font: inherit;
-  font-weight: 650;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 14px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.15s;
-}
-.demo-chip:hover { border-color: var(--line-strong); transform: translateY(-1px); }
-.demo-chip .icon, .role-icon { color: var(--brand-text); }
-.demo-chip.selected { border-color: var(--brand); background: var(--brand-soft); }
+.role-icon { color: var(--brand-text); }
 
 .role-picker { border: 0; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; }
 .role-picker legend { margin-bottom: 0.5rem; }

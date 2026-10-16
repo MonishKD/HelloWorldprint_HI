@@ -2,17 +2,8 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { dashboardPath, useSession } from '../../session';
 import { errorMessage, send } from '../dashboard/dashboardApi';
-import { Icon, type IconName } from '../icons';
 import AuthShell from './AuthShell';
 import { login } from './regApi';
-
-// Quick-fill buttons for the seeded demo accounts (see README).
-const DEMO_ACCOUNTS: { label: string; icon: IconName; email: string }[] = [
-  { label: 'Customer', icon: 'bag', email: 'alice@demo.com' },
-  { label: 'Restaurant', icon: 'store', email: 'greenleaf@demo.com' },
-  { label: 'Courier', icon: 'bike', email: 'courier@demo.com' },
-  { label: 'Operator', icon: 'grid', email: 'operator@demo.com' },
-];
 
 export default function LoginPage() {
   const { user, notice, setUser } = useSession();
@@ -70,26 +61,6 @@ export default function LoginPage() {
         <p className="muted center">
           New here? <Link to="/register">Create an account</Link>
         </p>
-
-        <div className="demo">
-          <span className="eyebrow">Try a demo account · password demo123</span>
-          <div className="demo-grid">
-            {DEMO_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                type="button"
-                className={`demo-chip ${email === a.email ? 'selected' : ''}`}
-                onClick={() => {
-                  setEmail(a.email);
-                  setPassword('demo123');
-                }}
-              >
-                <Icon name={a.icon} />
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </div>
       </form>
     </AuthShell>
   );

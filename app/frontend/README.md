@@ -22,7 +22,7 @@ It needs Node.js 20.19 or newer. Light or dark mode follows your system by defau
 
 ## Demo accounts
 
-Every account uses the password `demo123`. You can log in with the email below or with the username (`alice`, `greenleaf`, `carl`, `operator`, and so on). The login page has one-click buttons for the main ones.
+These are mock accounts for development and testing only, and the login page doesn't list them. Every account uses the password `demo123`, and you can log in with the email below or with the username (`alice`, `greenleaf`, `carl`, `operator`, and so on). They go away when the real backend and its seeded accounts replace the mock data.
 
 | Role       | Email                | Notes                                         |
 |------------|----------------------|-----------------------------------------------|
