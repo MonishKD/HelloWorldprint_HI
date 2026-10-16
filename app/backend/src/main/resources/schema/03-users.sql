@@ -23,11 +23,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (LOWER(email));
 
 -- One table per kind of user (Customer, Courier, Restaurant Personnel, Platform Operator).
 -- user_id is the primary key and points to users, so a user has at most one row in each table.
--- Everything Phase II does not use can be empty (names, coordinates, courier status).
+-- Everything Phase II does not use can be empty (names, customer address, coordinates, courier status).
 
 CREATE TABLE IF NOT EXISTS customers (
     user_id    INTEGER PRIMARY KEY REFERENCES users (id),
     name       VARCHAR(100),
+    address    VARCHAR(255),
     latitude   DOUBLE PRECISION,
     longitude  DOUBLE PRECISION
 );
