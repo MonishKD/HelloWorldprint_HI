@@ -14,6 +14,7 @@ import com.fortunategoods.domain.restaurant.MenuService;
 import com.fortunategoods.domain.restaurant.RestaurantMenu;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.security.SessionValidator;
 
 class BrowseMenuCommandTest {
@@ -44,7 +45,7 @@ class BrowseMenuCommandTest {
     };
 
     // The real CommandInvoker, with the fake validator and a command log that saves nothing.
-    private final MenuCommands menuCommands = new MenuCommands(new CommandInvoker(validator, log -> { }), menuService);
+    private final MenuCommands menuCommands = new MenuCommands(new CommandInvoker(validator, new CommandLogRepository(null) { public void save(CommandLog log) { } }), menuService);
 
     // A signed-in customer is allowed.
     @Test
