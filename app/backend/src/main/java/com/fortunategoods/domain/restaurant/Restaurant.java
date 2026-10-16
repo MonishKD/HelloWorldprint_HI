@@ -17,13 +17,7 @@ public class Restaurant {
         this.status = status;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.menu = List.copyOf(menu);
-        for (MenuItem item : this.menu) {
-            if (!item.getRestaurantId().equals(id)) {
-                throw new IllegalArgumentException(
-                        "menu item " + item.getId() + " belongs to restaurant " + item.getRestaurantId() + ", not " + id);
-            }
-        }
+        this.menu = ownItemsOnly(menu);
     }
 
     public String getId() {
@@ -54,7 +48,20 @@ public class Restaurant {
         this.status = status;
     }
 
+    // Same check as the constructor, so a new menu can't contain another restaurant's items.
     public void setMenu(List<MenuItem> menu) {
-        this.menu = List.copyOf(menu);
+        this.menu = ownItemsOnly(menu);
+    }
+
+    // Returns a read-only copy of the menu, or throws if an item belongs to another restaurant.
+    private List<MenuItem> ownItemsOnly(List<MenuItem> menu) {
+        List<MenuItem> copy = List.copyOf(menu);
+        for (MenuItem item : copy) {
+            if (!item.getRestaurantId().equals(id)) {
+                throw new IllegalArgumentException(
+                        "menu item " + item.getId() + " belongs to restaurant " + item.getRestaurantId() + ", not " + id);
+            }
+        }
+        return copy;
     }
 }

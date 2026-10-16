@@ -9,6 +9,11 @@ import com.fortunategoods.domain.user.UserRole;
 public class OrdModulePermissions {
     private OrdModulePermissions(){} // No instances will be created
 
+    // Story #43: the restaurant list is for signed-in customers.
+    public static Set<UserRole> browseRestaurantsRoles(){
+        return Set.of(UserRole.CUSTOMER);
+    }
+
     public static Set<UserRole> browseMenuRoles(){
         return Set.of(UserRole.CUSTOMER, UserRole.RESTAURANT);
     }
