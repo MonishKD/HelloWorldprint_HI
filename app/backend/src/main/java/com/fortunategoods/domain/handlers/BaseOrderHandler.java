@@ -11,5 +11,7 @@ public abstract class BaseOrderHandler implements OrderHandler {
 
     //concrete will deal with implementation
     public abstract boolean handle(OrderRequest orderRequest);
+    //needed to add this
+    public abstract void setNextHandler(BaseOrderHandler nextHandler);
     
 }
