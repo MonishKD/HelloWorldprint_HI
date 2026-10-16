@@ -33,8 +33,11 @@ public class SecurityConfig {
 
     // The security rules for every request.
     // Spring calls this list of checks a "filter chain": each request goes through the checks one by one.
+    // Spring fills both parameters itself: httpSecurity is its rule builder, and securityErrorResponses
+    // is the one it created at startup (it's a @Component).
     @Bean
-    public SecurityFilterChain securityRules(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityRules(HttpSecurity httpSecurity, SecurityErrorResponses securityErrorResponses)
+            throws Exception {
 
         // 1. Who needs to be logged in.
         //    Register and login are open to everyone.
@@ -59,6 +62,13 @@ public class SecurityConfig {
         httpSecurity.csrf(csrfRules -> csrfRules
                 .spa()
                 .ignoringRequestMatchers(REGISTER_URL, LOGIN_URL));
+
+        // 4. What the browser gets when a rule above refuses a request:
+        //    401 when nobody is logged in, 403 when it's not allowed, both as { "status", "code", "message" }.
+        //    The JSON is written by SecurityErrorResponses.
+        httpSecurity.exceptionHandling(refusalRules -> refusalRules
+                .authenticationEntryPoint(securityErrorResponses)
+                .accessDeniedHandler(securityErrorResponses));
 
         // Turns the rules above into the filter chain Spring uses.
         return httpSecurity.build();
