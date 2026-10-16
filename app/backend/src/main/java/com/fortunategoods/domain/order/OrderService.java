@@ -10,6 +10,8 @@ public class OrderService {
     }
     //until the order repo and the queue are implemented just return the boolean value for testing
     public boolean placeOrder(OrderRequest orderRequest){
+        //verify first, THEN return the result
+        OrderVerify.verifyOrder(orderRequest,orderHandler);
         return orderHandler.handle(orderRequest);
     }
 }
