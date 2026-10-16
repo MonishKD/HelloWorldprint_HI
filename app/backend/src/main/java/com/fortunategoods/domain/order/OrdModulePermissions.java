@@ -1,6 +1,7 @@
 package com.fortunategoods.domain.order;
-import com.fortunategoods.domain.user.UserRole;
 import java.util.Set;
+
+import com.fortunategoods.domain.user.UserRole;
 
 /*
     Class that returns user roles that are allowed for each concrete commands
@@ -21,7 +22,7 @@ public class OrdModulePermissions {
     }
 
     public static Set<UserRole> cancelOrderRoles(){
-        return Set.of(UserRole.CUSTOMER, UserRole.OPERATOR);
+        return Set.of(UserRole.CUSTOMER);
     }
 
     public static Set<UserRole> acceptOrderRoles(){
