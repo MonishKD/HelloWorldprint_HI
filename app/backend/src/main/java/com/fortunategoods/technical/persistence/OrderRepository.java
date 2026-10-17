@@ -117,4 +117,21 @@ public class OrderRepository {
                 row.getObject("original_price", Double.class),
                 menuItemRepository.findById(menuItemId));
     }
+
+    /*
+        This update method prevents from writing changes to DB
+        if they were already applied by another request. I.e. a 
+        customer logged into two different tabs w/ same account can both 
+        press cancel, but only one write to the DB is done as this is transactional
+    */
+    @Transactional
+    public String updateStatusIfUnchanged(String orderId, String prevId, OrderStatus expectedStatus, OrderStatus newStatus){
+        String sql = "UPDATE orders SET status = ? WHERE id = ? AND status = ?";
+        int changed = jdbc.update(sql, newStatus.name(), Integer.parseInt(orderId), expectedStatus.name());
+
+        if (changed == 0) {
+            return null;
+        }
+        return orderEventRepository.add(orderId, prevId, expectedStatus, newStatus);
+    }
 }
