@@ -72,4 +72,20 @@ public class OrderService {
 
         return new OrderServiceResult(orderId, OrderStatus.PLACED, Long.parseLong(event.getId()));
     }
+
+    public void acceptOrder(Order order){
+        order.accept();
+    }
+    public void prepareOrder(Order order){
+        order.startPreparing();
+    }
+    public void cancelOrder(Order order){
+        order.cancel();
+    }
+    public void markAsReadyOrder(Order order){
+        order.markReady();
+    }
+
+
+
 }

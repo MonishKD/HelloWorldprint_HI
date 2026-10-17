@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.fortunategoods.application.ord.OrderRequest;
 import com.fortunategoods.domain.handlers.BaseOrderHandler;
+import com.fortunategoods.domain.order.StateDesignPattern.PlacedState;
 import com.fortunategoods.domain.restaurant.MenuItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
 /*
@@ -150,7 +151,7 @@ public class OrderVerify {
         // Create a new Order and change the transition to
         Order order = new Order(null, customerId, restaurantId, null, OrderStatus.PLACED, instructions, deliveryAddress, null, null, null, lines);
 
-        order.stateTransition(new PlacedState());
+        order.transitionTo(new PlacedState());
 
         return order;
     }
