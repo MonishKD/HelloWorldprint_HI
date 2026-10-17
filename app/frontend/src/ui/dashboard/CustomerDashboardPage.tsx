@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, TERMINAL, useLoad } from '../common';
+import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, useLoad } from '../common';
 import MenuPage from '../ord/MenuPage';
 import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
@@ -59,7 +59,7 @@ function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) 
 
 function MyOrders() {
   const user = useUser();
-  const placedOrderId = (useLocation().state as { placedOrderId?: string } | null)?.placedOrderId;
+  const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
   const { data, error, reload } = useLoad(() => Promise.all([getCustomerOrderStatuses(user.id), listRestaurants()]), [user.id]);
   const [actionError, setActionError] = useState('');
   const now = useNow(data?.[0].some((o) => o.status === 'picked_up') ? 1000 : null);
@@ -115,9 +115,9 @@ function MyOrders() {
         </button>
       </div>
 
-      {placedOrderId && (
+      {placed && (
         <p className="alert alert-success rise" role="status">
-          <Icon name="check" /> <strong>Order #{placedOrderId} placed!</strong> The restaurant will confirm it shortly.
+          <Icon name="check" /> <strong>Order #{placed.id} placed!</strong> <StatusBadge status={placed.status} /> The restaurant will confirm it shortly.
         </p>
       )}
       {actionError && (

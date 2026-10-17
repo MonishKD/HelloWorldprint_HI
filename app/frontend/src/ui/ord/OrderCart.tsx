@@ -63,7 +63,7 @@ export default function OrderCart({
           specialInstructions: instructions,
         }),
       );
-      navigate('/customer/orders', { state: { placedOrderId: order.id } });
+      navigate('/customer/orders', { state: { placed: { id: order.id, status: order.status } } });
     } catch (e) {
       setError(errorMessage(e));
       setBusy(false);
