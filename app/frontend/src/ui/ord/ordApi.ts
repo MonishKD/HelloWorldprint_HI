@@ -134,6 +134,16 @@ export async function placeOrder(input: {
   return copy(order);
 }
 
+// TODO: replace with fetch() to the real backend: POST /orders/{id}/cancel  (customer). Answers 200 { orderId, status: 'cancelled' }.
+// The backend refuses (409) unless the order is still `placed`; the mock mirrors that, so a stale screen gets a real refusal.
+export async function cancelOrder(orderId: string): Promise<Order> {
+  const order = db.orders.find((o) => o.id === orderId);
+  if (!order) throw new Error('Order not found.');
+  if (order.status !== 'placed') throw new Error('Only PLACED orders can be cancelled.');
+  order.status = 'cancelled';
+  return copy(order);
+}
+
 // TODO: replace with fetch() to the real backend: GET /orders  (operator)
 export async function listAllOrders(): Promise<Order[]> {
   return copy(db.orders);
