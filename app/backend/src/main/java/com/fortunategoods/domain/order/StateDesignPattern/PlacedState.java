@@ -1,4 +1,6 @@
-package com.fortunategoods.domain.order;
+package com.fortunategoods.domain.order.StateDesignPattern;
+import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrderStatus;
 
 public class PlacedState extends BaseOrderState{
     //refuses the other states since it'll use the Base one which throws an error
@@ -10,16 +12,16 @@ public class PlacedState extends BaseOrderState{
 
     @Override 
     public void accept(Order order){
-        order.stateTransition(new AcceptedState());
+        order.transitionTo(new AcceptedState());
     }
 
     @Override 
-     public void reject(Order order){
-        order.stateTransition(new RejectedState());
+     public void reject(Order order,String reason){
+        order.transitionTo(new RejectedState());
     }
 
     @Override 
      public void cancel(Order order){
-        order.stateTransition(new CanceledState());
+        order.transitionTo(new CanceledState());
     }
 }

@@ -2,6 +2,7 @@ package com.fortunategoods.domain.order;
 
 import java.util.List;
 import java.util.Objects;
+import com.fortunategoods.domain.order.StateDesignPattern.*;
 
 public class Order {
 
@@ -126,12 +127,29 @@ public class Order {
     public List<OrderLine> getLines() {
         return lines;
     }
-
-    public void stateTransition(OrderState state){
-        this.state = state;
+    
+    public void transitionTo(OrderState next){
+        this.state = next;
         //this so that the state and status changes together
         //each State implementation like Accepted returns ACCEPTED for getStatus()
-        this.status = state.getStatus();
+        this.status = next.getStatus();
+    }
+    //adding the state functins
+    public void accept(){
+        state.accept(this);
+    }
+    public void startPreparing(){
+        state.startPreparing(this);
+    }
+    public void markReady(){
+        state.markReady(this);
+    }
+    public void reject(){
+        //this will have to change at some point
+        state.reject(this,"reason");
+    }
+    public void cancel(){
+        state.cancel(this);
     }
 
 }

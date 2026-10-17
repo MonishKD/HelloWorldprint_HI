@@ -1,4 +1,6 @@
-package com.fortunategoods.domain.order;
+package com.fortunategoods.domain.order.StateDesignPattern;
+import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrderStatus;
 
 public interface OrderState {
     public OrderStatus getStatus();
