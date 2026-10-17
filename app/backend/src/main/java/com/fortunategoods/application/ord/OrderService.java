@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 
 import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
 import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
+import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
@@ -79,9 +80,45 @@ public class OrderService {
     public void prepareOrder(Order order){
         order.startPreparing();
     }
-    public void cancelOrder(Order order){
-        order.cancel();
+
+    @Transactional
+    public OrderServiceResult cancelOrder(String customerId, String orderId){
+        // check validity of IDs provided
+        OrderVerify.requireId(customerId, "Customer ID");
+        OrderVerify.requireId(orderId, "Order ID");
+        // Find the order details from the order repo
+        Order order = orderRepo.findById(orderId);
+
+        if (order == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Order not found");
+        }
+
+        // Check if customer trying to cancel order, is customer mentionned in order
+        // and check if customer's order status is PLACED
+        order.cancelCustomer(customerId);
+
+        // Find the order event of the cancellation
+        List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
+        if (events.isEmpty()) {
+            throw new IllegalStateException("Order has no event history");
+        }
+
+        OrderEvent previousEvent = events.get(events.size() - 1);
+
+        if (previousEvent.getNewStatus() != OrderStatus.PLACED) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order is no longer placed");
+        }
+
+        // Save only if the database order is still PLACED.
+        String eventId = orderRepo.updateStatusIfUnchanged(orderId, previousEvent.getId(), OrderStatus.PLACED, OrderStatus.CANCELLED);
+
+        if (eventId == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order changed before it could be cancelled");
+        }
+
+        return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
+    
     public void markAsReadyOrder(Order order){
         order.markReady();
     }

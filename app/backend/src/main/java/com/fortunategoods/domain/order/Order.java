@@ -2,7 +2,15 @@ package com.fortunategoods.domain.order;
 
 import java.util.List;
 import java.util.Objects;
-import com.fortunategoods.domain.order.StateDesignPattern.*;
+
+import com.fortunategoods.domain.order.StateDesignPattern.AcceptedState;
+import com.fortunategoods.domain.order.StateDesignPattern.BaseOrderState;
+import com.fortunategoods.domain.order.StateDesignPattern.CanceledState;
+import com.fortunategoods.domain.order.StateDesignPattern.OrderState;
+import com.fortunategoods.domain.order.StateDesignPattern.PlacedState;
+import com.fortunategoods.domain.order.StateDesignPattern.PreparingState;
+import com.fortunategoods.domain.order.StateDesignPattern.ReadyState;
+import com.fortunategoods.domain.order.StateDesignPattern.RejectedState;
 
 public class Order {
 
@@ -64,11 +72,48 @@ public class Order {
         this.deliveryLongitude = deliveryLongitude;
         this.rejectReason = rejectReason;
         this.lines = List.copyOf(lines);
+        this.state = pickState(status);
+    }
+
+    private BaseOrderState pickState(OrderStatus status){
+        switch(status){
+            case PLACED:
+                return new PlacedState();
+            case ACCEPTED:
+                return new AcceptedState();
+            case PREPARING:
+                return new PreparingState();
+            case READY:
+                return new ReadyState();
+            case REJECTED:
+                return new RejectedState();
+            case CANCELLED:
+                return new CanceledState();
+            default:
+                return new BaseOrderState() {
+                    @Override 
+                    public OrderStatus getStatus(){
+                        return status;
+                    }
+                };
+        }
     }
 
     // New order with initial status = PLACED 
     public static Order placed(String customerId, String restaurantId, String specialInstructions, List<OrderLine> lines){
-            return new Order(null, customerId, restaurantId, null, OrderStatus.PLACED, specialInstructions, null, null, null ,null,lines);
+        return new Order(null, customerId, restaurantId, null, OrderStatus.PLACED, specialInstructions, null, null, null ,null,lines);
+    }
+
+    public void cancelCustomer(String customerId){
+        if (!this.customerId.equals(customerId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "You are only allowed to cancel your own order");
+        }
+        // Only PLACED orders can be cancelled
+        if (status != OrderStatus.PLACED){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only PLACED orders can be cancelled");
+        }
+
+        cancel(); // will throw Exception if wrong state, or state life cycle disrespected
     }
 
     // Setters for non-final fields
