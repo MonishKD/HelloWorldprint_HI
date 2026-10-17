@@ -1,4 +1,5 @@
-package com.fortunategoods.domain.order;
+package com.fortunategoods.domain.order.StateDesignPattern;
+import com.fortunategoods.domain.order.Order;
 //everything fail for now, no good explanation just IllegalTransitionExcp
 public abstract class BaseOrderState implements OrderState{
     //make it easier since got to write the same thing over and over
