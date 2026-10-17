@@ -58,6 +58,18 @@ class SpringSecuritySessionValidatorTest {
         }
     }
 
+    @Test
+    void commandThatAllowsNoRoleIsRefused() {
+        Session customer = logInAs(UserRole.CUSTOMER);
+
+        try {
+            sessionValidator.requireRoles(customer, Set.of());
+            fail("A command that allows no role must refuse everyone");
+        } catch (AccessDeniedException refused) {
+            assertEquals("You are not allowed to perform this action", refused.getMessage());
+        }
+    }
+
     // Logs in a user with this role through the real Login, and returns their Session.
     private Session logInAs(UserRole role) {
         User account = new User("1", "tester", "tester@mail.com", null, passwordEncoder.encode(PASSWORD), role);

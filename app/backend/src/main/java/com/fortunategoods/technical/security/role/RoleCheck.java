@@ -28,6 +28,12 @@ public class RoleCheck {
 
     // Does nothing when the role is allowed. Throws (403) when it isn't.
     public void requireOneOf(Authentication loggedInUser, Set<UserRole> allowedRoles) {
+        // A command that allows no role is refused for everyone.
+        // Checked here because Spring's role check crashes on an empty list instead of refusing (500, not 403).
+        if (allowedRoles.isEmpty()) {
+            throw new AccessDeniedException(NOT_ALLOWED_MESSAGE);
+        }
+
         // Spring Security's role check: "does this user have one of these roles?"
         // It adds the "ROLE_" in front of each name itself, to match what Login saved.
         AuthorityAuthorizationManager<Set<UserRole>> springRoleCheck =
