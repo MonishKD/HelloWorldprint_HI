@@ -1,0 +1,67 @@
+/* Output console panel. */
+
+/* ---------- Output console ---------- */
+.console {
+  position: sticky;
+  top: 84px;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--console-bg);
+  color: var(--console-ink);
+  border: 1px solid var(--console-line);
+  box-shadow: var(--shadow-md);
+}
+.console-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.6rem 0.55rem 0.4rem; background: color-mix(in srgb, var(--white) 3%, transparent); border-bottom: 1px solid var(--console-line); }
+.console-title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.3rem 0.5rem;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 750;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+}
+.console-title:hover { background: color-mix(in srgb, var(--white) 5%, transparent); }
+.console-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--console-ok); box-shadow: 0 0 10px var(--console-ok); }
+.console-count { margin-left: auto; font-family: var(--mono); font-size: 0.75rem; color: var(--console-muted); font-weight: 500; }
+.console-errors { color: var(--console-err); }
+.console-chevron { color: var(--console-muted); transition: transform 0.2s; }
+.console.is-closed .console-chevron { transform: rotate(-90deg); }
+.console.is-closed .console-head { border-bottom: 0; }
+.console-clear {
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--console-btn-line);
+  background: transparent;
+  color: var(--console-btn-ink);
+  cursor: pointer;
+}
+.console-clear:disabled { opacity: 0.4; cursor: default; }
+.console ol {
+  list-style: none;
+  margin: 0;
+  padding: 0.6rem 0.9rem 0.8rem;
+  max-height: calc(100vh - 200px);
+  min-height: 9rem;
+  overflow-y: auto;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+.console li { display: grid; grid-template-columns: auto auto 1fr; gap: 0.55rem; padding: 0.22rem 0; animation: rise 0.3s var(--ease); }
+.console time { color: var(--console-faint); }
+.console .log-sent .tag { color: var(--console-ink); }
+.console .log-ok { color: var(--console-muted); }
+.console .tag { font-weight: 800; color: var(--console-ok); }
+.console .log-error, .console .log-error .tag { color: var(--console-err); }
+.console .empty-log { display: block; color: var(--console-faint); }
