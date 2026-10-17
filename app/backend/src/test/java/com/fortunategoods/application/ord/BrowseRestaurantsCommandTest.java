@@ -14,6 +14,7 @@ import com.fortunategoods.domain.restaurant.RestaurantService;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.restaurant.RestaurantSummary;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.security.SessionValidator;
 
 class BrowseRestaurantsCommandTest {
@@ -28,6 +29,12 @@ class BrowseRestaurantsCommandTest {
 
     // Fake SessionValidator with the same behaviour as the real one: no session or a wrong role is refused.
     private final SessionValidator validator = new SessionValidator() {
+        // Not used by these tests: they pass the Session in themselves.
+        @Override
+        public Session currentSession() {
+            return null;
+        }
+
         @Override
         public void requireValid(Session session) {
             if (session == null) {
@@ -44,7 +51,7 @@ class BrowseRestaurantsCommandTest {
     };
 
     private final RestaurantCommands restaurantCommands =
-            new RestaurantCommands(new CommandInvoker(validator, log -> { }), restaurantService);
+            new RestaurantCommands(new CommandInvoker(validator, new CommandLogRepository(null) { public void save(CommandLog log) { } }), restaurantService);
 
     // A signed-in customer gets the list.
     @Test
