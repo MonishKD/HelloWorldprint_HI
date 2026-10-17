@@ -112,7 +112,7 @@ public class SeedLoader implements ApplicationRunner {
             accountIds.put(account.username(), userRepository.add(newAccount));
         }
 
-        // The new restaurant ids by owner username, to link each menu item to its restaurant below.
+        // Saves each restaurant, links it to its owner account, then saves its menu items.
         int menuItemCount = 0;
         for (SeedRestaurant restaurant : seed.restaurants()) {
             Restaurant newRestaurant = new Restaurant(null, restaurant.name(), restaurant.status(),
