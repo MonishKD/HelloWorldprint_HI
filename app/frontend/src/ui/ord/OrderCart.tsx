@@ -110,7 +110,7 @@ export default function OrderCart({
           <input required placeholder="Street address, apt" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
         </label>
         <label className="field">
-          <span>Special instructions</span>
+          <span>Special instructions (optional)</span>
           <textarea placeholder="Allergies, buzzer code, drop-off notes…" maxLength={300} value={instructions} onChange={(e) => setInstructions(e.target.value)} />
         </label>
 
