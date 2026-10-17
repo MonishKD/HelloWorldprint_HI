@@ -1,0 +1,30 @@
+# This is a simple docker-compose file for db, backend and frontend services. It is used for local development and testing.
+#First step, you would name the services that you name. for now we use database, backend and frontend. You can name them whatever you want,
+# but make sure to update the service names in the backend and frontend Dockerfiles accordingly.
+services:
+    # Here you setup the database service. i used the postgres:17 image. which is downloaded from the Docker Hub.
+    database:
+        image: postgres:17
+        # setup the env variables for the database to exist. in other words, this is always setup before creation of database
+        # These variables are used by the postgres image to configure the database
+
+        environment:
+            POSTGRES_DB: ${DB_NAME:?Set DB_NAME in .env file. I know you forgot lol :P}
+            POSTGRES_USER: ${DB_USERNAME:?Set DB_USERNAME in .env file. I know you forgot lol :P}
+
+            #here you configure the password in your root .env file. An .env.example file will show u. passwords on discord.
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env file. I know you forgot lol :P}
+        ports:
+            #used 5432 since its default port for postgres, though the 9090 is the port
+            #(can be whatever but must be consistent across the application) that we will
+            #use to connect to the database from our local machine.
+            - '${DB_PORT:-9090}:5432'
+        volumes:
+            #this is where the database data is stored. it is a volume (trackable place/path) that is created by
+            # docker-compose. it is used to persist the data even if the container is destroyed It represents where the
+            #data lives in the container running the database image. This is important because if the container is destroyed,
+            #the data will still be there when the container is recreated. This is a good practice to use volumes for databases.
+            - database_data:/var/lib/postgresql/data
+
+volumes:
+    database_data:
