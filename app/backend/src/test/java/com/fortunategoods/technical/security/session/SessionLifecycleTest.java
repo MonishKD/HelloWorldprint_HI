@@ -16,11 +16,6 @@ import com.fortunategoods.domain.user.*;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.role.RoleCheck;
 
-// Story #15: logging in starts a session and logging out ends it.
-// Uses the real Login, Logout and SessionValidator. Nothing here talks to a database.
-//
-// A "request" is faked with Spring's MockHttpServletRequest. The browser's session cookie is faked by
-// giving the next request the same MockHttpSession, the way the cookie points the server to the same session.
 class SessionLifecycleTest {
 
     private static final String PASSWORD = "secret";
@@ -89,7 +84,6 @@ class SessionLifecycleTest {
     }
 
     // Starts a new fake request carrying this session, and loads whoever is saved in it,
-    // which is what Spring Security does at the start of every real request.
     private void newRequest(MockHttpSession browserSession) {
         SecurityContextHolder.clearContext();
         MockHttpServletRequest request = new MockHttpServletRequest();

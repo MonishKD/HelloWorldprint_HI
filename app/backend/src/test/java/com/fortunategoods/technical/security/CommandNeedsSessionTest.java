@@ -22,8 +22,6 @@ import com.fortunategoods.technical.security.session.*;
 
 import tools.jackson.databind.json.JsonMapper;
 
-// Story #14: an authenticated user's command is accepted, everyone else is refused.
-// Uses the real CommandInvoker, SessionValidator, Login and 401 writer. Nothing here talks to a database.
 class CommandNeedsSessionTest {
 
     private static final String PASSWORD = "secret";
