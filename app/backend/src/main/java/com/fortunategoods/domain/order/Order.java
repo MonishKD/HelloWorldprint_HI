@@ -16,13 +16,14 @@ public class Order {
     private final Double deliveryLongitude;
     private String rejectReason;
     private final List<OrderLine> lines;
+    //new addition
+    private OrderState state;
 
     public Order(String id, String customerId, String restaurantId, String courierId, OrderStatus status, String specialInstructions, String deliveryAddress, Double deliveryLatitude, Double deliveryLongitude, String rejectReason, List<OrderLine> lines) {
         // Validation checks before respository loads data in
         if (customerId == null || customerId.isBlank()){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Customer is required in an Order");
         }
-
         if (restaurantId == null || restaurantId.isBlank()){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Restaurant is required in an Order");   
         }
@@ -124,6 +125,13 @@ public class Order {
 
     public List<OrderLine> getLines() {
         return lines;
+    }
+
+    public void stateTransition(OrderState state){
+        this.state = state;
+        //this so that the state and status changes together
+        //each State implementation like Accepted returns ACCEPTED for getStatus()
+        this.status = state.getStatus();
     }
 
 }
