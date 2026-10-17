@@ -17,6 +17,7 @@ import com.fortunategoods.domain.restaurant.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
+import com.fortunategoods.application.ord.OrderService;
 
 public class CoRTest {
     private BaseOrderHandler restaurantHandler;

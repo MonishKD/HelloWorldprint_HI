@@ -1,6 +1,6 @@
-package com.fortunategoods.domain.order;
-import com.fortunategoods.application.ord.OrderRequest;
+package com.fortunategoods.application.ord;
 import com.fortunategoods.domain.handlers.BaseOrderHandler;
+import com.fortunategoods.domain.order.OrderVerify;
 
 public class OrderService {
     private BaseOrderHandler orderHandler;
@@ -15,4 +15,3 @@ public class OrderService {
         return orderHandler.handle(orderRequest);
     }
 }
-
