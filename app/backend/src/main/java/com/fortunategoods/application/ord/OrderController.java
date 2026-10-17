@@ -3,6 +3,7 @@ package com.fortunategoods.application.ord;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,6 +29,7 @@ public class OrderController {
         this.sessionValidator = sessionValidator;
     }
 
+    // API Endpoint for placing order
     @PostMapping
     public ResponseEntity<CommandSuccess<PlaceOrderResponse>> placeOrder(@RequestBody PlaceOrderJSON req) {
         // Get current session
@@ -43,5 +45,21 @@ public class OrderController {
         URI uri = URI.create("/api/orders/" + result.getData().getOrderId());
 
         return ResponseEntity.created(uri).body(result);
+    }
+
+    // API Endpoint for cancelling an order
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<CommandSuccess<CancelOrderResponse>> cancelOrder(@PathVariable("orderId") String orderId){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        CancelOrderCommand command = new CancelOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);
+
+        // Confirm the cancellation request
+        return ResponseEntity.ok(result);
     }
 }
