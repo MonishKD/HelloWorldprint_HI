@@ -61,4 +61,8 @@ public class OrdModulePermissions {
     public static Set<UserRole> setRestaurantStatusRoles(){
         return Set.of(UserRole.RESTAURANT);
     }
+
+    public static Set<UserRole> viewPlacedOrdersRoles(){
+        return Set.of(UserRole.RESTAURANT);
+    }
 }
