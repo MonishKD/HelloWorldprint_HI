@@ -1,0 +1,117 @@
+/* Delivery map (OpenStreetMap data drawn with MapLibre; colours come from the --map-* tokens). */
+
+/* ---------- Map (OpenStreetMap data, drawn with MapLibre in the app's palette) ---------- */
+.map {
+  isolation: isolate; /* keep the map's z-indexes under the sticky top bar */
+  width: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.map-card { display: grid; gap: 0.6rem; padding: 0.6rem; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.map-legend { display: flex; gap: 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.8rem; font-weight: 650; color: var(--muted); }
+.map-legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
+.map-legend i { display: inline-block; }
+.lg-route { width: 22px; height: 4px; border-radius: 4px; background: var(--brand); }
+.lg-request { width: 12px; height: 12px; border-radius: 4px; border: 2px dashed var(--muted); }
+.order .map { margin-top: 0.1rem; }
+
+.map .maplibregl-canvas { outline: none; }
+/* MapLibre positions markers absolutely; do not override `position` here. */
+.map-marker { cursor: default; }
+.map-marker.is-courier { z-index: 3; }
+.map-marker::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translate(-50%, 4px);
+  padding: 0.3rem 0.65rem;
+  border-radius: 10px;
+  background: var(--dark);
+  color: var(--dark-ink);
+  font: 700 0.78rem var(--body);
+  white-space: nowrap;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.map-marker:hover { z-index: 4; }
+.map-marker:hover::after { opacity: 1; transform: translate(-50%, 0); }
+.pin-store, .pin-home, .pin-courier {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.28);
+  border: 2.5px solid var(--surface);
+}
+.pin-store {
+  border-radius: 12px;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: -0.03em;
+  color: hsl(var(--hue) 70% var(--tile-ink));
+  background: linear-gradient(135deg, hsl(var(--hue) 70% var(--cover-l)), hsl(calc(var(--hue) + 40) 60% var(--cover-l2)));
+}
+.is-request .pin-store { opacity: 0.9; border-style: dashed; border-color: var(--muted); }
+.pin-home { border-radius: 50%; background: var(--accent); color: var(--white); border-color: var(--white); }
+.pin-courier { position: relative; border-radius: 50%; background: var(--dark); color: var(--pop); }
+:root[data-theme='dark'] .pin-courier { color: var(--forest-950); }
+.pin-courier::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  animation: courier-ping 1.8s infinite;
+}
+@keyframes courier-ping {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px color-mix(in srgb, var(--brand) 0%, transparent); }
+}
+
+.map .maplibregl-ctrl-group { border-radius: 12px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow-md); border: 1px solid var(--line); }
+.map .maplibregl-ctrl-group button { width: 32px; height: 32px; background-color: transparent; }
+.map .maplibregl-ctrl-group button + button { border-top: 1px solid var(--line); }
+.map .maplibregl-ctrl-group button:hover { background-color: var(--surface-2); }
+:root[data-theme='dark'] .map .maplibregl-ctrl-icon { filter: invert(1); }
+.map .maplibregl-ctrl-attrib { background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(6px); border-radius: 10px 0 0 0; font: 0.65rem var(--body); color: var(--muted); }
+.map .maplibregl-ctrl-attrib a { color: var(--brand-text); font-weight: 600; }
+.map .maplibregl-ctrl-attrib-button { background-color: transparent; }
+
+.map-marker.is-clickable { cursor: pointer; }
+.map-marker.is-clickable:focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 55%, transparent); outline-offset: 3px; border-radius: 14px; }
+.map-marker::after { white-space: pre; text-align: left; content: attr(data-label) attr(data-detail); }
+
+/* City map: restaurant pins by status, riders by state */
+.is-restaurant .pin-store { border-radius: 14px; font-size: 0.82rem; border-width: 3px; transition: transform 0.15s var(--ease); }
+.is-restaurant.is-clickable:hover .pin-store { transform: scale(1.12); }
+.is-restaurant.status-open .pin-store { border-color: var(--ok-fg); }
+.is-restaurant.status-paused .pin-store { border-color: var(--warn-fg); border-style: dashed; opacity: 0.85; }
+.is-restaurant.status-closed .pin-store { border-color: var(--line-strong); filter: grayscale(0.85); opacity: 0.65; }
+.pin-rider {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--pop);
+  border: 2.5px solid var(--surface);
+  box-shadow: 0 3px 8px rgb(0 0 0 / 0.28);
+}
+:root[data-theme='dark'] .pin-rider { color: var(--on-lime); }
+.is-rider.status-offline .pin-rider { opacity: 0.45; }
+.is-rider.status-idle .pin-rider { border-color: var(--ok-fg); }
+.is-rider.status-assigned .pin-rider, .is-rider.status-carrying .pin-rider { border-color: var(--route-fg); }
+
+.lg-open, .lg-off, .lg-rider, .lg-home { width: 12px; height: 12px; border-radius: 4px; }
+.lg-open { border: 2.5px solid var(--ok-fg); background: var(--surface-2); }
+.lg-off { border: 2.5px dashed var(--warn-fg); background: var(--surface-2); }
+.lg-rider { border-radius: 50%; background: var(--dark); }
+.lg-home { border-radius: 50%; background: var(--accent); }
+
+.eta { display: flex; align-items: center; gap: 0.45rem; font-weight: 700; font-size: 0.9rem; color: var(--route-fg); background: var(--route-bg); padding: 0.5rem 0.75rem; border-radius: 12px; }

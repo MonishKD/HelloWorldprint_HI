@@ -26,6 +26,7 @@ import com.fortunategoods.domain.restaurant.MenuService;
 import com.fortunategoods.domain.restaurant.RestaurantMenu;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.SessionValidator;
@@ -61,7 +62,7 @@ class CommandInvokerTest {
         // Store logs in a list instead of a database.
         savedLogs = new ArrayList<>();
 
-        invoker = new CommandInvoker(validator, log -> savedLogs.add(log));
+        invoker = new CommandInvoker(validator, new CommandLogRepository(null) { public void save(CommandLog log) { savedLogs.add(log); } });
     }
 
     @Test

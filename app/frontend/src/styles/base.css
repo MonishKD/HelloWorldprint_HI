@@ -1,0 +1,43 @@
+/* Reset, typography and motion primitives. Uses only tokens from tokens.css. */
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; background: var(--bg); min-height: 100vh; transition: background 0.25s; }
+h1, h2, h3 { margin: 0; font-family: var(--display); line-height: 1.1; letter-spacing: -0.02em; font-weight: 750; }
+h1 { font-size: clamp(1.7rem, 2.6vw, 2.25rem); }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+a { color: var(--brand-text); font-weight: 650; text-underline-offset: 3px; }
+h1 em, h2 em {
+  font-style: normal;
+  color: var(--brand-text);
+  background: linear-gradient(transparent 60%, var(--hl) 60% 92%, transparent 92%);
+  padding: 0 0.08em;
+}
+::selection { background: var(--pop); color: var(--on-lime); }
+
+.muted { color: var(--muted); }
+.icon { flex: none; vertical-align: -0.22em; }
+.small { font-size: 0.85rem; }
+.center { text-align: center; }
+.block { display: block; }
+.eyebrow {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- Motion ---------- */
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--brand) 0%, transparent); } }
+@keyframes bob { 50% { transform: translateY(-8px) rotate(var(--r)); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes blink { 50% { opacity: 0.25; } }
+.rise { animation: rise 0.5s var(--ease) both; animation-delay: calc(var(--i, 0) * 50ms); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
