@@ -20,6 +20,7 @@ import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
+import com.fortunategoods.domain.order.StateDesignPattern.IllegalTransitionException;
 import com.fortunategoods.domain.restaurant.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
@@ -118,5 +119,28 @@ public class CancelOrderServiceTest {
     private Order createOrder(OrderStatus status) {
         MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
         return new Order("100", "7", "1", null, status, null, null, null, null, null, List.of(OrderLine.fromMenuItem(item, 1)));
+    }
+
+    @Test
+    void cancelledOrderCannotChangeAgain() {
+        when(orders.updateStatusIfUnchanged("100", "700", OrderStatus.PLACED, OrderStatus.CANCELLED)).thenReturn("701");
+
+        service.cancelOrder("7", "100");
+
+        assertEquals(OrderStatus.CANCELLED, order.getStatus());
+
+        assertThrows(IllegalTransitionException.class, order::accept);
+        assertThrows(IllegalTransitionException.class, order::startPreparing);
+        assertThrows(IllegalTransitionException.class, order::markReady);
+        assertThrows(IllegalTransitionException.class, order::reject);
+        assertThrows(IllegalTransitionException.class, order::cancel);
+
+        assertEquals(OrderStatus.CANCELLED, order.getStatus());
+
+        // Second cancellation request refused.
+        assertThrows(DomainRuleViolation.class, () -> service.cancelOrder("7", "100"));
+
+        // DB updates only the first cancellation
+        verify(orders).updateStatusIfUnchanged("100", "700",OrderStatus.PLACED, OrderStatus.CANCELLED);
     }
 }
