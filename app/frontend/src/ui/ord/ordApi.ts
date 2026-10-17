@@ -99,7 +99,8 @@ export async function setMenuItemStatus(itemId: string, status: MenuItemStatus):
   return copy(item);
 }
 
-// TODO: replace with fetch() to the real backend: POST /orders
+// TODO: replace with fetch() to the real backend: POST /orders  { restaurantId, lines: [{ menuItemId, quantity }], instructions, deliveryAddress }
+// Answers 201 { orderId, status: 'placed' }; the backend refuses (409/400) a closed restaurant, a sold-out item or an empty order. The mock mirrors that.
 export async function placeOrder(input: {
   customerId: string;
   customerName: string;
@@ -110,6 +111,10 @@ export async function placeOrder(input: {
   lines: OrderLine[];
   specialInstructions: string;
 }): Promise<Order> {
+  if (db.restaurants.find((r) => r.id === input.restaurant.id)?.status !== 'open') throw new Error(`${input.restaurant.name} isn't taking orders right now.`);
+  if (input.lines.length === 0) throw new Error('Add at least one item to your order.');
+  const soldOut = input.lines.find((l) => db.menuItems.find((m) => m.id === l.itemId)?.status !== 'available');
+  if (soldOut) throw new Error(`${soldOut.name} is no longer available.`);
   const order: Order = {
     id: String(1001 + db.orders.length),
     customerId: input.customerId,
@@ -126,6 +131,16 @@ export async function placeOrder(input: {
     createdAt: new Date().toISOString(),
   };
   db.orders.push(order);
+  return copy(order);
+}
+
+// TODO: replace with fetch() to the real backend: POST /orders/{id}/cancel  (customer). Answers 200 { orderId, status: 'cancelled' }.
+// The backend refuses (409) unless the order is still `placed`; the mock mirrors that, so a stale screen gets a real refusal.
+export async function cancelOrder(orderId: string): Promise<Order> {
+  const order = db.orders.find((o) => o.id === orderId);
+  if (!order) throw new Error('Order not found.');
+  if (order.status !== 'placed') throw new Error('Only PLACED orders can be cancelled.');
+  order.status = 'cancelled';
   return copy(order);
 }
 

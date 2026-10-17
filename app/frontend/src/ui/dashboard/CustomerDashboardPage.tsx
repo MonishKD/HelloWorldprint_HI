@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, TERMINAL, useLoad } from '../common';
+import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, useLoad } from '../common';
 import MenuPage from '../ord/MenuPage';
 import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
-import { listRestaurants, updateOrderStatus } from '../ord/ordApi';
+import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
 import { errorMessage, getCustomerOrderStatuses, send } from './dashboardApi';
 import { Icon } from '../icons';
@@ -59,15 +59,18 @@ function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) 
 
 function MyOrders() {
   const user = useUser();
-  const placedOrderId = (useLocation().state as { placedOrderId?: string } | null)?.placedOrderId;
+  const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
   const { data, error, reload } = useLoad(() => Promise.all([getCustomerOrderStatuses(user.id), listRestaurants()]), [user.id]);
   const [actionError, setActionError] = useState('');
+  const [cancelled, setCancelled] = useState('');
   const now = useNow(data?.[0].some((o) => o.status === 'picked_up') ? 1000 : null);
 
   async function cancel(order: Order) {
     setActionError('');
+    setCancelled('');
     try {
-      await send(`Cancel order #${order.id}`, () => updateOrderStatus(order.id, 'cancelled'));
+      await send(`Cancel order #${order.id}`, () => cancelOrder(order.id));
+      setCancelled(order.id);
     } catch (e) {
       setActionError(errorMessage(e));
     }
@@ -115,9 +118,14 @@ function MyOrders() {
         </button>
       </div>
 
-      {placedOrderId && (
+      {placed && placed.id !== cancelled && (
         <p className="alert alert-success rise" role="status">
-          <Icon name="check" /> <strong>Order #{placedOrderId} placed!</strong> The restaurant will confirm it shortly.
+          <Icon name="check" /> <strong>Order #{placed.id} placed!</strong> <StatusBadge status={placed.status} /> The restaurant will confirm it shortly.
+        </p>
+      )}
+      {cancelled && (
+        <p className="alert alert-success rise" role="status">
+          <Icon name="check" /> <strong>Order #{cancelled} cancelled.</strong>
         </p>
       )}
       {actionError && (

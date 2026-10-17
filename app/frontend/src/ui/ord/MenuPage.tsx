@@ -16,7 +16,10 @@ import { addMenuItem, getRestaurant, listMenu, removeMenuItem, setMenuItemStatus
  */
 export default function MenuPage({ onChanged }: { onChanged?: () => void }) {
   const { role } = useUser();
-  return role === 'restaurant' ? <RestaurantMenu onChanged={onChanged} /> : <CustomerMenu />;
+  const { restaurantId } = useParams();
+  // The key resets the cart (items, instructions, address) whenever another restaurant is opened,
+  // so nothing typed for one restaurant ends up in an order for another.
+  return role === 'restaurant' ? <RestaurantMenu onChanged={onChanged} /> : <CustomerMenu key={restaurantId} />;
 }
 
 function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
