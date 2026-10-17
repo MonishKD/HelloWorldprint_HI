@@ -1,0 +1,54 @@
+{
+  "accounts": [
+    { "username": "alice",       "email": "alice@example.com",       "password": "demo123", "role": "CUSTOMER" },
+    { "username": "bob",         "email": "bob@example.com",         "password": "demo123", "role": "CUSTOMER" },
+    { "username": "carl",        "email": "carl@example.com",        "password": "demo123", "role": "COURIER" },
+    { "username": "operator",    "email": "operator@example.com",    "password": "demo123", "role": "OPERATOR" },
+    { "username": "pouletrouge", "email": "pouletrouge@example.com", "password": "demo123", "role": "RESTAURANT" },
+    { "username": "uniburger",   "email": "uniburger@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "boustan",     "email": "boustan@example.com",     "password": "demo123", "role": "RESTAURANT" },
+    { "username": "lolarosa",    "email": "lolarosa@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "myriade",     "email": "myriade@example.com",     "password": "demo123", "role": "RESTAURANT" }
+  ],
+  "restaurants": [
+    {
+      "name": "Poulet Rouge", "owner": "pouletrouge", "status": "OPEN", "cuisine": "Chicken",
+      "address": "1623 Rue Sainte-Catherine O, Montréal", "latitude": 45.4957, "longitude": -73.5795,
+      "menu": [
+        { "id": "pr-1", "name": "Poulet Rouge bowl", "description": "Grilled chicken, rice, greens and red sauce.", "price": 7.50, "originalPrice": 15.25, "status": "AVAILABLE" },
+        { "id": "pr-2", "name": "Quarter chicken plate", "description": "Roasted quarter chicken with rice and salad.", "price": 13.95, "originalPrice": null, "status": "AVAILABLE" },
+        { "id": "pr-3", "name": "Lentil soup", "description": "Made this morning.", "price": 2.50, "originalPrice": 5.50, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Uniburger", "owner": "uniburger", "status": "OPEN", "cuisine": "Burgers",
+      "address": "2001 Rue Saint-Denis, Montréal", "latitude": 45.5150, "longitude": -73.5641,
+      "menu": [
+        { "id": "ub-1", "name": "Classic burger", "description": "Beef patty, cheddar and house sauce.", "price": 6.50, "originalPrice": 13.00, "status": "AVAILABLE" },
+        { "id": "ub-2", "name": "Veggie burger", "description": "Plant-based patty, pickles and onions.", "price": 6.50, "originalPrice": 13.00, "status": "AVAILABLE" },
+        { "id": "ub-3", "name": "Fries", "description": "Hand-cut and salted.", "price": 2.00, "originalPrice": 5.00, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Boustan", "owner": "boustan", "status": "PAUSED", "cuisine": "Lebanese",
+      "address": "2020A Rue Crescent, Montréal", "latitude": 45.4990, "longitude": -73.5776,
+      "menu": [
+        { "id": "bo-1", "name": "Chicken shawarma wrap", "description": "Garlic sauce, pickles and turnips.", "price": 5.00, "originalPrice": 10.50, "status": "AVAILABLE" },
+        { "id": "bo-2", "name": "Falafel plate", "description": "Six falafels, hummus and salad.", "price": 7.00, "originalPrice": 14.50, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Lola Rosa", "owner": "lolarosa", "status": "CLOSED", "cuisine": "Vegetarian",
+      "address": "545 Rue Milton, Montréal", "latitude": 45.5072, "longitude": -73.5745,
+      "menu": [
+        { "id": "lr-1", "name": "Burrito", "description": "Black beans, rice and guacamole.", "price": 7.50, "originalPrice": 16.00, "status": "SOLD_OUT" },
+        { "id": "lr-2", "name": "Nachos", "description": "Melted cheese, salsa and sour cream.", "price": 6.00, "originalPrice": 13.50, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Café Myriade", "owner": "myriade", "status": "CLOSED", "cuisine": "Café",
+      "address": "1432 Rue Mackay, Montréal", "latitude": 45.4966, "longitude": -73.5786,
+      "menu": []
+    }
+  ]
+}
