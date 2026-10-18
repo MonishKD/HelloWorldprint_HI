@@ -74,13 +74,64 @@ public class OrderService {
         return new OrderServiceResult(orderId, OrderStatus.PLACED, Long.parseLong(event.getId()));
     }
 
-    public void acceptOrder(Order order){
-        order.accept();
+
+    //helper
+    private Order findOrder(String orderId){
+        //verifies the id before anything
+        OrderVerify.requireId(orderId,"Order ID");
+        //gets the order from repo based on the id
+        Order order = orderRepo.findById(orderId);
+
+        return order;
+
     }
-    public void prepareOrder(Order order){
-        order.startPreparing();
+    //this functino SHOULD take care of making sure that the order goes in the proper path I puth multiple checks
+    //implemented it basically like the cancelOrder steps, just refactored it
+    private OrderServiceResult saveTransition(String orderId, Order order, OrderStatus previous){
+        //event repo cant return just the top event so you have to get it all THEN get latest
+        List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
+        OrderEvent latest = events.get(events.size()-1);
+        //safety check here insted of just using the updateStatus functino
+        String eventId = orderRepo.updateStatusIfUnchanged(orderId, latest.getId(), previous, order.getStatus());
+        //another sanity check here
+        if(eventId == null){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order changed before status was updated!!!!!");
+        }
+        return new OrderServiceResult(orderId,order.getStatus(),Long.parseLong(latest.getId()));
     }
 
+    //makes it so that if it fails it wont save it
+    @Transactional 
+    public OrderServiceResult acceptOrder(String orderId){
+        Order order = findOrder(orderId);
+        //you need this for the saving step cause it'll compare it before saving the transaction
+        OrderStatus previous = order.getStatus();
+
+        order.accept();
+
+        return saveTransition(orderId,order,previous);
+    }
+
+    @Transactional 
+    public OrderServiceResult prepareOrder(String orderId){
+        Order order = findOrder(orderId);
+        OrderStatus previous = order.getStatus();
+
+        order.startPreparing();
+
+        return saveTransition(orderId,order,previous);
+    }
+
+    @Transactional 
+    public OrderServiceResult markAsReadyOrder(String orderId){
+        Order order = findOrder(orderId);
+        OrderStatus previous = order.getStatus();
+
+        order.markReady();
+
+        return saveTransition(orderId,order,previous);
+    }
+    //could refactor now that we have the saveTransaction but its fine like this TBH
     @Transactional
     public OrderServiceResult cancelOrder(String customerId, String orderId){
         // check validity of IDs provided
@@ -119,9 +170,6 @@ public class OrderService {
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
     
-    public void markAsReadyOrder(Order order){
-        order.markReady();
-    }
 
 
 
