@@ -134,4 +134,18 @@ public class OrderRepository {
         }
         return orderEventRepository.add(orderId, prevId, expectedStatus, newStatus);
     }
+
+    @Transactional
+    /*
+
+    */
+    public String rejectOrderIfPlaced(String orderId, String prevEventId, String reason){
+        String sql = "UPDATE orders SET status = ?, reject_reason = ? WHERE id = ? and status = ?";
+        int changed = jdbc.update(sql, OrderStatus.REJECTED.name(), reason, Integer.parseInt(orderId), OrderStatus.PLACED.name());
+        // No orders matched with SQL query
+        if (changed == 0) {
+            return null;
+        }
+        return orderEventRepository.add(orderId, prevEventId, OrderStatus.PLACED, OrderStatus.REJECTED);
+    }
 }

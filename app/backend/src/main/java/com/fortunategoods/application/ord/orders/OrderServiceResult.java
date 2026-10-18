@@ -9,11 +9,18 @@ public class OrderServiceResult {
     private final String orderId;
     private final OrderStatus status;
     private final long eventId;
+    private final String rejectReason;
 
+    // Prevents existing code using it to fail
     public OrderServiceResult(String orderId, OrderStatus status, long eventId){
+        this(orderId, status, eventId, null); // will call the constructor below
+    }
+
+    public OrderServiceResult(String orderId, OrderStatus status, long eventId, String rejectReason){
         this.orderId = orderId;
         this.status = status;
         this.eventId = eventId;
+        this.rejectReason = rejectReason;
     }
 
     public String getOrderId() {
@@ -26,5 +33,9 @@ public class OrderServiceResult {
 
     public long getEventId() {
         return eventId;
+    }
+
+    public String getRejectReason(){
+        return rejectReason;
     }
 }
