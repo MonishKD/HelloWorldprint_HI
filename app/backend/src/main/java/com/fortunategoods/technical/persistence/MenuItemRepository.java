@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 
 // Finds, adds, changes and hides menu items in the database (#24, #145).

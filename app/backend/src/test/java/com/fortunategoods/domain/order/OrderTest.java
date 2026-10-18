@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 
 

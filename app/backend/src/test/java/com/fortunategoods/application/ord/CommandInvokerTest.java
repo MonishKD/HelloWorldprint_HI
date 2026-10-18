@@ -1,5 +1,11 @@
 package com.fortunategoods.application.ord;
 
+import com.fortunategoods.application.ord.execution.Command;
+import com.fortunategoods.application.ord.execution.CommandExecutionException;
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandLog;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.menu.BrowseMenuCommand;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -22,8 +28,8 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.order.DomainRuleViolation;
-import com.fortunategoods.domain.restaurant.MenuService;
-import com.fortunategoods.domain.restaurant.RestaurantMenu;
+import com.fortunategoods.application.ord.menu.MenuService;
+import com.fortunategoods.domain.restaurant.menu.RestaurantMenu;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;

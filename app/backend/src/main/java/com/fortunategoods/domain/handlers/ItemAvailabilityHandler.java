@@ -1,5 +1,5 @@
 package com.fortunategoods.domain.handlers;
-import com.fortunategoods.application.ord.OrderRequest;
+import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrderLine;
 

@@ -1,5 +1,6 @@
 package com.fortunategoods.application.ord;
 
+import com.fortunategoods.application.ord.orders.OrderService;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -22,10 +23,10 @@ import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
-import com.fortunategoods.domain.order.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.order.RequestedOrderLineItem;
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;

@@ -1,5 +1,5 @@
 package com.fortunategoods.domain.order;
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 
 public class OrderLine {
 

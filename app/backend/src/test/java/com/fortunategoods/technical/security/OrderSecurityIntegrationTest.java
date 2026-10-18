@@ -30,12 +30,12 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.fortunategoods.application.ord.CommandInvoker;
-import com.fortunategoods.application.ord.OrderController;
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.orders.OrderController;
 import com.fortunategoods.application.ord.OrderExceptionHandler;
-import com.fortunategoods.application.ord.OrderService;
+import com.fortunategoods.application.ord.orders.OrderService;
 import com.fortunategoods.domain.order.DomainRuleViolation;
-import com.fortunategoods.domain.order.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;

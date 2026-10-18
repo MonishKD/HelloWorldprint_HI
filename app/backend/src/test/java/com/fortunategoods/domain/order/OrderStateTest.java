@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fortunategoods.domain.order.StateDesignPattern.IllegalTransitionException;
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.order.state.IllegalTransitionException;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 
 

@@ -1,5 +1,8 @@
 package com.fortunategoods.domain.restaurant;
 
+import com.fortunategoods.application.ord.menu.MenuService;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.RestaurantMenu;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

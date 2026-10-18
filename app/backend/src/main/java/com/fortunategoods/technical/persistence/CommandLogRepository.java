@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fortunategoods.application.ord.CommandLog;
+import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.user.UserRole;
 

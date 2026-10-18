@@ -1,5 +1,8 @@
 package com.fortunategoods.application.ord;
 
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.orders.OrderController;
+import com.fortunategoods.application.ord.orders.OrderService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -8,7 +11,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.order.DomainRuleViolation;
-import com.fortunategoods.domain.order.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;

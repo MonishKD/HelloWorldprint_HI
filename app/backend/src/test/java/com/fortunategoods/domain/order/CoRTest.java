@@ -1,5 +1,6 @@
 package com.fortunategoods.domain.order;
 
+import com.fortunategoods.domain.order.validation.OrderVerify;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fortunategoods.application.ord.OrderRequest;
+import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.handlers.BaseOrderHandler;
 import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
 import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;

@@ -1,5 +1,5 @@
 package com.fortunategoods.domain.handlers;
-import com.fortunategoods.application.ord.OrderRequest;
+import com.fortunategoods.domain.order.validation.OrderRequest;
 public abstract class BaseOrderHandler implements OrderHandler {
     protected OrderHandler nextHandler;
 

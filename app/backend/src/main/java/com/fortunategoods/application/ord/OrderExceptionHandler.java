@@ -1,4 +1,6 @@
 package com.fortunategoods.application.ord;
+import com.fortunategoods.application.ord.execution.CommandError;
+import com.fortunategoods.application.ord.execution.CommandExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter .HttpMessageNotReadableException;
@@ -7,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import com.fortunategoods.domain.order.StateDesignPattern.IllegalTransitionException;
+import com.fortunategoods.domain.order.state.IllegalTransitionException;
 
 
 @RestControllerAdvice(basePackages = "com.fortunategoods.application.ord")
