@@ -8,17 +8,17 @@ import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 /*
     This class will be used to process the full order JSON request.
     It will create RequestedOrderLineItems for each order lines using
-    PlaceOrderLinesJSON class objects.
+    PlaceOrderLinesReqJSON class objects.
 */
-public class PlaceOrderJSON {
+public class PlaceOrderReqJSON {
     private String restaurantId;
-    private List<PlaceOrderLinesJSON> ol;
+    private List<PlaceOrderLinesReqJSON> ol;
     private String instructions;
     private String deliveryAddress;
 
-    public PlaceOrderJSON(){}
+    public PlaceOrderReqJSON(){}
 
-    public PlaceOrderJSON(String restaurantId, List<PlaceOrderLinesJSON> ol, String instructions, String deliveryAddress) {
+    public PlaceOrderReqJSON(String restaurantId, List<PlaceOrderLinesReqJSON> ol, String instructions, String deliveryAddress) {
         this.restaurantId = restaurantId;
         this.ol = ol == null ? null : new ArrayList<>(ol);
         this.instructions = instructions;
@@ -33,11 +33,11 @@ public class PlaceOrderJSON {
         this.restaurantId = restaurantId;
     }
 
-    public List<PlaceOrderLinesJSON> getLines() {
+    public List<PlaceOrderLinesReqJSON> getLines() {
         return ol;
     }
 
-    public void setLines(List<PlaceOrderLinesJSON> ol) {
+    public void setLines(List<PlaceOrderLinesReqJSON> ol) {
         this.ol = ol;
     }
 
@@ -57,14 +57,14 @@ public class PlaceOrderJSON {
         this.deliveryAddress = deliveryAddress;
     }
 
-    // Method to convert each PlaceOrderLinesJSON into RequestedOrderLineItem
+    // Method to convert each PlaceOrderLinesReqJSON into RequestedOrderLineItem
     public List<RequestedOrderLineItem> toRequestedItems() {
         if (ol == null) {
             return null;
         }
 
         List<RequestedOrderLineItem> requestedItems = new ArrayList<>();
-        for (PlaceOrderLinesJSON line : ol) {
+        for (PlaceOrderLinesReqJSON line : ol) {
             if (line == null) {
                 requestedItems.add(null);
             } else {

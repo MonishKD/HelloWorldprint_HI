@@ -27,6 +27,7 @@ import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
 
 public class CancelOrderServiceTest {
     private OrderRepository orders;
@@ -39,7 +40,7 @@ public class CancelOrderServiceTest {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(mock(RestaurantRepository.class), orders, events);
+        service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class));
 
         order = createOrder(OrderStatus.PLACED);
         when(orders.findById("100")).thenReturn(order);

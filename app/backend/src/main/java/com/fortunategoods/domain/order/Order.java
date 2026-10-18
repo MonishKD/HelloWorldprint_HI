@@ -189,9 +189,13 @@ public class Order {
     public void markReady(){
         state.markReady(this);
     }
+    public void reject(String reason){
+        //this will have to change at some point // it has been changed.
+        state.reject(this, reason);
+    }
+
     public void reject(){
-        //this will have to change at some point
-        state.reject(this,"reason");
+        reject(null);
     }
     public void cancel(){
         state.cancel(this);

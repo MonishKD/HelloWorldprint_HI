@@ -2,11 +2,16 @@ package com.fortunategoods.application.ord.orders;
 
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderResponse;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
-import com.fortunategoods.application.ord.orders.placement.PlaceOrderJSON;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderReqJSON;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderReqJSON;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
+import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderCommand;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
@@ -38,7 +43,7 @@ public class OrderController {
 
     // API Endpoint for placing order
     @PostMapping
-    public ResponseEntity<CommandSuccess<PlaceOrderResponse>> placeOrder(@RequestBody PlaceOrderJSON req) {
+    public ResponseEntity<CommandSuccess<PlaceOrderResponse>> placeOrder(@RequestBody PlaceOrderReqJSON req) {
         // Get current session
         Session session = sessionValidator.currentSession();
 
@@ -66,7 +71,38 @@ public class OrderController {
         // Process the command and store success result
         CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);
 
-        // Confirm the cancellation request
+        // Confirm the cancellation request to frontend
+        return ResponseEntity.ok(result);
+    }
+
+    // API Endpoint for acceptinng an order
+    @PostMapping("/{orderId}/accept")
+    public ResponseEntity<CommandSuccess<AcceptOrderResponse>> acceptOrder(@PathVariable("orderId") String orderId){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        AcceptOrderCommand command = new AcceptOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<AcceptOrderResponse> result = invoker.process(command, session);
+
+        // Confirm the accept request to frontend
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{orderId}/reject")
+    public ResponseEntity<CommandSuccess<RejectOrderResponse>> rejectOrder(@PathVariable("orderId") String orderId, @RequestBody RejectOrderReqJSON request){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        RejectOrderCommand command = new RejectOrderCommand(orderService, session, orderId, request.getReason());
+
+        // Process the command and store success result
+        CommandSuccess<RejectOrderResponse> result = invoker.process(command, session);
+
+        // Confirm the reject request to frontend
         return ResponseEntity.ok(result);
     }
 }

@@ -1,5 +1,4 @@
 package com.fortunategoods.application.ord.orders;
-import com.fortunategoods.domain.order.validation.OrderRequest;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -11,12 +10,15 @@ import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
+import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
 
 import jakarta.transaction.Transactional;
 
@@ -28,11 +30,13 @@ public class OrderService {
     private final RestaurantRepository restaurantRepo;
     private final OrderRepository orderRepo;
     private final OrderEventRepository orderEventRepo;
+    private final UserRepository userRepo;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
+        this.userRepo = userRepo;
     }
     
     @Transactional 
@@ -46,7 +50,6 @@ public class OrderService {
 
         // Verify validity of the order lines
         List<OrderLine> lines = OrderVerify.prepareLines(restaurant, requestedItems);
-
 
         // Chain of responsibility
         RestaurantStatusHandler chain = new RestaurantStatusHandler();
@@ -81,33 +84,106 @@ public class OrderService {
         OrderVerify.requireId(orderId,"Order ID");
         //gets the order from repo based on the id
         Order order = orderRepo.findById(orderId);
+        //exception handling addition
+        if (order == null){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Order could not be found.");
+        }
 
         return order;
 
     }
-    //this functino SHOULD take care of making sure that the order goes in the proper path I puth multiple checks
+    //this function SHOULD take care of making sure that the order goes in the proper path I puth multiple checks
     //implemented it basically like the cancelOrder steps, just refactored it
     private OrderServiceResult saveTransition(String orderId, Order order, OrderStatus previous){
         //event repo cant return just the top event so you have to get it all THEN get latest
         List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
+        //check if there are order events
+        if (events.isEmpty()){
+            throw new IllegalStateException("Order has no event history");
+        }
         OrderEvent latest = events.get(events.size()-1);
-        //safety check here insted of just using the updateStatus functino
-        String eventId = orderRepo.updateStatusIfUnchanged(orderId, latest.getId(), previous, order.getStatus());
+        //safety check by comparing the latest order status saved in the orderEvent repo to the previous
+        if (latest.getNewStatus() != previous){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order changed before status was updated.");
+        }
+        //safety check here insted of just using the updateStatus function
+        String eventId;
+        /*
+            Since saving transition can lead to different outcomes and different fields being saved
+            Check their status and determine which field in the repo to update.
+            If the current order status is REJECTED, call the rejectOrderIfPlaced method to update status in repo,
+            assuming that the order has a reject reason (if it d/n method won't make any updates).
+            Else update the status if unchanged (default update)
+        */
+        if (order.getStatus() == OrderStatus.REJECTED){
+            eventId = orderRepo.rejectOrderIfPlaced(orderId, latest.getId(), order.getRejectReason());
+        } else {
+            eventId = orderRepo.updateStatusIfUnchanged(orderId, latest.getId(), previous, order.getStatus());
+        }
+
         //another sanity check here
         if(eventId == null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order changed before status was updated!!!!!");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order changed before status was updated.");
         }
-        return new OrderServiceResult(orderId,order.getStatus(),Long.parseLong(latest.getId()));
+        return new OrderServiceResult(orderId,order.getStatus(),Long.parseLong(eventId), order.getRejectReason());
     }
 
     //makes it so that if it fails it wont save it
     @Transactional 
-    public OrderServiceResult acceptOrder(String orderId){
+    public OrderServiceResult acceptOrder(String staffId, UserRole role, String orderId){
+        // check if user role is restaurant
+        if (role != UserRole.RESTAURANT){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Accepting orders are only done by restaurant staffs");
+        }
+        // verify validity of staffId formatting
+        OrderVerify.requireId(staffId, "Staff ID");
+
+        // Find order and restaurant
         Order order = findOrder(orderId);
+        String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
+
+        // Does order's restaurant match the restaurant trying to accept it
+        if (!order.getRestaurantId().equals(restaurantId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Cannot accept an order from another restaurant.");
+        }
+
+        // Check if order has been placed
+        if (order.getStatus() != OrderStatus.PLACED){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not accept order as it was not in the status PLACED");
+        }
         //you need this for the saving step cause it'll compare it before saving the transaction
         OrderStatus previous = order.getStatus();
 
         order.accept();
+
+        return saveTransition(orderId,order,previous);
+    }
+
+    @Transactional
+    public OrderServiceResult rejectOrder(String staffId, UserRole role, String orderId, String reason){
+        if (role != UserRole.RESTAURANT){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Rejecting orders are only done by restaurant staffs");
+        }
+        // verify validity of staffId formatting
+        OrderVerify.requireId(staffId, "Staff ID");
+
+        // Find order and restaurant
+        Order order = findOrder(orderId);
+        String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
+
+        // Does order's restaurant match the restaurant trying to reject it
+        if (!order.getRestaurantId().equals(restaurantId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Cannot reject an order from another restaurant.");
+        }
+
+        // Check if order has been placed
+        if (order.getStatus() != OrderStatus.PLACED){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not reject order as it was not in the status PLACED");
+        }
+        //you need this for the saving step cause it'll compare it before saving the transaction
+        OrderStatus previous = order.getStatus();
+
+        order.reject(reason);
 
         return saveTransition(orderId,order,previous);
     }
@@ -170,7 +246,4 @@ public class OrderService {
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
     
-
-
-
 }
