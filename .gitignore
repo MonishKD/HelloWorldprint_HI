@@ -1,6 +1,15 @@
 # Compiled class files
 *.class
 
+#Frontend fix
+app/frontend/node_modules/
+app/frontend/dist/
+
+#backend fix
+app/backend/target/
+app/backend/.env
+
+
 # Build directories
 target/
 out/
