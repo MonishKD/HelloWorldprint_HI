@@ -33,6 +33,7 @@ import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
 
 public class OrderServiceTest {
     private RestaurantRepository restaurants;
@@ -46,7 +47,7 @@ public class OrderServiceTest {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(restaurants, orders, events);
+        service = new OrderService(restaurants, orders, events, mock(UserRepository.class));
 
         givenRestaurant(RestaurantStatus.OPEN, MenuItemStatus.AVAILABLE);
     }
