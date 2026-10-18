@@ -8,12 +8,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
     This class converts all order lines from the REST Endpoint
     into java objects for backend processing through OrderService
 */
-public class PlaceOrderLinesJSON {
+public class PlaceOrderLinesReqJSON {
     @JsonProperty("itemId")
     private String menuItemId;
     private BigDecimal quantity;
 
-    public PlaceOrderLinesJSON(String menuItemId, BigDecimal quantity){
+    public PlaceOrderLinesReqJSON(String menuItemId, BigDecimal quantity){
         this.menuItemId = menuItemId;
         this.quantity = quantity;
     }
