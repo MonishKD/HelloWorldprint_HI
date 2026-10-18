@@ -1,0 +1,72 @@
+package com.fortunategoods.application.ord.orders;
+
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
+import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderJSON;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
+import java.net.URI;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fortunategoods.application.reg.Session;
+import com.fortunategoods.technical.security.SessionValidator;
+
+/*
+    This class will be used to control the flow of all
+    REST Endpoints the frontend sends to the backend.
+*/
+@RestController 
+@RequestMapping("/api/orders")
+public class OrderController {
+    private final CommandInvoker invoker; // used to call concrete command class
+    private final OrderService orderService; // used to handle business logic
+    private final SessionValidator sessionValidator; // used to validate session
+
+    public OrderController(CommandInvoker invoker, OrderService orderService, SessionValidator sessionValidator){
+        this.invoker = invoker;
+        this.orderService = orderService;
+        this.sessionValidator = sessionValidator;
+    }
+
+    // API Endpoint for placing order
+    @PostMapping
+    public ResponseEntity<CommandSuccess<PlaceOrderResponse>> placeOrder(@RequestBody PlaceOrderJSON req) {
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        PlaceOrderCommand command = new PlaceOrderCommand(orderService, session, req.getRestaurantId(), req.toRequestedItems(), req.getInstructions(), req.getDeliveryAddress());
+
+        // Process the command and store success result
+        CommandSuccess<PlaceOrderResponse> result = invoker.process(command, session);
+
+        // Create URI to send back to frontend
+        URI uri = URI.create("/api/orders/" + result.getData().getOrderId());
+
+        return ResponseEntity.created(uri).body(result);
+    }
+
+    // API Endpoint for cancelling an order
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<CommandSuccess<CancelOrderResponse>> cancelOrder(@PathVariable("orderId") String orderId){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        CancelOrderCommand command = new CancelOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);
+
+        // Confirm the cancellation request
+        return ResponseEntity.ok(result);
+    }
+}

@@ -1,5 +1,11 @@
 package com.fortunategoods.application.ord;
 
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandLog;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
@@ -18,9 +24,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
 import com.fortunategoods.application.reg.Session;
-import com.fortunategoods.domain.order.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.order.RequestedOrderLineItem;
+import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.security.SessionValidator;

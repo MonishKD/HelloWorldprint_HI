@@ -1,5 +1,6 @@
 package com.fortunategoods.domain.restaurant;
 
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import java.util.ArrayList;
 import java.util.List;
 

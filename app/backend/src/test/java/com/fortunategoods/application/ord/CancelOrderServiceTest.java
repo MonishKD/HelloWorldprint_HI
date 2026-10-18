@@ -1,5 +1,6 @@
 package com.fortunategoods.application.ord;
 
+import com.fortunategoods.application.ord.orders.OrderService;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -18,10 +19,10 @@ import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
-import com.fortunategoods.domain.order.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.order.StateDesignPattern.IllegalTransitionException;
-import com.fortunategoods.domain.restaurant.MenuItem;
+import com.fortunategoods.domain.order.state.IllegalTransitionException;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;

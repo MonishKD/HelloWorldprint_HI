@@ -3,14 +3,14 @@ package com.fortunategoods.domain.order;
 import java.util.List;
 import java.util.Objects;
 
-import com.fortunategoods.domain.order.StateDesignPattern.AcceptedState;
-import com.fortunategoods.domain.order.StateDesignPattern.BaseOrderState;
-import com.fortunategoods.domain.order.StateDesignPattern.CanceledState;
-import com.fortunategoods.domain.order.StateDesignPattern.OrderState;
-import com.fortunategoods.domain.order.StateDesignPattern.PlacedState;
-import com.fortunategoods.domain.order.StateDesignPattern.PreparingState;
-import com.fortunategoods.domain.order.StateDesignPattern.ReadyState;
-import com.fortunategoods.domain.order.StateDesignPattern.RejectedState;
+import com.fortunategoods.domain.order.state.AcceptedState;
+import com.fortunategoods.domain.order.state.BaseOrderState;
+import com.fortunategoods.domain.order.state.CanceledState;
+import com.fortunategoods.domain.order.state.OrderState;
+import com.fortunategoods.domain.order.state.PlacedState;
+import com.fortunategoods.domain.order.state.PreparingState;
+import com.fortunategoods.domain.order.state.ReadyState;
+import com.fortunategoods.domain.order.state.RejectedState;
 
 public class Order {
 
