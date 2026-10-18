@@ -1,0 +1,11 @@
+#ignores the node_modules but from my local machine. .gitignore does that, but since we are using docker,
+# your device that will run the build will have its own node_modules to copy, but u wanna be careful because
+# it might break the docker build.
+
+#Imagine the image docker uses is in Unix but yours is in windows. it will copy from windows to unix and it might
+# break the build at the "COPY . ." command in the frontend Dockerfile. So we ignore the node_modules from our local
+#machine, but the image will have its own node_modules to copy.
+
+node_modules
+dist
+.env

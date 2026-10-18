@@ -1,0 +1,91 @@
+# This is a simple docker-compose file for db, backend and frontend services. It is used for local development and testing.
+#First step, you would name the services that you name. for now we use database, backend and frontend. You can name them whatever you want,
+# but make sure to update the service names in the backend and frontend Dockerfiles accordingly.
+services:
+    # Here you setup the database service. i used the postgres:17 image. which is downloaded from the Docker Hub.
+    database:
+        image: postgres:17
+        # setup the env variables for the database to exist. in other words, this is always setup before creation of database
+        # These variables are used by the postgres image to configure the database
+
+        environment:
+            POSTGRES_DB: ${DB_NAME:?Set DB_NAME in .env file. I know you forgot lol :P}
+            POSTGRES_USER: ${DB_USERNAME:?Set DB_USERNAME in .env file. I know you forgot lol :P}
+
+            #here you configure the password in your root .env file. An .env.example file will show u. passwords on discord.
+            POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env file. I know you forgot lol :P}
+        ports:
+            #used 5432 since its default port for postgres, though the 9090 is the port
+            #(can be whatever but must be consistent across the application) that we will
+            #use to connect to the database from our local machine.
+            - '${DB_PORT:?Set DB_PORT in .env file. I know you forgot lol :P}:5432'
+        volumes:
+            #this is where the database data is stored. it is a volume (trackable place/path) that is created by
+            # docker-compose. it is used to persist the data even if the container is destroyed It represents where the
+            #data lives in the container running the database image. This is important because if the container is destroyed,
+            #the data will still be there when the container is recreated. This is a good practice to use volumes for databases.
+            - database_data:/var/lib/postgresql/data
+
+    # here is where we setup the backend for our orchestrator to know what to build and run. So we give it a name, we name it backend
+    backend:
+        # here we tell our orchestrator, "hey dont use an image, use this build we setup for you, take a look at this path and find the
+        #Dockerfile and build the image for me." The path is relative to the docker-compose.yml file.
+        build: ./app/backend
+
+        environment:
+            # Inside Docker, "localhost" means this container itself, so the backend can't use it to find the
+            # database. Compose uses each service's name as its address, so the database is at "database".
+            # Only the backend needs this line: DB_HOST means "which machine do I call", and the database
+            # never calls anyone, it just waits for connections, so it has nothing to look up. Thats why it doesnt have
+            # backend in its environment variables. The backend is the one that needs to know where the database is.
+            DB_HOST: database
+
+            # your .env sets DB_PORT to 9090, but that port only exsits on your local machine. Containers talk to each
+            # other directly under the same shared network. Database listens to this port 5432, so the backend needs to
+            # use that port to connect to the database. The backend does not need to know about 9090.
+            DB_PORT: 5432
+
+            DB_NAME: ${DB_NAME:?Set DB_NAME in .env file. I know you forgot lol :P}
+            DB_USERNAME: ${DB_USERNAME:?Set DB_USERNAME in .env file. I know you forgot lol :P}
+            DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env file. I know you forgot lol :P}
+
+            #keep = only seed an empty database, reset=. wipe and seed again. -keep means default to keep if .env doesnt set it
+            SEED_MODE: ${SEED_MODE:-keep}
+
+            # The frontend's port, used to build the address the backend accepts requests from (CORS, see
+            # app.cors.allowed-origin in application.properties). Must match the port the frontend is opened on.
+            FRONTEND_PORT: ${FRONTEND_PORT:?Set FRONTEND_PORT in .env file. I know you forgot lol :P}
+
+        ports:
+            # Left side = the door on your computer, right side = the backend's port inside the container. check in .env
+            # This is what lets your browser reach the backend at localhost:8080.
+            - '${BACKEND_PORT:?Set BACKEND_PORT in .env file. I know you forgot lol :P}:8080'
+
+        depends_on:
+            # this is a dependency, the backend depends on the database. This means that the backend will
+            # wait for the database to be ready before starting. (makes sense, also relevant for seeding the database,
+            #if the backend starts before the database is ready, it will fail to seed the database)
+            - database
+
+    frontend:
+        # here we tell our orchestrator, "hey dont use an image, use this build we setup for you, take a look at this path and find the
+        #Dockerfile and build the image for me." The path is relative to the docker-compose.yml file.
+        build: ./app/frontend
+
+        environment:
+            #the addresses te frontend calls the backend at, this runs in your BROWSER, not inside docker.
+            # so its localhost and port is published for the backend, not the service name "backend"
+            VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in .env file. I know you forgot lol :P}
+
+        ports:
+            # Left side = the door on your computer, right side = the frontend's port inside the container.
+            # this is what lets ur browseer open the site at localhost:5173. Keep 5173 as the frontend port,
+            # because Vite (the frontend framework) is default to use that port. If you change it, you will
+            # have to update the CORS settings
+            - '${FRONTEND_PORT:?Set FRONTEND_PORT in .env file. I know you forgot lol :P}:5173'
+        depends_on:
+            # start backend before frontend.
+            - backend
+
+volumes:
+    database_data:
