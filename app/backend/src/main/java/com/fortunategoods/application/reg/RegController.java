@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.fortunategoods.application.ord.execution.CommandError;
+
 /*  
 Login and logout orchestration for #62, against AuthenticationService (#28).
  This has now been refactored for step #65 too!
@@ -63,9 +65,9 @@ public class RegController {
         return value == null || value.isBlank();
     }
 
-    private static ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message) {
-    return ResponseEntity.status(status).body(new ErrorResponse(code, message));
-    }       
+    private static ResponseEntity<CommandError> error(HttpStatus status, String code, String message) {
+    return ResponseEntity.status(status).body(new CommandError(status.value(), code, message));
+    }   
 
     // Here are the enums that show off the "clear response outcomes" as mentioned in the task description on GitHub
     public enum LoginOutcome {
@@ -104,9 +106,5 @@ public class RegController {
     }
 
     public record SessionResponse(UserRole role) {
-    }
-
-    // Placeholder: replace with the project's shared error shape.
-    public record ErrorResponse(String error, String message) {
     }
 }
