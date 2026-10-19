@@ -1,4 +1,4 @@
-package com.fortunategoods.application.ord.orders;
+package com.fortunategoods.application.ord.orders.preparation;
 
 import java.util.Locale;
 

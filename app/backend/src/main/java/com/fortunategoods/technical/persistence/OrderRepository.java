@@ -7,7 +7,7 @@ import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.transaction.annotation.Propagation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
@@ -147,5 +147,12 @@ public class OrderRepository {
             return null;
         }
         return orderEventRepository.add(orderId, prevEventId, OrderStatus.PLACED, OrderStatus.REJECTED);
+    }
+
+    // Thread-locks preparation queue so multiple requests cannot modify the queue while a
+    // transaction to that queue is still ongoing
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockRestaurantQueue(String restaurantId) {
+        jdbc.queryForObject("SELECT id FROM restaurants WHERE id = ? FOR UPDATE", Integer.class, Integer.parseInt(restaurantId));
     }
 }
