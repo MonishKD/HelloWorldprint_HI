@@ -1,7 +1,9 @@
 package com.fortunategoods.domain.restaurant;
 
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import java.util.List;
+
+import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 public class Restaurant {
 
     private final String id;
@@ -64,5 +66,21 @@ public class Restaurant {
             }
         }
         return copy;
+    }
+
+    public void changeStatus(String staffRestaurantId, RestaurantStatus newStatus) {
+        if (!id.equals(staffRestaurantId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,"You do not have permissions to change this restaurant's status.");
+        }
+
+        if (newStatus == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Restaurant's new status cannot be empty");
+        }
+
+        if (newStatus == RestaurantStatus.OPEN && menu.isEmpty()) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Add at least one menu item before opening");
+        }
+
+        this.status = newStatus;
     }
 }

@@ -22,7 +22,7 @@ class RestaurantServiceTest {
         }
     };
 
-    private final RestaurantService restaurantService = new RestaurantService(restaurants);
+    private final RestaurantService restaurantService = new RestaurantService(restaurants, null);
 
     // Every restaurant comes back with its id, name, status and coordinates.
     @Test
