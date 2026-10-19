@@ -15,34 +15,35 @@ public class PreparationQueue {
     private final Queue<Entry> queue;
 
 
-    public PreparationQueue(String restaurantID) {
-        if (restaurantID == null || restaurantID.trim().isEmpty()) {
+    public PreparationQueue(String restaurantId) {
+        if (restaurantId == null || restaurantId.trim().isEmpty()) {
             throw new IllegalArgumentException("Given restaurant ID to PreparationQueue constructor is null or empty! Fix this!");
         }
-        this.RestaurantID = restaurantID;
+        this.RestaurantID = restaurantId;
         queue = new PriorityQueue<>(Comparator.comparing(Entry::timestamp));
     }
 
-    public Order peek() {
+    //returns null when empty
+    public synchronized Order peek() {
         if (queue.isEmpty()) {
             return null;
         }
         return queue.peek().order();
     }
 
-
-    public Order dequeue() {
+    //returns null when empty
+    public synchronized Order dequeue() {
         if (queue.isEmpty()) {
             return null;
         }
         return queue.remove().order();
     }
 
-    public Order remove(Order order) {
+    public synchronized Order remove(Order order) {
         return queue.removeIf(entry -> entry.order().equals(order)) ? order : null;
     }
 
-    public void enqueue(Order order, LocalDateTime timestamp) {
+    public synchronized void enqueue(Order order, LocalDateTime timestamp) {
         if (order == null) {
             throw new IllegalArgumentException("Given order to queue is null!");
         }

@@ -194,19 +194,32 @@ public class OrderService {
     }
 
     @Transactional 
-    public OrderServiceResult prepareOrder(String restaurantID, String orderId){
-        // check validity of IDs provided
-        Restaurant restaurant = restaurantRepo.findById(restaurantID);
+    public OrderServiceResult prepareOrder(String orderId){
+        // check validity of the orderID parameter
         OrderVerify.requireId(orderId, "Order ID");
         // Find the order details from the order repo
 
         Order order = findOrder(orderId);
         OrderStatus previous = order.getStatus();
         PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
+        synchronized (queue) {
+            Order peeked = queue.peek();
+            order.startPreparing();
 
-        order.startPreparing();
+            //now, we implement the guard!
+            if (peeked == null || !(orderId.equals(peeked.getId()))) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order does not match the next order in the queue for this restaurant!");
+            }
 
-        return saveTransition(orderId,order,previous);
+            OrderServiceResult result = saveTransition(orderId,order,previous);
+            //run result first in case there is a conflict and if there is, then the queue is never dequeued
+            Order dequeued = queue.dequeue(); //only runs after a successful save! order only leaves when database change happens
+            if (!(orderId.equals(dequeued.getId()))) {
+                throw new IllegalArgumentException("Order dequeued doesn't match prepared order!");
+            }
+
+            return result; //still need to return an OrderServiceResult!
+        }
     }
 
     @Transactional 
