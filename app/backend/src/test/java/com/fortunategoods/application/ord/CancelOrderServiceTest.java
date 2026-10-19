@@ -1,6 +1,5 @@
 package com.fortunategoods.application.ord;
 
-import com.fortunategoods.application.ord.orders.OrderService;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,16 +14,17 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.ord.orders.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
-import com.fortunategoods.application.ord.orders.OrderServiceResult;
-import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.state.IllegalTransitionException;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;

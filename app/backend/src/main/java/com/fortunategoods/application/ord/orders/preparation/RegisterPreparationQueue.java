@@ -1,5 +1,7 @@
-package com.fortunategoods.application.ord.orders;
+package com.fortunategoods.application.ord.orders.preparation;
 
+
+import java.util.List;
 
 import org.springframework.stereotype.Component;
 
@@ -10,7 +12,6 @@ import com.fortunategoods.domain.order.PreparationQueue;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
-import java.util.List;
 
 @Component 
 public class RegisterPreparationQueue {

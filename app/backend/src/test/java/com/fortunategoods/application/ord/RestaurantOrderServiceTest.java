@@ -1,5 +1,4 @@
 package com.fortunategoods.application.ord;
-import com.fortunategoods.application.ord.orders.pending.RestaurantOrderService;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -12,12 +11,14 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import com.fortunategoods.application.ord.orders.RestaurantOrderService;
+import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -33,7 +34,7 @@ public class RestaurantOrderServiceTest {
         users = mock(UserRepository.class);
         orders = mock(OrderRepository.class);
 
-        service = new RestaurantOrderService(users, orders);
+        service = new RestaurantOrderService(users, orders, mock(RegisterPreparationQueue.class));
 
         // Staff member 8 belongs to restaurant 1.
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");

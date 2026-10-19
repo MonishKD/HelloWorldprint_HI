@@ -1,14 +1,14 @@
-package com.fortunategoods.application.ord.orders;
+package com.fortunategoods.application.ord.orders.preparation;
 
-import com.fortunategoods.application.reg.Session;
-import com.fortunategoods.domain.user.UserRole;
+import java.util.Set;
+
+import com.fortunategoods.application.ord.execution.Command;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.ord.orders.OrderService;
-import com.fortunategoods.application.ord.orders.PrepareOrderResponse;
-import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
-import com.fortunategoods.application.ord.execution.Command;
-import java.util.Set;
+import com.fortunategoods.application.reg.Session;
+import com.fortunategoods.domain.order.OrdModulePermissions;
+import com.fortunategoods.domain.user.UserRole;
 
 public class PreparingOrderCommand implements Command<PrepareOrderResponse> {
     private final OrderService orderService;
