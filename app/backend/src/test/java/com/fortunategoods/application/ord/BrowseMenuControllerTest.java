@@ -147,7 +147,7 @@ class BrowseMenuControllerTest {
         // Not used by these tests, but RestaurantController needs one.
         @Bean
         RestaurantService restaurantService() {
-            return new RestaurantService(null);
+            return new RestaurantService(null, null);
         }
 
         @Bean
