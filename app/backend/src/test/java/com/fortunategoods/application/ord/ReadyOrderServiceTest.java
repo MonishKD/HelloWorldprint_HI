@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.*;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
@@ -21,8 +22,7 @@ class ReadyOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final UserRepository users = mock(UserRepository.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users);
-
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users, mock(RegisterPreparationQueue.class));
     private Order order;
 
     @BeforeEach

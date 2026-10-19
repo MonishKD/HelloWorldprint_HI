@@ -29,12 +29,11 @@ public class PreparingOrderCommand implements Command<PrepareOrderResponse> {
     }
 
     @Override
-public CommandSuccess<PrepareOrderResponse> execute() {
-    OrderServiceResult result = orderService.prepareOrder(
-            String.valueOf(session.getUserID()), session.getRole(), orderId);
-    PrepareOrderResponse response = new PrepareOrderResponse(result.getOrderId(), result.getStatus());
-    return new CommandSuccess<>(response, "Order is now being prepared!", result.getEventId());
-}
+    public CommandSuccess<PrepareOrderResponse> execute() {
+        OrderServiceResult result = orderService.prepareOrder(String.valueOf(session.getUserID()), session.getRole(), orderId);
+        PrepareOrderResponse response = new PrepareOrderResponse(result.getOrderId(), result.getStatus());
+        return new CommandSuccess<>(response, "Order is now being prepared!", result.getEventId());
+    }
 
 
 
