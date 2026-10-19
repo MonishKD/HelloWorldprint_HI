@@ -209,30 +209,37 @@ public class OrderService {
         return saveTransition(orderId,order,previous);
     }
 
-    @Transactional 
-    public OrderServiceResult prepareOrder(String orderId){
-        // check validity of the orderID parameter
+    @Transactional
+    public OrderServiceResult prepareOrder(String staffId, UserRole role, String orderId) {
+        if (role != UserRole.RESTAURANT) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,
+                    "Restaurant staff should be preparing the order, not any other role!");
+        }
+        OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(orderId, "Order ID");
-        // Find the order details from the order repo
 
         Order order = findOrder(orderId);
-        OrderStatus previous = order.getStatus();
+        String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
+        if (!order.getRestaurantId().equals(restaurantId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,
+                    "Cannot prepare an order from another restaurant.");
+        }
+
         PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
         synchronized (queue) {
-            order.startPreparing();
-            Order peeked = queue.peek();
-
-            //now, we implement the guard!
-            if (peeked == null || !(orderId.equals(peeked.getId()))) {
-                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order does not match the next order in the queue for this restaurant!");
+            // FIFO guard first, before any state change
+            Order next = queue.peek();
+            if (next == null || !orderId.equals(next.getId())) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,
+                        "Order does not match the next order in the queue for this restaurant!");
             }
 
-            OrderServiceResult result = saveTransition(orderId,order,previous);
-            //run result first in case there is a conflict and if there is, then the queue is never dequeued
-            queue.dequeue(); //only runs after a successful save! order only leaves when database change happens
-    
+            OrderStatus previous = order.getStatus();
+            order.startPreparing();
 
-            return result; //still need to return an OrderServiceResult!
+            OrderServiceResult result = saveTransition(orderId, order, previous);
+            queue.dequeue(); // only after a successful save
+            return result;
         }
     }
 
