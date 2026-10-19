@@ -8,7 +8,14 @@
     { "username": "uniburger",   "email": "uniburger@example.com",   "password": "demo123", "role": "RESTAURANT" },
     { "username": "boustan",     "email": "boustan@example.com",     "password": "demo123", "role": "RESTAURANT" },
     { "username": "lolarosa",    "email": "lolarosa@example.com",    "password": "demo123", "role": "RESTAURANT" },
-    { "username": "myriade",     "email": "myriade@example.com",     "password": "demo123", "role": "RESTAURANT" }
+    { "username": "myriade",     "email": "myriade@example.com",     "password": "demo123", "role": "RESTAURANT" },
+    { "username": "fromagerie",  "email": "fromagerie@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "atwater",     "email": "atwater@example.com",       "password": "demo123", "role": "RESTAURANT" },
+    { "username": "pholambert",  "email": "pholambert@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "pizzeriaguy", "email": "pizzeriaguy@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "bagelclark",  "email": "bagelclark@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "sushibishop", "email": "sushibishop@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "taqueria",    "email": "taqueria@example.com",      "password": "demo123", "role": "RESTAURANT" }
   ],
   "restaurants": [
     {
@@ -49,6 +56,56 @@
       "name": "Café Myriade", "owner": "myriade", "status": "CLOSED", "cuisine": "Café",
       "address": "1432 Rue Mackay, Montréal", "latitude": 45.4966, "longitude": -73.5786,
       "menu": []
+    },
+    {
+      "name": "Fromagerie Saint-Laurent", "owner": "fromagerie", "status": "OPEN", "cuisine": "Cheese shop",
+      "address": "3700 Boulevard Saint-Laurent, Montréal", "latitude": 45.5145, "longitude": -73.5760,
+      "menu": [
+        { "id": "fr-1", "name": "Cheese platter", "description": "Three Québec cheeses with bread.", "price": 8.00, "originalPrice": 17.00, "status": "SOLD_OUT" },
+        { "id": "fr-2", "name": "Grilled cheese", "description": "Aged cheddar on sourdough.", "price": 6.25, "originalPrice": null, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Bistro Atwater", "owner": "atwater", "status": "OPEN", "cuisine": "French",
+      "address": "1200 Avenue Atwater, Montréal", "latitude": 45.4890, "longitude": -73.5850,
+      "menu": []
+    },
+    {
+      "name": "Pho Lambert", "owner": "pholambert", "status": "PAUSED", "cuisine": "Vietnamese",
+      "address": "1100 Boulevard De Maisonneuve O, Montréal", "latitude": 45.5010, "longitude": -73.5730,
+      "menu": [
+        { "id": "pl-1", "name": "Beef pho", "description": "Rice noodles in beef broth.", "price": 6.00, "originalPrice": 12.50, "status": "AVAILABLE" },
+        { "id": "pl-2", "name": "Spring rolls", "description": "Two fresh rolls with peanut sauce.", "price": 4.50, "originalPrice": null, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Pizzeria Guy", "owner": "pizzeriaguy", "status": "PAUSED", "cuisine": "Pizza",
+      "address": "1450 Rue Guy, Montréal", "latitude": 45.4950, "longitude": -73.5790,
+      "menu": [
+        { "id": "pg-1", "name": "Margherita slice", "description": "Tomato, mozzarella and basil.", "price": 2.50, "originalPrice": 5.00, "status": "SOLD_OUT" },
+        { "id": "pg-2", "name": "Pepperoni slice", "description": "Tomato, mozzarella and pepperoni.", "price": 3.00, "originalPrice": 6.00, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Bagel Clark", "owner": "bagelclark", "status": "PAUSED", "cuisine": "Bakery",
+      "address": "4500 Rue Clark, Montréal", "latitude": 45.5210, "longitude": -73.5890,
+      "menu": []
+    },
+    {
+      "name": "Sushi Bishop", "owner": "sushibishop", "status": "CLOSED", "cuisine": "Japanese",
+      "address": "1400 Rue Bishop, Montréal", "latitude": 45.4975, "longitude": -73.5780,
+      "menu": [
+        { "id": "sb-1", "name": "Salmon maki", "description": "Eight pieces.", "price": 5.50, "originalPrice": 11.00, "status": "AVAILABLE" },
+        { "id": "sb-2", "name": "Miso soup", "description": "Tofu, seaweed and green onion.", "price": 2.00, "originalPrice": null, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Taqueria Peel", "owner": "taqueria", "status": "CLOSED", "cuisine": "Mexican",
+      "address": "1250 Rue Peel, Montréal", "latitude": 45.4995, "longitude": -73.5720,
+      "menu": [
+        { "id": "tp-1", "name": "Al pastor tacos", "description": "Three tacos with pineapple.", "price": 6.00, "originalPrice": 12.00, "status": "AVAILABLE" },
+        { "id": "tp-2", "name": "Churros", "description": "With chocolate sauce.", "price": 3.00, "originalPrice": 6.50, "status": "SOLD_OUT" }
+      ]
     }
   ]
 }
