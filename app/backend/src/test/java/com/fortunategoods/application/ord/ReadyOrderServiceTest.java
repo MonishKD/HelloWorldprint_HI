@@ -42,6 +42,7 @@ class ReadyOrderServiceTest {
         assertEquals("100", result.getOrderId());
         assertEquals(OrderStatus.READY, result.getStatus());
         assertEquals(OrderStatus.READY, order.getStatus());
+        assertNull(order.getCourierId());
         assertEquals(701L, result.getEventId());
         fails(DomainRuleViolation.Reason.CONFLICT);
 
@@ -98,6 +99,7 @@ class ReadyOrderServiceTest {
 
     private void nothingSaved() {
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
+        verifyNoInteractions(events);
     }
 
     private Order createOrder(OrderStatus status) {

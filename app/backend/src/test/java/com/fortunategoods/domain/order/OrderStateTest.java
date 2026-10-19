@@ -5,6 +5,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,31 @@ public class OrderStateTest{
     @Test
     void skippingStep(){
         assertThrows(IllegalTransitionException.class, () -> testOrder.markReady());
+        assertEquals(OrderStatus.PLACED, testOrder.getStatus());
+    }
+
+    @Test
+    void acceptedOrderCannotSkipPreparation(){
+        testOrder.accept();
+
+        assertThrows(IllegalTransitionException.class, testOrder::markReady);
+        assertEquals(OrderStatus.ACCEPTED, testOrder.getStatus());
+    }
+
+    @Test
+    void readyIsThePhaseTwoBoundary(){
+        testOrder.accept();
+        testOrder.startPreparing();
+        testOrder.markReady();
+
+        assertThrows(IllegalTransitionException.class, testOrder::accept);
+        assertThrows(IllegalTransitionException.class, testOrder::startPreparing);
+        assertThrows(IllegalTransitionException.class, testOrder::markReady);
+        assertThrows(IllegalTransitionException.class, testOrder::cancel);
+        assertThrows(IllegalTransitionException.class, () -> testOrder.reject("Sold out"));
+
+        assertEquals(OrderStatus.READY, testOrder.getStatus());
+        assertNull(testOrder.getCourierId());
     }
 
     @Test
