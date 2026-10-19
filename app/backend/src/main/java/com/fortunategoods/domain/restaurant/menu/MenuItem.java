@@ -1,5 +1,6 @@
 package com.fortunategoods.domain.restaurant.menu;
 
+import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import java.util.Objects;
 
@@ -88,6 +89,14 @@ public final class MenuItem {
     // Setter for status
     public void setStatus(MenuItemStatus status) {
         this.status = Objects.requireNonNull(status, "Status can not be null");
+    }
+
+    //change only if restaurant matches
+    public void changeAvailability(String staffRestoId, MenuItemStatus newStatus){
+        if (!restaurantId.equals(staffRestoId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "restaurant staff can only change their own menu items");
+        }
+        setStatus(newStatus);
     }
 
 }
