@@ -22,6 +22,7 @@ public class MenuService {
     private final RestaurantRepository restaurantRepository; // reads restaurants with their menu
     private final UserRepository userRepository;             // finds which restaurant a staff user works for
     private final MenuItemRepository menuItemRepository;
+
     // Spring gives us both repositories.
     public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository, MenuItemRepository menuItemRepository) {
         this.restaurantRepository = restaurantRepository;
@@ -53,28 +54,37 @@ public class MenuService {
         return RestaurantMenu.of(restaurant);
     }
 
-    public void updateItemAvailability(String userId, UserRole role, String itemId, MenuItemStatus newStat){
+    // Sets one menu item to available or sold out and returns the updated item (#89).
+    // Throws FORBIDDEN, INVALID or NOT_FOUND, and saves nothing when it throws: the save is the last line.
+    // restaurantId comes from the URL. The staff member's own restaurant comes from their account, never from the request.
+    public MenuItem updateItemAvailability(String userId, UserRole role, String restaurantId, String itemId, MenuItemStatus newStat){
         //verifying that request is valid with staff, ID and new stat
         if(role!=UserRole.RESTAURANT){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only staff can change item status");
         }
 
-        if(itemId==null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "invalid Item ID");
+        // Ids are database numbers, so anything else is an invalid request instead of a crash in the repository.
+        if(restaurantId==null || !restaurantId.matches("\\d{1,9}")){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Restaurant id is invalid");
+        }
+        if(itemId==null || !itemId.matches("\\d{1,9}")){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Item id is invalid");
         }
         if(newStat==null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "invalid new Status");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Status must be available or sold_out");
         }
 
         MenuItem item = menuItemRepository.findById(itemId);
-        if(item==null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "item not found");
+        // The item must exist AND be on the menu of the restaurant in the URL.
+        if(item==null || !item.getRestaurantId().equals(restaurantId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Item not found on this restaurant's menu");
         }
         //now checking if item belongs to right resto
-        String restaurantId = userRepository.findRestaurantIdByUserId(userId);
+        String staffRestaurantId = userRepository.findRestaurantIdByUserId(userId);
         //this function will verify that restaurant matches the item restaurant
-        item.changeAvailability(restaurantId,newStat);
+        item.changeAvailability(staffRestaurantId,newStat);
         //takes the new set status
         menuItemRepository.updateStatus(itemId, item.getStatus());
+        return item;
     }
 }

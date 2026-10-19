@@ -65,4 +65,8 @@ public class OrdModulePermissions {
     public static Set<UserRole> viewPlacedOrdersRoles(){
         return Set.of(UserRole.RESTAURANT);
     }
+
+    public static Set<UserRole> viewPreparationQueueRoles() {
+        return Set.of(UserRole.RESTAURANT);
+    }
 }
