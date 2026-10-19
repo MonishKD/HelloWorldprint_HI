@@ -1,0 +1,60 @@
+package com.fortunategoods.domain.order; //package before imports!
+
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.util.Comparator;
+import java.time.LocalDateTime;
+
+public class PreparationQueue {
+    private final String RestaurantID;
+
+    private record Entry(Order order, LocalDateTime timestamp) 
+    {
+    }
+
+    private final Queue<Entry> queue;
+
+
+    public PreparationQueue(String restaurantID) {
+        if (restaurantID == null || restaurantID.trim().isEmpty()) {
+            throw new IllegalArgumentException("Given restaurant ID to PreparationQueue constructor is null or empty! Fix this!");
+        }
+        this.RestaurantID = restaurantID;
+        queue = new PriorityQueue<>(Comparator.comparing(Entry::timestamp));
+    }
+
+    public Order peek() {
+        if (queue.isEmpty()) {
+            return null;
+        }
+        return queue.peek().order();
+    }
+
+
+    public Order dequeue() {
+        if (queue.isEmpty()) {
+            return null;
+        }
+        return queue.remove().order();
+    }
+
+    public Order remove(Order order) {
+        return queue.removeIf(entry -> entry.order().equals(order)) ? order : null;
+    }
+
+    public void enqueue(Order order, LocalDateTime timestamp) {
+        if (order == null) {
+            throw new IllegalArgumentException("Given order to queue is null!");
+        }
+
+        if (timestamp == null) {
+            throw new IllegalArgumentException("Timestamp added to the queue is null!");
+        }
+
+        if (!order.getRestaurantId().equals(RestaurantID)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Order does not belong to this current queue's restaurant");
+        }
+        queue.add(new Entry(order, timestamp));
+    }
+
+}

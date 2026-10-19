@@ -29,6 +29,7 @@ import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.Order;
 import java.util.List;
 
@@ -36,7 +37,8 @@ public class RejectOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final UserRepository users = mock(UserRepository.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users);
+    private final RegisterPreparationQueue preparationQueue = mock(RegisterPreparationQueue.class);
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users, preparationQueue);
 
     private Order order;
 

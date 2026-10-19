@@ -1,6 +1,9 @@
 # Compiled class files
 *.class
 
+app/frontend/node_modules/
+app/frontend/dist/
+
 # Build directories
 target/
 out/

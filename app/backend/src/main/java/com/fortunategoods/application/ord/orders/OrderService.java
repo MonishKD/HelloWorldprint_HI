@@ -12,6 +12,7 @@ import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.validation.OrderVerify;
+import com.fortunategoods.domain.order.PreparationQueue;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.UserRole;
@@ -19,6 +20,7 @@ import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+
 
 import jakarta.transaction.Transactional;
 
@@ -31,12 +33,15 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final OrderEventRepository orderEventRepo;
     private final UserRepository userRepo;
+    private final RegisterPreparationQueue preparationQueueRegistry;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
         this.userRepo = userRepo;
+        this.preparationQueueRegistry = preparationQueueRegistry;
+
     }
     
     @Transactional 
@@ -189,9 +194,15 @@ public class OrderService {
     }
 
     @Transactional 
-    public OrderServiceResult prepareOrder(String orderId){
+    public OrderServiceResult prepareOrder(String restaurantID, String orderId){
+        // check validity of IDs provided
+        Restaurant restaurant = restaurantRepo.findById(restaurantID);
+        OrderVerify.requireId(orderId, "Order ID");
+        // Find the order details from the order repo
+
         Order order = findOrder(orderId);
         OrderStatus previous = order.getStatus();
+        PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
 
         order.startPreparing();
 
