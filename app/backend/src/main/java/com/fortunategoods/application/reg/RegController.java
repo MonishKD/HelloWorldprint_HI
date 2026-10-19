@@ -1,19 +1,25 @@
 package com.fortunategoods.application.reg;
 
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 
 import com.fortunategoods.technical.security.AuthenticationService;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 /*  
 Login and logout orchestration for #62, against AuthenticationService (#28).
- This currently holds no HTTP route bindings and it never touches
- passwords, the database or the session itself: AuthenticationService does all of that.
+ This has now been refactored for step #65 too!
 */ 
-@Component
+@RestController
+@RequestMapping("/api/auth")
 public class RegController {
 
     private final AuthenticationService authenticationService;
@@ -22,12 +28,20 @@ public class RegController {
         this.authenticationService = authenticationService;
     }
 
-    // Logs in with a username or email and a password.
-    // Success: the outcome is SUCCESS and carries the user's role.
-    // Failure: the outcome is INVALID_INPUT (missing field) or INVALID_CREDENTIALS (wrong login),
-    // and no role is returned.
-    public LoginResult login(String usernameOrEmail, String password) {
-        if (isBlank(usernameOrEmail) || isBlank(password) || usernameOrEmail.isEmpty() || password.isEmpty()) {
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        LoginResult result = authenticate(request.usernameOrEmail(), request.password());
+        return switch (result.outcome()) {
+            case SUCCESS -> ResponseEntity.ok(new SessionResponse(result.role()));
+            case INVALID_INPUT -> error(HttpStatus.BAD_REQUEST, "INVALID_INPUT",
+                    "Username or email and password are required.");
+            case INVALID_CREDENTIALS -> error(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS",
+                    "Wrong username, email or password.");
+        };
+    }
+
+    private LoginResult authenticate(String usernameOrEmail, String password) {
+        if (isBlank(usernameOrEmail) || isBlank(password) || usernameOrEmail.length() > 255 || password.length() > 255) {
             return LoginResult.failure(LoginOutcome.INVALID_INPUT);
         }
         try {
@@ -39,15 +53,19 @@ public class RegController {
         }
     }
 
-    // Ends the session through AuthenticationService.logout(), which uses Spring Security's logout handler.
-    public LogoutResult logout() {
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout() {
         authenticationService.logout();
-        return new LogoutResult(LogoutOutcome.LOGGED_OUT);
+        return ResponseEntity.noContent().build();
     }
 
     private static boolean isBlank(String value) {
         return value == null || value.isBlank();
     }
+
+    private static ResponseEntity<ErrorResponse> error(HttpStatus status, String code, String message) {
+    return ResponseEntity.status(status).body(new ErrorResponse(code, message));
+    }       
 
     // Here are the enums that show off the "clear response outcomes" as mentioned in the task description on GitHub
     public enum LoginOutcome {
@@ -76,5 +94,19 @@ public class RegController {
     }
 
     public record LogoutResult(LogoutOutcome outcome) {
+    }
+
+    public record LoginRequest(String usernameOrEmail, String password) {
+    @Override
+    public String toString() {
+        return "LoginRequest[usernameOrEmail=" + usernameOrEmail + ", password=***]";
+        }
+    }
+
+    public record SessionResponse(UserRole role) {
+    }
+
+    // Placeholder: replace with the project's shared error shape.
+    public record ErrorResponse(String error, String message) {
     }
 }
