@@ -22,6 +22,7 @@ public class MenuService {
     private final RestaurantRepository restaurantRepository; // reads restaurants with their menu
     private final UserRepository userRepository;             // finds which restaurant a staff user works for
     private final MenuItemRepository menuItemRepository;
+
     // Spring gives us both repositories.
     public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository, MenuItemRepository menuItemRepository) {
         this.restaurantRepository = restaurantRepository;
