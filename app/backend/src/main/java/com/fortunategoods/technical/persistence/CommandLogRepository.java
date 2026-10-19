@@ -56,6 +56,17 @@ public class CommandLogRepository {
         return jdbc.query(sql, (row, rowNumber) -> toCommandLog(row), count);
     }
 
+    // Returns the latest entries of one user (at most count of them), oldest first, for the console feed (#140).
+    // beforeId is for "load more": only entries older than that id. null means start from the newest.
+    public List<CommandLog> findLatestForUser(long userId, int count, Long beforeId) {
+        if (beforeId == null) {
+            String sql = "SELECT * FROM (SELECT * FROM command_log WHERE user_id = ? ORDER BY id DESC LIMIT ?) AS latest ORDER BY id";
+            return jdbc.query(sql, (row, rowNumber) -> toCommandLog(row), userId, count);
+        }
+        String sql = "SELECT * FROM (SELECT * FROM command_log WHERE user_id = ? AND id < ? ORDER BY id DESC LIMIT ?) AS latest ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toCommandLog(row), userId, beforeId, count);
+    }
+
     // Turns one row of the command_log table into a CommandLog.
     // user_id and event_id can be empty, so we check first. getLong would give 0 instead of null.
     private CommandLog toCommandLog(ResultSet row) throws SQLException {
@@ -70,6 +81,8 @@ public class CommandLogRepository {
         }
 
         return new CommandLog(
+                row.getLong("id"),
+                row.getTimestamp("created_at").toLocalDateTime(),
                 row.getString("command_name"),
                 session,
                 CommandLog.Result.valueOf(row.getString("result")),
