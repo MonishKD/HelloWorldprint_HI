@@ -29,7 +29,6 @@ import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
-import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.Order;
 import java.util.List;
 

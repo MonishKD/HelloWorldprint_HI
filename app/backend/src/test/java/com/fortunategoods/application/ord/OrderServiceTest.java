@@ -33,7 +33,6 @@ import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
-import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
