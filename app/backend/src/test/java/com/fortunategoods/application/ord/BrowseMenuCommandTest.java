@@ -24,7 +24,7 @@ import com.fortunategoods.technical.security.SessionValidator;
 class BrowseMenuCommandTest {
 
     // Fake MenuService: returns an empty menu for restaurant "1", nothing else is called.
-    private final MenuService menuService = new MenuService(null, null) {
+    private final MenuService menuService = new MenuService(null, null, null) {
         @Override
         public RestaurantMenu browseMenu(String restaurantId, String userId, UserRole role) {
             return new RestaurantMenu(restaurantId, "Cafe", RestaurantStatus.OPEN, List.of());

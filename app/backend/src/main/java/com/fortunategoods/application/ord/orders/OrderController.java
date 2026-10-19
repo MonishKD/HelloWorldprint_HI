@@ -12,6 +12,8 @@ import com.fortunategoods.application.ord.orders.rejection.RejectOrderReqJSON;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
 import com.fortunategoods.application.ord.orders.rejection.RejectOrderCommand;
+import com.fortunategoods.application.ord.orders.ready.ReadyOrderCommand;
+import com.fortunategoods.application.ord.orders.ready.ReadyOrderResponse;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
@@ -103,6 +105,21 @@ public class OrderController {
         CommandSuccess<RejectOrderResponse> result = invoker.process(command, session);
 
         // Confirm the reject request to frontend
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{orderId}/ready")
+    public ResponseEntity<CommandSuccess<ReadyOrderResponse>> markOrderReady(@PathVariable("orderId") String orderId) {
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        ReadyOrderCommand command = new ReadyOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<ReadyOrderResponse> result = invoker.process(command, session);
+
+        // Confirm the ready request to frontend
         return ResponseEntity.ok(result);
     }
 }
