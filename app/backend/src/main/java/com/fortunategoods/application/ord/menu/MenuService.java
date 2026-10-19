@@ -23,9 +23,10 @@ public class MenuService {
     private final UserRepository userRepository;             // finds which restaurant a staff user works for
     private final MenuItemRepository menuItemRepository;
     // Spring gives us both repositories.
-    public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository) {
+    public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository, MenuItemRepository menuItemRepository) {
         this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
+        this.menuItemRepository = menuItemRepository;
     }
 
     // Returns the menu of this restaurant, or throws INVALID, FORBIDDEN or NOT_FOUND.
@@ -52,7 +53,7 @@ public class MenuService {
         return RestaurantMenu.of(restaurant);
     }
 
-    public void updateItemStatus(String userId, UserRole role, String itemId, MenuItemStatus newStat){
+    public void updateItemAvailability(String userId, UserRole role, String itemId, MenuItemStatus newStat){
         //verifying that request is valid with staff, ID and new stat
         if(role!=UserRole.RESTAURANT){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only staff can change item status");
