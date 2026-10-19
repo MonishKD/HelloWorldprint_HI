@@ -66,7 +66,7 @@ class ReadyOrderServiceTest {
     void customerIsForbidden() {
         var error = assertThrows(DomainRuleViolation.class, () -> service.markAsReadyOrder("7", UserRole.CUSTOMER, "100"));
         assertEquals(DomainRuleViolation.Reason.FORBIDDEN, error.getReason());
-        verifyNoInteractions(orders, events, users);
+        verifyNoInteractions(orders, events, users, mock(RegisterPreparationQueue.class));
     }
 
     @Test

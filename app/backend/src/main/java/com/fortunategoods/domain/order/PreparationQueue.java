@@ -10,11 +10,21 @@ import java.util.List;
 public class PreparationQueue {
     private final String RestaurantID;
 
-    private record Entry(Order order, LocalDateTime timestamp, long seq)  
-    {
+    private record Entry(Order order, LocalDateTime timestamp, long seq){}
+
+    // First in, first out: the oldest timestamp goes first. If two have the same timestamp, the lower seq goes first.
+    private static class FifoOrder implements Comparator<Entry> {
+        @Override
+        public int compare(Entry first, Entry second) {
+            int byTime = first.timestamp().compareTo(second.timestamp());
+            if (byTime != 0) {
+                return byTime;
+            }
+            return Long.compare(first.seq(), second.seq());
+        }
     }
 
-    private static final Comparator<Entry> FIFO = Comparator.comparing(Entry::timestamp).thenComparingLong(Entry::seq);
+    private static final Comparator<Entry> FIFO = new FifoOrder();
 
     // Queue for the restaurant will be initialized as soon as it is created for that Restaurant
     private final Queue<Entry> queue = new PriorityQueue<>(FIFO);
