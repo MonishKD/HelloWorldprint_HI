@@ -1,4 +1,5 @@
 package com.fortunategoods.application.ord.orders;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -143,7 +144,8 @@ public class OrderService {
         // verify validity of staffId formatting
         OrderVerify.requireId(staffId, "Staff ID");
 
-        // Find order and restaurant
+        // Find and verify order and restaurant
+        OrderVerify.requireId(orderId, "Order ID");
         Order order = findOrder(orderId);
         String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
 
@@ -159,9 +161,23 @@ public class OrderService {
         //you need this for the saving step cause it'll compare it before saving the transaction
         OrderStatus previous = order.getStatus();
 
+
+        PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
+
+       
         order.accept();
 
-        return saveTransition(orderId,order,previous);
+        OrderServiceResult saving;
+        synchronized(queue){
+            saving = saveTransition(orderId,order,previous);
+            List<OrderEvent> eventList = orderEventRepo.findByOrderId(orderId);
+            OrderEvent properEvent = eventList.get(eventList.size()- 1);
+            if (properEvent.getNewStatus() != OrderStatus.ACCEPTED || !(properEvent.getId()).equals(String.valueOf(saving.getEventId()))){
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order is not in the status ACCEPTED or event ID does not match the newest saved event");
+            }
+            queue.enqueue(order, properEvent.getTimestamp());
+        }
+        return saving;
     }
 
     @Transactional
@@ -203,8 +219,8 @@ public class OrderService {
         OrderStatus previous = order.getStatus();
         PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
         synchronized (queue) {
-            Order peeked = queue.peek();
             order.startPreparing();
+            Order peeked = queue.peek();
 
             //now, we implement the guard!
             if (peeked == null || !(orderId.equals(peeked.getId()))) {
@@ -213,10 +229,8 @@ public class OrderService {
 
             OrderServiceResult result = saveTransition(orderId,order,previous);
             //run result first in case there is a conflict and if there is, then the queue is never dequeued
-            Order dequeued = queue.dequeue(); //only runs after a successful save! order only leaves when database change happens
-            if (!(orderId.equals(dequeued.getId()))) {
-                throw new IllegalArgumentException("Order dequeued doesn't match prepared order!");
-            }
+            queue.dequeue(); //only runs after a successful save! order only leaves when database change happens
+    
 
             return result; //still need to return an OrderServiceResult!
         }
