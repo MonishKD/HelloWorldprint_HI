@@ -5,15 +5,20 @@ import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.technical.security.SessionValidator;
 
+import java.net.URI;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /*
-    REST endpoint for a restaurant to mark one of its menu items available or sold out (#89).
+    REST endpoints for a restaurant to change its own menu:
+      mark an item available or sold out, and add, edit or remove items.
     @RestController: Spring sends every request that matches the paths below to this class,
     and turns what the method returns into JSON.
     Errors (400 invalid, 403 forbidden, 404 not found) are turned into responses by OrderExceptionHandler.
@@ -48,6 +53,48 @@ public class MenuController {
         // 2. let the invoker check and run it
         UpdateItemAvailabilityCommand command = new UpdateItemAvailabilityCommand(menuService, session, restaurantId, itemId, req.toStatus());
         CommandSuccess<UpdateItemAvailabilityResponse> result = invoker.process(command, session);
+
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{restaurantId}/menu")
+    public ResponseEntity<CommandSuccess<MenuItemResponse>> addMenuItem(
+            @PathVariable("restaurantId") String restaurantId,
+            @RequestBody MenuItemReqJSON req) {
+
+        Session session = sessionValidator.currentSession();
+
+        AddMenuItemCommand command = new AddMenuItemCommand(menuService, session, restaurantId, req.toInput());
+        CommandSuccess<MenuItemResponse> result = invoker.process(command, session);
+
+        URI uri = URI.create("/api/restaurants/" + restaurantId + "/menu/" + result.getData().id());
+        return ResponseEntity.created(uri).body(result);
+    }
+
+    @PatchMapping("/{restaurantId}/menu/{itemId}")
+    public ResponseEntity<CommandSuccess<MenuItemResponse>> editMenuItem(
+            @PathVariable("restaurantId") String restaurantId,
+            @PathVariable("itemId") String itemId,
+            @RequestBody MenuItemReqJSON req) {
+
+        Session session = sessionValidator.currentSession();
+
+        EditMenuItemCommand command = new EditMenuItemCommand(menuService, session, restaurantId, itemId, req.toInput());
+        CommandSuccess<MenuItemResponse> result = invoker.process(command, session);
+
+        return ResponseEntity.ok(result);
+    }
+
+    // Hidden, not deleted, so past orders stay intact.
+    @DeleteMapping("/{restaurantId}/menu/{itemId}")
+    public ResponseEntity<CommandSuccess<MenuItemResponse>> removeMenuItem(
+            @PathVariable("restaurantId") String restaurantId,
+            @PathVariable("itemId") String itemId) {
+
+        Session session = sessionValidator.currentSession();
+
+        RemoveMenuItemCommand command = new RemoveMenuItemCommand(menuService, session, restaurantId, itemId);
+        CommandSuccess<MenuItemResponse> result = invoker.process(command, session);
 
         return ResponseEntity.ok(result);
     }
