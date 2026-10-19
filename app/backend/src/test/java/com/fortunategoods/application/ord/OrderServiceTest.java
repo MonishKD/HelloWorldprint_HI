@@ -24,6 +24,7 @@ import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
@@ -32,6 +33,7 @@ import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
@@ -40,6 +42,7 @@ public class OrderServiceTest {
     private OrderRepository orders;
     private OrderEventRepository events;
     private OrderService service;
+    private final RegisterPreparationQueue preparationQueue = mock(RegisterPreparationQueue.class);
 
     @BeforeEach
     void setup() {
@@ -47,7 +50,7 @@ public class OrderServiceTest {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(restaurants, orders, events, mock(UserRepository.class));
+        service = new OrderService(restaurants, orders, events, mock(UserRepository.class), preparationQueue);
 
         givenRestaurant(RestaurantStatus.OPEN, MenuItemStatus.AVAILABLE);
     }

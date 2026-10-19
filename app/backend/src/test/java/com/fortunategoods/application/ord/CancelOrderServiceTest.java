@@ -20,6 +20,7 @@ import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
+import com.fortunategoods.application.ord.orders.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.state.IllegalTransitionException;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
@@ -34,13 +35,14 @@ public class CancelOrderServiceTest {
     private OrderEventRepository events;
     private OrderService service;
     private Order order;
+    private final RegisterPreparationQueue preparationQueue = mock(RegisterPreparationQueue.class);
 
     @BeforeEach
     void setup() {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class));
+        service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class), preparationQueue);
 
         order = createOrder(OrderStatus.PLACED);
         when(orders.findById("100")).thenReturn(order);

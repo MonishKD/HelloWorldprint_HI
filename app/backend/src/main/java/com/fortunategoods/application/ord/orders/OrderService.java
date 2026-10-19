@@ -1,4 +1,5 @@
 package com.fortunategoods.application.ord.orders;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.validation.OrderVerify;
+import com.fortunategoods.domain.order.PreparationQueue;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.UserRole;
@@ -19,6 +21,7 @@ import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+
 
 import jakarta.transaction.Transactional;
 
@@ -31,12 +34,15 @@ public class OrderService {
     private final OrderRepository orderRepo;
     private final OrderEventRepository orderEventRepo;
     private final UserRepository userRepo;
+    private final RegisterPreparationQueue preparationQueueRegistry;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
         this.userRepo = userRepo;
+        this.preparationQueueRegistry = preparationQueueRegistry;
+
     }
     
     @Transactional 
@@ -138,7 +144,8 @@ public class OrderService {
         // verify validity of staffId formatting
         OrderVerify.requireId(staffId, "Staff ID");
 
-        // Find order and restaurant
+        // Find and verify order and restaurant
+        OrderVerify.requireId(orderId, "Order ID");
         Order order = findOrder(orderId);
         String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
 
@@ -154,9 +161,23 @@ public class OrderService {
         //you need this for the saving step cause it'll compare it before saving the transaction
         OrderStatus previous = order.getStatus();
 
+
+        PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
+
+       
         order.accept();
 
-        return saveTransition(orderId,order,previous);
+        OrderServiceResult saving;
+        synchronized(queue){
+            saving = saveTransition(orderId,order,previous);
+            List<OrderEvent> eventList = orderEventRepo.findByOrderId(orderId);
+            OrderEvent properEvent = eventList.get(eventList.size()- 1);
+            if (properEvent.getNewStatus() != OrderStatus.ACCEPTED || !(properEvent.getId()).equals(String.valueOf(saving.getEventId()))){
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order is not in the status ACCEPTED or event ID does not match the newest saved event");
+            }
+            queue.enqueue(order, properEvent.getTimestamp());
+        }
+        return saving;
     }
 
     @Transactional
@@ -188,14 +209,38 @@ public class OrderService {
         return saveTransition(orderId,order,previous);
     }
 
-    @Transactional 
-    public OrderServiceResult prepareOrder(String orderId){
+    @Transactional
+    public OrderServiceResult prepareOrder(String staffId, UserRole role, String orderId) {
+        if (role != UserRole.RESTAURANT) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,
+                    "Restaurant staff should be preparing the order, not any other role!");
+        }
+        OrderVerify.requireId(staffId, "Staff ID");
+        OrderVerify.requireId(orderId, "Order ID");
+
         Order order = findOrder(orderId);
-        OrderStatus previous = order.getStatus();
+        String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
+        if (!order.getRestaurantId().equals(restaurantId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,
+                    "Cannot prepare an order from another restaurant.");
+        }
 
-        order.startPreparing();
+        PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
+        synchronized (queue) {
+            // FIFO guard first, before any state change
+            Order next = queue.peek();
+            if (next == null || !orderId.equals(next.getId())) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,
+                        "Order does not match the next order in the queue for this restaurant!");
+            }
 
-        return saveTransition(orderId,order,previous);
+            OrderStatus previous = order.getStatus();
+            order.startPreparing();
+
+            OrderServiceResult result = saveTransition(orderId, order, previous);
+            queue.dequeue(); // only after a successful save
+            return result;
+        }
     }
 
     @Transactional 
