@@ -1,8 +1,5 @@
 package com.fortunategoods.application.ord;
 
-import com.fortunategoods.application.ord.execution.CommandInvoker;
-import com.fortunategoods.application.ord.orders.pending.RestaurantOrderController;
-import com.fortunategoods.application.ord.orders.pending.RestaurantOrderService;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -22,12 +19,15 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.orders.RestaurantOrderController;
+import com.fortunategoods.application.ord.orders.RestaurantOrderService;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.security.SecurityConfig;

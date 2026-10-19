@@ -1,19 +1,5 @@
 package com.fortunategoods.application.ord.orders;
 
-import com.fortunategoods.application.ord.execution.CommandInvoker;
-import com.fortunategoods.application.ord.execution.CommandSuccess;
-import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
-import com.fortunategoods.application.ord.orders.rejection.RejectOrderResponse;
-import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
-import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
-import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
-import com.fortunategoods.application.ord.orders.placement.PlaceOrderReqJSON;
-import com.fortunategoods.application.ord.orders.rejection.RejectOrderReqJSON;
-import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
-import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
-import com.fortunategoods.application.ord.orders.rejection.RejectOrderCommand;
-import com.fortunategoods.application.ord.orders.ready.ReadyOrderCommand;
-import com.fortunategoods.application.ord.orders.ready.ReadyOrderResponse;
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
@@ -23,6 +9,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
+import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
+import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
+import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderReqJSON;
+import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
+import com.fortunategoods.application.ord.orders.preparation.PrepareOrderResponse;
+import com.fortunategoods.application.ord.orders.preparation.PreparingOrderCommand;
+import com.fortunategoods.application.ord.orders.ready.ReadyOrderCommand;
+import com.fortunategoods.application.ord.orders.ready.ReadyOrderResponse;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderCommand;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderReqJSON;
+import com.fortunategoods.application.ord.orders.rejection.RejectOrderResponse;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.technical.security.SessionValidator;
 
@@ -120,6 +122,21 @@ public class OrderController {
         CommandSuccess<ReadyOrderResponse> result = invoker.process(command, session);
 
         // Confirm the ready request to frontend
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/{orderId}/prepare")
+    public ResponseEntity<CommandSuccess<PrepareOrderResponse>> prepareOrder(@PathVariable("orderId") String orderId) {
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        PreparingOrderCommand command = new PreparingOrderCommand(orderService, session, orderId);
+
+        // Process command and store success result
+        CommandSuccess<PrepareOrderResponse> result = invoker.process(command, session);
+
+        // Confirm and send the request to frontend
         return ResponseEntity.ok(result);
     }
 }

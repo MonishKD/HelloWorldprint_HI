@@ -3,26 +3,39 @@ package com.fortunategoods.application.ord;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.fortunategoods.application.ord.orders.OrderService;
-import com.fortunategoods.domain.order.*;
+import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
+import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrderEvent;
+import com.fortunategoods.domain.order.OrderLine;
+import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
-import com.fortunategoods.technical.persistence.*;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import com.fortunategoods.technical.persistence.OrderEventRepository;
+import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
 
 class ReadyOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final UserRepository users = mock(UserRepository.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users);
-
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users, mock(RegisterPreparationQueue.class));
     private Order order;
 
     @BeforeEach

@@ -14,12 +14,10 @@ public class PreparationQueue {
     {
     }
 
-    private static final Comparator<Entry> FIFO =
-        Comparator.comparing(Entry::timestamp).thenComparingLong(Entry::seq);
+    private static final Comparator<Entry> FIFO = Comparator.comparing(Entry::timestamp).thenComparingLong(Entry::seq);
 
-    private long nextSeq = 0;
-
-    private final Queue<Entry> queue;
+    // Queue for the restaurant will be initialized as soon as it is created for that Restaurant
+    private final Queue<Entry> queue = new PriorityQueue<>(FIFO);
 
 
     public PreparationQueue(String restaurantId) {
@@ -27,54 +25,72 @@ public class PreparationQueue {
             throw new IllegalArgumentException("Given restaurant ID to PreparationQueue constructor is null or empty! Fix this!");
         }
         this.RestaurantID = restaurantId;
-        queue = new PriorityQueue<>(FIFO);
     }
 
     //returns null when empty
     public synchronized Order peek() {
-        if (queue.isEmpty()) {
-            return null;
-        }
-        return queue.peek().order();
+        Entry e = queue.peek();
+        return e == null ? null: e.order();
     }
 
     //returns null when empty
     public synchronized Order dequeue() {
-        if (queue.isEmpty()) {
-            return null;
-        }
-        return queue.remove().order();
+        Entry e = queue.poll(); // won't throw an exception
+        return e == null? null: e.order();
     }
 
     public synchronized Order remove(Order order) {
-        return queue.removeIf(entry -> entry.order().equals(order)) ? order : null;
+        if (order == null || order.getId() == null) {
+            return null;
+        }
+        // Find first entry specified in the method, or else return null if not found
+        Entry found = queue.stream().filter(entry -> order.getId().equals(entry.order().getId())).findFirst().orElse(null);
+
+        if (found == null) {
+            return null;
+        }
+        queue.remove(found);
+        return found.order();
     }
 
-    public synchronized void enqueue(Order order, LocalDateTime timestamp) {
-        if (order == null) {
+    public synchronized void enqueue(Order order, LocalDateTime timestamp, long acceptedEventId) {
+        if (order == null || order.getId() == null || order.getId().isBlank()) {
             throw new IllegalArgumentException("Given order to queue is null!");
         }
 
-        if (timestamp == null) {
+        if (timestamp == null || acceptedEventId <= 0) {
             throw new IllegalArgumentException("Timestamp added to the queue is null!");
         }
 
         if (!order.getRestaurantId().equals(RestaurantID)) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Order does not belong to this current queue's restaurant");
         }
-        queue.add(new Entry(order, timestamp, nextSeq++));
+
+        // Check if order is in the ACCEPTED state
+        if (order.getStatus() != OrderStatus.ACCEPTED){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only ACCEPTED orders can be placed in the preparation queue");
+        }
+
+        // Check if order is already in queue
+        boolean alreadyInQueue = queue.stream().anyMatch(entry -> order.getId().equals(entry.order().getId()));
+
+        if (!alreadyInQueue){
+            queue.add(new Entry(order, timestamp, acceptedEventId));
+        }
+
     }
 
     public record QueueSlot(int position, String orderId, OrderStatus status) {}
 
-public synchronized List<QueueSlot> snapshot() {
-    List<Entry> sorted = queue.stream().sorted(FIFO).toList();
-    List<QueueSlot> slots = new ArrayList<>(sorted.size());
-    for (int i = 0; i < sorted.size(); i++) {
-        Order o = sorted.get(i).order();
-        slots.add(new QueueSlot(i + 1, o.getId(), o.getStatus()));
+    public synchronized List<QueueSlot> snapshot() {
+        List<Entry> sorted = queue.stream().sorted(FIFO).toList();
+        List<QueueSlot> slots = new ArrayList<>(); // removed size ArrayLists grow
+
+        for (int i = 0; i < sorted.size(); i++) {
+            Order o = sorted.get(i).order();
+            slots.add(new QueueSlot(i + 1, o.getId(), o.getStatus()));
+        }
+        return List.copyOf(slots);
     }
-    return List.copyOf(slots);
-}
 
 }
