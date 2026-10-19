@@ -7,12 +7,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 import org.junit.jupiter.api.Test;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.technical.persistence.MenuItemRepository;
 
 class MenuServiceTest {
     // Fake repositories: no database, restaurant "1" exists and user "8" works for it.
@@ -36,7 +38,7 @@ class MenuServiceTest {
         }
     };
 
-    private final MenuService menuService = new MenuService(restaurants, users);
+    private final MenuService menuService = new MenuService(restaurants, users, mock(MenuItemRepository.class));
     // The tests below check that the MenuService behaves correctly for different users and restaurants, including access control and error handling.
     @Test
     void customerSeesItemsWithStatusAndPrice() {

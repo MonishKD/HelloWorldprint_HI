@@ -1,13 +1,16 @@
 package com.fortunategoods.application.ord.menu;
 
+import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.menu.RestaurantMenu;
 import org.springframework.stereotype.Service;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.technical.persistence.MenuItemRepository;
 
 /*
     * This service is used to browse a restaurant's menu. It is used by the frontend to display the menu to the user.
@@ -18,11 +21,12 @@ public class MenuService {
 
     private final RestaurantRepository restaurantRepository; // reads restaurants with their menu
     private final UserRepository userRepository;             // finds which restaurant a staff user works for
-
+    private final MenuItemRepository menuItemRepository;
     // Spring gives us both repositories.
-    public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository) {
+    public MenuService(RestaurantRepository restaurantRepository, UserRepository userRepository, MenuItemRepository menuItemRepository) {
         this.restaurantRepository = restaurantRepository;
         this.userRepository = userRepository;
+        this.menuItemRepository = menuItemRepository;
     }
 
     // Returns the menu of this restaurant, or throws INVALID, FORBIDDEN or NOT_FOUND.
@@ -47,5 +51,30 @@ public class MenuService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Restaurant not found");
         }
         return RestaurantMenu.of(restaurant);
+    }
+
+    public void updateItemAvailability(String userId, UserRole role, String itemId, MenuItemStatus newStat){
+        //verifying that request is valid with staff, ID and new stat
+        if(role!=UserRole.RESTAURANT){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only staff can change item status");
+        }
+
+        if(itemId==null){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "invalid Item ID");
+        }
+        if(newStat==null){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "invalid new Status");
+        }
+
+        MenuItem item = menuItemRepository.findById(itemId);
+        if(item==null){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "item not found");
+        }
+        //now checking if item belongs to right resto
+        String restaurantId = userRepository.findRestaurantIdByUserId(userId);
+        //this function will verify that restaurant matches the item restaurant
+        item.changeAvailability(restaurantId,newStat);
+        //takes the new set status
+        menuItemRepository.updateStatus(itemId, item.getStatus());
     }
 }

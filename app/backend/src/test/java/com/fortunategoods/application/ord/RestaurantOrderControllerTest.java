@@ -38,7 +38,10 @@ import com.fortunategoods.technical.security.session.SpringSecuritySessionValida
 
 @WebMvcTest(
     controllers = RestaurantOrderController.class,
-    properties = "app.cors.allowed-origin=http://localhost:5173"
+    properties = {
+        "app.cors.allowed-origin=http://localhost:5173",
+        "spring.application.name=fortunategoods-test"
+    }
 )
 @Import({
     SecurityConfig.class, SecurityErrorResponses.class,

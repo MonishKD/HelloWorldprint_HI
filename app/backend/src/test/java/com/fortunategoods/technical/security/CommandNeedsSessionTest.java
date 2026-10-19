@@ -17,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.context.request.*;
 
-import com.fortunategoods.application.ord.*;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.user.*;
 import com.fortunategoods.technical.persistence.*;

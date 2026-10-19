@@ -244,13 +244,31 @@ public class OrderService {
     }
 
     @Transactional 
-    public OrderServiceResult markAsReadyOrder(String orderId){
+    public OrderServiceResult markAsReadyOrder(String staffId, UserRole role, String orderId){
+        if (role != UserRole.RESTAURANT){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only restaurant staff can mark orders ready");
+        }
+        // verify validity of staffId formatting
+        OrderVerify.requireId(staffId, "Staff ID");
+
+        // Validate and get the order using the id
         Order order = findOrder(orderId);
+        String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
+        // Does order's restaurant match the restaurant trying to mark the order as prepared
+        if (!order.getRestaurantId().equals(restaurantId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Cannot mark an order from another restaurant as ready.");
+        }
+
+        // Check if order has been prepared
+        if (order.getStatus() != OrderStatus.PREPARING){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only preparing orders can be marked ready");
+        }
+
         OrderStatus previous = order.getStatus();
 
         order.markReady();
 
-        return saveTransition(orderId,order,previous);
+        return saveTransition(orderId, order, previous);
     }
     //could refactor now that we have the saveTransaction but its fine like this TBH
     @Transactional

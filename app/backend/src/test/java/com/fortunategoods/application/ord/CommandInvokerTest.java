@@ -34,6 +34,7 @@ import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.MenuItemRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.SessionValidator;
 
@@ -158,7 +159,7 @@ class CommandInvokerTest {
         // Staff user 8 belongs to restaurant 1.
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
 
-        MenuService realMenuService = new MenuService(restaurants, users);
+        MenuService realMenuService = new MenuService(restaurants, users, mock(MenuItemRepository.class));
 
         // Staff requests restaurant 2.
         BrowseMenuCommand command = new BrowseMenuCommand(realMenuService, staff, "2");
