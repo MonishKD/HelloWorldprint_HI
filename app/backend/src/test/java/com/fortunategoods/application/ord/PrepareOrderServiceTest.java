@@ -97,6 +97,22 @@ class PrepareOrderServiceTest {
         assertEquals(0, queue.snapshot().size());
     }
 
+    @Test
+    void preparingOrderCannotStartAgain() {
+        order.startPreparing();
+
+        DomainRuleViolation error = assertThrows(
+            DomainRuleViolation.class,
+            () -> service.prepareOrder("8", UserRole.RESTAURANT, "100")
+        );
+
+        assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+        assertEquals("Only accepted orders can enter preparation", error.getMessage());
+        assertEquals(OrderStatus.PREPARING, order.getStatus());
+        verifyNoInteractions(queues, events);
+        verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
+    }
+
     private void assertFifoRefusal() {
         DomainRuleViolation error = assertThrows(
             DomainRuleViolation.class,

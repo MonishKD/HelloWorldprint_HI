@@ -138,14 +138,10 @@ public class OrderService {
     public OrderServiceResult acceptOrder(String staffId, UserRole role, String orderId){
         Order order = findStaffOrder(staffId, role, orderId);
 
-        // Check if order has been placed
-        if (order.getStatus() != OrderStatus.PLACED){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not accept order as it was not in the status PLACED");
-        }
         //you need this for the saving step cause it'll compare it before saving the transaction
         OrderStatus previous = order.getStatus();
 
-        order.accept();
+        order.acceptIncoming();
 
         return saveTransition(orderId, order, previous);
     }
@@ -167,14 +163,10 @@ public class OrderService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Cannot reject an order from another restaurant.");
         }
 
-        // Check if order has been placed
-        if (order.getStatus() != OrderStatus.PLACED){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not reject order as it was not in the status PLACED");
-        }
         //you need this for the saving step cause it'll compare it before saving the transaction
         OrderStatus previous = order.getStatus();
 
-        order.reject(reason);
+        order.rejectIncoming(reason);
 
         return saveTransition(orderId,order,previous);
     }
@@ -182,10 +174,7 @@ public class OrderService {
     @Transactional
     public OrderServiceResult prepareOrder(String staffId, UserRole role, String orderId) {
         Order order = findStaffOrder(staffId, role, orderId);
-        // Cannot prepare an order that isn't ACCEPTED
-        if (order.getStatus() != OrderStatus.ACCEPTED) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only accepted orders can enter preparation");
-        }
+        order.requireAcceptedForPreparation();
 
         PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
         // Check if the order we are trying to prepare is the next one in the queue
@@ -215,14 +204,9 @@ public class OrderService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Cannot mark an order from another restaurant as ready.");
         }
 
-        // Check if order has been prepared
-        if (order.getStatus() != OrderStatus.PREPARING){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only preparing orders can be marked ready");
-        }
-
         OrderStatus previous = order.getStatus();
 
-        order.markReady();
+        order.markReadyFromPreparation();
 
         return saveTransition(orderId, order, previous);
     }
