@@ -5,6 +5,7 @@ import com.fortunategoods.application.ord.execution.CommandSuccess;
 import java.util.List;
 import java.util.Set;
 
+import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.restaurant.RestaurantSummary;
 import com.fortunategoods.domain.user.UserRole;
@@ -14,9 +15,11 @@ import com.fortunategoods.domain.user.UserRole;
 public final class BrowseRestaurantsCommand implements Command<List<RestaurantSummary>> {
 
     private final RestaurantService restaurantService; // receiver: does the real work
+    private final Session session;
 
-    public BrowseRestaurantsCommand(RestaurantService restaurantService) {
+    public BrowseRestaurantsCommand(RestaurantService restaurantService, Session session) {
         this.restaurantService = restaurantService;
+        this.session = session;
     }
 
     // Roles allowed to see the list (CUSTOMER). The invoker checks this before execute().
@@ -28,7 +31,7 @@ public final class BrowseRestaurantsCommand implements Command<List<RestaurantSu
     // Only runs after the invoker's checks pass. Asks RestaurantService for the list and wraps it in a success result.
     @Override
     public CommandSuccess<List<RestaurantSummary>> execute() {
-        List<RestaurantSummary> restaurants = restaurantService.browseRestaurants();
+        List<RestaurantSummary> restaurants = restaurantService.browseRestaurants(String.valueOf(session.getUserID()), session.getRole());
         return CommandSuccess.success(restaurants, restaurants.size() + " restaurants loaded");
     }
 }

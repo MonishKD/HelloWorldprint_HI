@@ -1,0 +1,64 @@
+@startuml RestaurantControllerVersionCOMMAND
+
+class RestaurantController {
+
+}
+CommandInvoker "1" <-down- RestaurantController: calls
+
+note "The Controller has methods that will call the \nCommandInvoker by creating a new Command, with \nthe information from the request of the REST Endpoints" as N1
+N1 -down- RestaurantController
+'Command, CommandInvoker, CommandLog
+class CommandInvoker {
+    - sessionValidator: SessionValidator
+    - commandLogRepo: CommandLogRepository
+    + process<T>(command: Command<T>, userSession: Session): CommandSuccess<T>
+}
+note "process(...) will use the session validator to validate the user's session, \nand check the user's roles against the command's permitted roles, and it will \nlog the result (success or failure) of the command into the command log repository" as N2
+N2 -down- CommandInvoker
+
+CommandInvoker .down.> Command : executes
+interface Command <<interface>> {
+    + {abstract} validRoles(): Set<UserRole>
+    + {abstract} execute(): CommandSuccess<T>
+}
+
+note left of Command
+    - validRoles() will return a set of valid user roles under which
+    the command is allowed to execute.
+    - execute() delegates the responsibility of the command to RestaurantService
+    and returns CommandSuccess<T>, where T is the response type associated 
+    with the concrete command being executed.
+end note
+
+RestaurantController ..> ConcreteCommands : creates
+rectangle ConcreteCommands {
+    class BrowseRestaurantsCommand{
+        - session: Session
+        - restaurantService: RestaurantService
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class SetRestaurantStatusCommand{
+        - session: Session
+        - service: RestaurantService
+        - restaurantId: String
+        - requestedStatus: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+}
+
+Command <|.. BrowseRestaurantsCommand
+Command <|.. SetRestaurantStatusCommand
+
+RestaurantService <.up. BrowseRestaurantsCommand
+RestaurantService <.up. SetRestaurantStatusCommand
+
+class RestaurantService {
+    + browseRestaurants(userId: String, role: UserRole): List<RestaurantSummary>
+    + setRestaurantStatus(staffId: String, role: UserRole, restaurantId: String, status: RestaurantStatus): Restaurant
+}
+
+@enduml

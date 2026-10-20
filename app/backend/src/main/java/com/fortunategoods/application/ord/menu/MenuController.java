@@ -3,12 +3,14 @@ package com.fortunategoods.application.ord.menu;
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.reg.Session;
+import com.fortunategoods.domain.restaurant.menu.RestaurantMenu;
 import com.fortunategoods.technical.security.SessionValidator;
 
 import java.net.URI;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +38,23 @@ public class MenuController {
         this.invoker = invoker;
         this.menuService = menuService;
         this.sessionValidator = sessionValidator;
+    }
+
+    // API Endpoint for one restaurant's menu: the restaurant's status and each item's name, price and availability.
+    // Customers see any menu, staff only their own. Bad id: 400, unknown restaurant: 404 (OrderExceptionHandler).
+    @GetMapping("/{restaurantId}/menu")
+    public ResponseEntity<CommandSuccess<RestaurantMenu>> browseMenu(@PathVariable("restaurantId") String restaurantId) {
+        // Get current session (who is asking comes from the session, never from the request)
+        Session session = sessionValidator.currentSession();
+
+        // Create a new command
+        BrowseMenuCommand command = new BrowseMenuCommand(menuService, session, restaurantId);
+
+        // Process the command: session and role are checked before it runs
+        CommandSuccess<RestaurantMenu> result = invoker.process(command, session);
+
+        // Send the menu back to frontend
+        return ResponseEntity.ok(result);
     }
 
     // PATCH /api/restaurants/{restaurantId}/menu/{itemId}/availability with body { "status": "sold_out" }

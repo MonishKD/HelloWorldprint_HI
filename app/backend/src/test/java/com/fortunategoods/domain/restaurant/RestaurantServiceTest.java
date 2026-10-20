@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.domain.user.UserRole;
 
 class RestaurantServiceTest {
 
@@ -31,7 +32,7 @@ class RestaurantServiceTest {
         stored.add(new Restaurant("2", "Deli", RestaurantStatus.PAUSED, 45.4, -73.5, List.of()));
         stored.add(new Restaurant("3", "Bakery", RestaurantStatus.CLOSED, 45.3, -73.4, List.of()));
 
-        List<RestaurantSummary> list = restaurantService.browseRestaurants();
+        List<RestaurantSummary> list = restaurantService.browseRestaurants("7", UserRole.CUSTOMER);
 
         assertEquals(3, list.size());
         assertEquals(new RestaurantSummary("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6), list.get(0));
@@ -42,7 +43,7 @@ class RestaurantServiceTest {
     // No restaurants gives an empty list, not null.
     @Test
     void noRestaurantsGivesAnEmptyList() {
-        assertTrue(restaurantService.browseRestaurants().isEmpty());
+        assertTrue(restaurantService.browseRestaurants("7", UserRole.CUSTOMER).isEmpty());
     }
 
 }
