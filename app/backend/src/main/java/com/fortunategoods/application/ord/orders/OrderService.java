@@ -102,6 +102,11 @@ public class OrderService {
     //this function SHOULD take care of making sure that the order goes in the proper path I puth multiple checks
     //implemented it basically like the cancelOrder steps, just refactored it
     private OrderServiceResult saveTransition(String orderId, Order order, OrderStatus previous){
+        String eventId = saveTransitionEvent(orderId, order, previous, "Order changed before status was updated.", "Order changed before status was updated.");
+        return new OrderServiceResult(orderId,order.getStatus(),Long.parseLong(eventId), order.getRejectReason());
+    }
+
+    private String saveTransitionEvent(String orderId, Order order, OrderStatus previous, String changedMessage, String updateFailedMessage){
         //event repo cant return just the top event so you have to get it all THEN get latest
         List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
         //check if there are order events
@@ -111,7 +116,7 @@ public class OrderService {
         OrderEvent latest = events.get(events.size()-1);
         //safety check by comparing the latest order status saved in the orderEvent repo to the previous
         if (latest.getNewStatus() != previous){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order changed before status was updated.");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, changedMessage);
         }
         //safety check here insted of just using the updateStatus function
         String eventId;
@@ -130,9 +135,9 @@ public class OrderService {
 
         //another sanity check here
         if(eventId == null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order changed before status was updated.");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, updateFailedMessage);
         }
-        return new OrderServiceResult(orderId,order.getStatus(),Long.parseLong(eventId), order.getRejectReason());
+        return eventId;
     }
 
     //makes it so that if it fails it wont save it
@@ -205,7 +210,6 @@ public class OrderService {
 
         return saveTransition(orderId, order, previous);
     }
-    //could refactor now that we have the saveTransaction but its fine like this TBH
     @Transactional
     public OrderServiceResult cancelOrder(String customerId, String orderId){
         // check validity of IDs provided
@@ -218,28 +222,11 @@ public class OrderService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Order not found");
         }
 
-        // Check if customer trying to cancel order, is customer mentionned in order
-        // and check if customer's order status is PLACED
+        // Check if customer trying to cancel order, is customer mentionned in order and check if customer's order status is PLACED
         order.cancelCustomer(customerId);
 
-        // Find the order event of the cancellation
-        List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
-        if (events.isEmpty()) {
-            throw new IllegalStateException("Order has no event history");
-        }
-
-        OrderEvent previousEvent = events.get(events.size() - 1);
-
-        if (previousEvent.getNewStatus() != OrderStatus.PLACED) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Order is no longer placed");
-        }
-
         // Save only if the database order is still PLACED.
-        String eventId = orderRepo.updateStatusIfUnchanged(orderId, previousEvent.getId(), OrderStatus.PLACED, OrderStatus.CANCELLED);
-
-        if (eventId == null) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order changed before it could be cancelled");
-        }
+        String eventId = saveTransitionEvent(orderId, order, OrderStatus.PLACED, "Order is no longer placed", "Order changed before it could be cancelled");
 
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
@@ -253,8 +240,7 @@ public class OrderService {
         // Find the restaurant from the staffId
         String restaurantId = userRepo.findRestaurantIdByUserId(staffId);
         // If order's restaurant and staff's restaurant don't match, throw exception
-        OrdModulePermissions.requireOwnRestaurant(restaurantId, order.getRestaurantId(),
-            "You can only change your own restaurant's orders");
+        OrdModulePermissions.requireOwnRestaurant(restaurantId, order.getRestaurantId(), "You can only change your own restaurant's orders");
         // Lock the queue to give time to finish transaction
         orderRepo.lockRestaurantQueue(restaurantId);
 
