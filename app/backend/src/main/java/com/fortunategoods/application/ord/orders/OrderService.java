@@ -188,13 +188,8 @@ public class OrderService {
         }
 
         PreparationQueue queue = preparationQueueRegistry.forRestaurant(order.getRestaurantId());
-        // Get the next order
-        Order next = queue.peek();
-
         // Check if the order we are trying to prepare is the next one in the queue
-        if (next == null || !orderId.equals(next.getId())) {
-                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order does not match the next order in the queue for this restaurant!");
-        }
+        queue.requireHead(orderId);
 
         OrderStatus prev = order.getStatus();
         order.startPreparing();
