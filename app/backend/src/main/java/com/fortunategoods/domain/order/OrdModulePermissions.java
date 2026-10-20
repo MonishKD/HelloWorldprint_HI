@@ -9,6 +9,18 @@ import com.fortunategoods.domain.user.UserRole;
 public class OrdModulePermissions {
     private OrdModulePermissions(){} // No instances will be created
 
+    public static void requireRole(UserRole role, Set<UserRole> allowedRoles, String message) {
+        if (role == null || !allowedRoles.contains(role)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, message);
+        }
+    }
+
+    public static void requireOwnRestaurant(String staffRestaurantId, String restaurantId, String message) {
+        if (staffRestaurantId == null || !staffRestaurantId.equals(restaurantId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, message);
+        }
+    }
+
     // Story #43: the restaurant list is for signed-in customers.
     public static Set<UserRole> browseRestaurantsRoles(){
         return Set.of(UserRole.CUSTOMER);

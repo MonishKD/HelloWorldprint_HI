@@ -1,7 +1,9 @@
 package com.fortunategoods.domain.restaurant.menu;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.user.UserRole;
 
 /*
     Domain rules for adding and editing menu items. MenuService calls them before anything is saved.
@@ -18,8 +20,13 @@ public final class MenuItemRules {
 
     // Their restaurant comes from their account, never from the request.
     public static void requireOwnRestaurant(String staffRestaurantId, String restaurantId) {
-        if (staffRestaurantId == null || !staffRestaurantId.equals(restaurantId)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Restaurant staff can only change their own restaurant's menu");
+        OrdModulePermissions.requireOwnRestaurant(staffRestaurantId, restaurantId,"Restaurant staff can only change their own restaurant's menu");
+    }
+
+    public static void requireBrowseAccess(UserRole role, String staffRestaurantId, String restaurantId) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.browseMenuRoles(),"You are not allowed to browse this menu");
+        if (role == UserRole.RESTAURANT) {
+            OrdModulePermissions.requireOwnRestaurant(staffRestaurantId, restaurantId,"Restaurant staff can only view their own restaurant's menu");
         }
     }
 
