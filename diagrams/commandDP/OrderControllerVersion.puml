@@ -3,7 +3,7 @@
 class OrderController {
 
 }
-CommandInvoker <-down- OrderController: calls
+CommandInvoker "1" <-down- OrderController: calls
 
 note "The Controller has methods that will call the \nCommandInvoker by creating a new Command, with \nthe information from the request of the REST Endpoints" as N1
 N1 -down- OrderController
@@ -16,7 +16,7 @@ class CommandInvoker {
 note "process(...) will use the session validator to validate the user's session, \nand check the user's roles against the command's permitted roles, and it will \nlog the result (success or failure) of the command into the command log repository" as N2
 N2 -down- CommandInvoker
 
-CommandInvoker -down-> Command
+CommandInvoker .down.> Command : executes
 interface Command <<interface>> {
     + {abstract} validRoles(): Set<UserRole>
     + {abstract} execute(): CommandSuccess<T>
