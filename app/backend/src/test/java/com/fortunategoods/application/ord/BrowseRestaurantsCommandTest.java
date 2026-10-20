@@ -12,7 +12,7 @@ import org.springframework.security.authentication.AuthenticationCredentialsNotF
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
-import com.fortunategoods.application.ord.restaurants.RestaurantCommands;
+import com.fortunategoods.application.ord.restaurants.browsing.RestaurantCommands;
 import com.fortunategoods.application.ord.restaurants.RestaurantService;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;

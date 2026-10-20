@@ -32,9 +32,7 @@ public class RestaurantService {
 
     // Returns every restaurant as a summary. Empty list (never null) when there are none.
     public List<RestaurantSummary> browseRestaurants(String userId, UserRole role) {
-        if (role == null || !OrdModulePermissions.browseRestaurantsRoles().contains(role)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only customers can browse restaurants");
-        }
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.browseRestaurantsRoles(), "Only customers can browse restaurants");
         OrderVerify.requireId(userId, "User ID");
         return restaurantRepository.findAll().stream().map(RestaurantSummary::of).toList();
     }
@@ -42,9 +40,7 @@ public class RestaurantService {
     // Runs the status operation within a database transaction.
     @Transactional
     public Restaurant setRestaurantStatus(String staffId, UserRole role, String restaurantId, RestaurantStatus status) {
-        if (role == null || !OrdModulePermissions.setRestaurantStatusRoles().contains(role)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,"Only Restaurant Staffs are allowed to change Restaurant Status");
-        }
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.setRestaurantStatusRoles(), "Only Restaurant Staffs are allowed to change Restaurant Status");
         // Verify the validity of the IDs
         OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(restaurantId, "Restaurant ID");
@@ -52,9 +48,7 @@ public class RestaurantService {
         // Find the restaurantID using the staff's user id
         String ownRestaurantId = userRepository.findRestaurantIdByUserId(staffId);
         // Compare user's restaurantId to the restaurantId status we are trying to change
-        if (!restaurantId.equals(ownRestaurantId)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,"You can only change your own restaurant's status");
-        }
+        OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only change your own restaurant's status");
         // Get restaurant
         Restaurant restaurant = restaurantRepository.findById(restaurantId);
 

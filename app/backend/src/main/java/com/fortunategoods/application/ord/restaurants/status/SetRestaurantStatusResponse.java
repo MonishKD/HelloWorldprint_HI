@@ -1,4 +1,4 @@
-package com.fortunategoods.application.ord.restaurants;
+package com.fortunategoods.application.ord.restaurants.status;
 
 import java.util.Locale;
 

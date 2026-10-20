@@ -1,4 +1,6 @@
-package com.fortunategoods.application.ord.menu;
+package com.fortunategoods.application.ord.menu.availability;
+
+import com.fortunategoods.application.ord.menu.MenuService;
 
 import java.util.Set;
 

@@ -1,4 +1,6 @@
-package com.fortunategoods.application.ord.menu;
+package com.fortunategoods.application.ord.menu.browsing;
+
+import com.fortunategoods.application.ord.menu.MenuService;
 
 import com.fortunategoods.application.ord.execution.Command;
 import com.fortunategoods.application.ord.execution.CommandSuccess;

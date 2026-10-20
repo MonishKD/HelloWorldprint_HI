@@ -1,4 +1,4 @@
-package com.fortunategoods.application.ord.restaurants;
+package com.fortunategoods.application.ord.restaurants.status;
 
 /*
     Class used for frontend request body

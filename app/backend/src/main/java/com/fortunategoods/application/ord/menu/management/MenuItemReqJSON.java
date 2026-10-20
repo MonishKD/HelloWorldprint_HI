@@ -1,4 +1,4 @@
-package com.fortunategoods.application.ord.menu;
+package com.fortunategoods.application.ord.menu.management;
 
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 
