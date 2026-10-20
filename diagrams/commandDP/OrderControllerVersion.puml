@@ -1,0 +1,117 @@
+@startuml OrderControllerVersionCOMMAND
+
+class OrderController {
+
+}
+CommandInvoker <-down- OrderController: calls
+
+note "The Controller has methods that will call the \nCommandInvoker by creating a new Command, with \nthe information from the request of the REST Endpoints" as N1
+N1 -down- OrderController
+'Command, CommandInvoker, CommandLog
+class CommandInvoker {
+    - sessionValidator: SessionValidator
+    - commandLogRepo: CommandLogRepository
+    + process<T>(command: Command<T>, userSession: Session): CommandSuccess<T>
+}
+note "process(...) will use the session validator to validate the user's session, \nand check the user's roles against the command's permitted roles, and it will \nlog the result (success or failure) of the command into the command log repository" as N2
+N2 -down- CommandInvoker
+
+CommandInvoker -down-> Command
+interface Command <<interface>> {
+    + {abstract} validRoles(): Set<UserRole>
+    + {abstract} execute(): CommandSuccess<T>
+}
+
+note left of Command
+    - validRoles() will return a set of valid user roles under which
+    the command is allowed to execute.
+    - execute() delegates the responsibility of the command to OrderService
+    and returns CommandSuccess<T>, where T is the response type associated 
+    with the concrete command being executed.
+end note
+
+OrderController ..> ConcreteCommands : creates
+rectangle ConcreteCommands {
+    class PlaceOrderCommand{
+        - session: Session
+        - service: OrderService
+        - restaurantId: String
+        - requestedItems: List<RequestedOrderLineItem>
+        - instructions: String
+        - deliveryAddress: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class AcceptOrderCommand{
+        - session: Session
+        - service: OrderService
+        - orderId: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class RejectOrderCommand {
+        - session: Session
+        - service: OrderService
+        - orderId: String
+        - reason: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class ReadyOrderCommand {
+        - session: Session
+        - service: OrderService
+        - orderId: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+
+    class CancelOrderCommand {
+        - session: Session
+        - service: OrderService
+        - orderId: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class PreparingOrderCommand{
+        - session: Session
+        - orderId: String
+        - orderService: OrderService
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+}
+
+
+
+Command <|.. PlaceOrderCommand
+Command <|.. AcceptOrderCommand
+Command <|.. RejectOrderCommand
+Command <|.. ReadyOrderCommand
+Command <|.. CancelOrderCommand
+Command <|.. PreparingOrderCommand
+
+
+
+OrderService <.up. PlaceOrderCommand
+OrderService <.up. AcceptOrderCommand
+OrderService <.up. RejectOrderCommand
+OrderService <.up. ReadyOrderCommand
+OrderService <.up. CancelOrderCommand
+OrderService <.up. PreparingOrderCommand
+
+class OrderService {
+    + placeOrder(customerId: String, restaurantId: String, requestedItems: List<RequestedOrderLineItem>, instructions: String, deliveryAddress: String): OrderServiceResult
+    + acceptOrder(staffId: String, role: UserRole, orderId: String): OrderServiceResult
+    + rejectOrder(staffId: String, role: UserRole, orderId: String, reason: String): OrderServiceResult
+    + markAsReadyOrder(staffId: String, role: UserRole, orderId: String): OrderServiceResult
+    + cancelOrder(customerId: String, orderId: String): OrderServiceResult
+    + prepareOrder(staffId: String, role: UserRole, orderId: String): OrderServiceResult
+}
+
+
+@enduml
