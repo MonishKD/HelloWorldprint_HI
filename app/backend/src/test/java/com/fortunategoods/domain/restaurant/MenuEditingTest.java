@@ -11,8 +11,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
 import com.fortunategoods.application.ord.FakeMenuDatabase;
-import com.fortunategoods.application.ord.menu.MenuItemInput;
-import com.fortunategoods.application.ord.menu.MenuItemResponse;
+import com.fortunategoods.application.ord.menu.management.MenuItemInput;
+import com.fortunategoods.application.ord.menu.management.MenuItemResponse;
 import com.fortunategoods.application.ord.menu.MenuService;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrderLine;

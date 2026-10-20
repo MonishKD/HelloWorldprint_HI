@@ -5,7 +5,7 @@ import com.fortunategoods.application.ord.execution.CommandExecutionException;
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
-import com.fortunategoods.application.ord.menu.BrowseMenuCommand;
+import com.fortunategoods.application.ord.menu.browsing.BrowseMenuCommand;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;

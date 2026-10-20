@@ -1,4 +1,4 @@
-package com.fortunategoods.application.ord.menu;
+package com.fortunategoods.application.ord.menu.availability;
 
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 //this is what will be returned to the frontend
