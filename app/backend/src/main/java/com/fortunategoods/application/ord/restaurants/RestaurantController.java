@@ -1,5 +1,10 @@
 package com.fortunategoods.application.ord.restaurants;
 
+import com.fortunategoods.application.ord.restaurants.browsing.BrowseRestaurantsCommand;
+import com.fortunategoods.application.ord.restaurants.status.SetRestaurantStatusCommand;
+import com.fortunategoods.application.ord.restaurants.status.SetRestaurantStatusReqJSON;
+import com.fortunategoods.application.ord.restaurants.status.SetRestaurantStatusResponse;
+
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
