@@ -26,7 +26,9 @@ class BrowseRestaurantsCommandTest {
     // Fake RestaurantService: always returns one open restaurant.
     private final RestaurantService restaurantService = new RestaurantService(null, null) {
         @Override
-        public List<RestaurantSummary> browseRestaurants() {
+        public List<RestaurantSummary> browseRestaurants(String userId, UserRole role) {
+            assertEquals("7", userId);
+            assertEquals(UserRole.CUSTOMER, role);
             return List.of(new RestaurantSummary("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6));
         }
     };

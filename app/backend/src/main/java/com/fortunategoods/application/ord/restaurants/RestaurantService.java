@@ -31,7 +31,11 @@ public class RestaurantService {
     }
 
     // Returns every restaurant as a summary. Empty list (never null) when there are none.
-    public List<RestaurantSummary> browseRestaurants() {
+    public List<RestaurantSummary> browseRestaurants(String userId, UserRole role) {
+        if (role == null || !OrdModulePermissions.browseRestaurantsRoles().contains(role)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only customers can browse restaurants");
+        }
+        OrderVerify.requireId(userId, "User ID");
         return restaurantRepository.findAll().stream().map(RestaurantSummary::of).toList();
     }
 
