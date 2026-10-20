@@ -72,15 +72,11 @@ public class MenuService {
         if(itemId==null || !itemId.matches("\\d{1,9}")){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Item id is invalid");
         }
-        if(newStat==null){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Status must be available or sold_out");
-        }
+        MenuItemRules.requireAvailability(newStat);
 
         MenuItem item = menuItemRepository.findById(itemId);
         // The item must exist AND be on the menu of the restaurant in the URL.
-        if(item==null || !item.getRestaurantId().equals(restaurantId)){
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Item not found on this restaurant's menu");
-        }
+        MenuItemRules.requireItemOnMenu(item, restaurantId);
         //now checking if item belongs to right resto
         String staffRestaurantId = userRepository.findRestaurantIdByUserId(userId);
         //this function will verify that restaurant matches the item restaurant
@@ -95,7 +91,7 @@ public class MenuService {
         requireOwnMenu(userId, role, restaurantId);
 
         // The id is only known once the database saves the item, so the checked item uses "new" until then.
-        MenuItem checked = checkedItem("new", restaurantId, input);
+        MenuItem checked = MenuItemRules.checkedItem("new", restaurantId, input.name(), input.price(), input.originalPrice(), input.status());
         String description = MenuItemRules.cleanDescription(input.description());
 
         String newId = menuItemRepository.add(restaurantId, checked, description, checked.getOriginalPrice());
@@ -109,7 +105,7 @@ public class MenuService {
         requireNumericId(itemId, "Item");
         findOnMenu(restaurantId, itemId);
 
-        MenuItem edited = checkedItem(itemId, restaurantId, input);
+        MenuItem edited = MenuItemRules.checkedItem(itemId, restaurantId, input.name(), input.price(), input.originalPrice(), input.status());
         String description = MenuItemRules.cleanDescription(input.description());
 
         menuItemRepository.update(edited, description, edited.getOriginalPrice());
@@ -151,12 +147,4 @@ public class MenuService {
                 .orElseThrow(() -> new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Item not found on this restaurant's menu"));
     }
 
-    private static MenuItem checkedItem(String itemId, String restaurantId, MenuItemInput input) {
-        String name = MenuItemRules.cleanName(input.name());
-        MenuItemRules.requireValidPrices(input.price(), input.originalPrice());
-        if (input.status() == null) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Status must be available or sold_out");
-        }
-        return new MenuItem(itemId, restaurantId, name, input.status(), input.price(), input.originalPrice());
-    }
 }

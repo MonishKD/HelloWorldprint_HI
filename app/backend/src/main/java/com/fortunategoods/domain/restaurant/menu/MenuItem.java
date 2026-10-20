@@ -96,6 +96,7 @@ public final class MenuItem {
         if (!restaurantId.equals(staffRestoId)){
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "restaurant staff can only change their own menu items");
         }
+        MenuItemRules.requireAvailability(newStatus);
         setStatus(newStatus);
     }
 
