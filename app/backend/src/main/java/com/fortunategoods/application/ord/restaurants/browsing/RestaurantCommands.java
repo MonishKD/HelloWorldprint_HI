@@ -1,4 +1,6 @@
-package com.fortunategoods.application.ord.restaurants;
+package com.fortunategoods.application.ord.restaurants.browsing;
+
+import com.fortunategoods.application.ord.restaurants.RestaurantService;
 
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
@@ -24,7 +26,7 @@ public class RestaurantCommands {
     // Returns the restaurant list, or throws the invoker's failure (not signed in, wrong role...).
     public CommandSuccess<List<RestaurantSummary>> browseRestaurants(Session session) {
         // 1. build the command, 2. let the invoker check and run it
-        BrowseRestaurantsCommand command = new BrowseRestaurantsCommand(restaurantService);
+        BrowseRestaurantsCommand command = new BrowseRestaurantsCommand(restaurantService, session);
         return commandInvoker.process(command, session);
     }
 }

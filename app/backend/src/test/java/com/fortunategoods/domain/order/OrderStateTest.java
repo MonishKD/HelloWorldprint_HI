@@ -45,6 +45,80 @@ public class OrderStateTest{
     }
 
     @Test
+    void incomingOperationsUseTheStatePattern() {
+        testOrder.acceptIncoming();
+        assertEquals(OrderStatus.ACCEPTED, testOrder.getStatus());
+
+        testOrder.requireAcceptedForPreparation();
+        testOrder.startPreparing();
+        assertEquals(OrderStatus.PREPARING, testOrder.getStatus());
+
+        testOrder.markReadyFromPreparation();
+        assertEquals(OrderStatus.READY, testOrder.getStatus());
+    }
+
+    @Test
+    void nonPlacedIncomingOrdersCannotBeAcceptedOrRejected() {
+        for (OrderStatus status : OrderStatus.values()) {
+            if (status == OrderStatus.PLACED) {
+                continue;
+            }
+            Order order = new Order("100", "123", "456", null, status,
+                null, null, null, null, null, testOrder.getLines());
+
+            DomainRuleViolation error = assertThrows(
+                DomainRuleViolation.class, order::acceptIncoming
+            );
+
+            assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+            assertEquals("Could not accept order as it was not in the status PLACED", error.getMessage());
+            assertEquals(status, order.getStatus());
+
+            DomainRuleViolation rejection = assertThrows(
+                DomainRuleViolation.class, () -> order.rejectIncoming("Sold out")
+            );
+            assertEquals(DomainRuleViolation.Reason.CONFLICT, rejection.getReason());
+            assertEquals("Could not reject order as it was not in the status PLACED", rejection.getMessage());
+            assertEquals(status, order.getStatus());
+        }
+    }
+
+    @Test
+    void incomingRejectionStillValidatesTheReason() {
+        DomainRuleViolation error = assertThrows(
+            DomainRuleViolation.class, () -> testOrder.rejectIncoming(" ")
+        );
+        assertEquals(DomainRuleViolation.Reason.INVALID, error.getReason());
+        assertEquals(OrderStatus.PLACED, testOrder.getStatus());
+
+        testOrder.rejectIncoming(" Sold out ");
+        assertEquals(OrderStatus.REJECTED, testOrder.getStatus());
+        assertEquals("Sold out", testOrder.getRejectReason());
+    }
+
+    @Test
+    void preparationAndReadyRequireThePreviousStatus() {
+        for (OrderStatus status : OrderStatus.values()) {
+            Order order = new Order("100", "123", "456", null, status,
+                null, null, null, null, null, testOrder.getLines());
+
+            if (status != OrderStatus.ACCEPTED) {
+                DomainRuleViolation error = assertThrows(
+                    DomainRuleViolation.class, order::requireAcceptedForPreparation
+                );
+                assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+            }
+            if (status != OrderStatus.PREPARING) {
+                DomainRuleViolation error = assertThrows(
+                    DomainRuleViolation.class, order::markReadyFromPreparation
+                );
+                assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+            }
+            assertEquals(status, order.getStatus());
+        }
+    }
+
+    @Test
     void skippingStep(){
         assertThrows(IllegalTransitionException.class, () -> testOrder.markReady());
         assertEquals(OrderStatus.PLACED, testOrder.getStatus());

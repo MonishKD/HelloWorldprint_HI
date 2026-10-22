@@ -3,7 +3,7 @@ package com.fortunategoods.application.ord;
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
-import com.fortunategoods.application.ord.menu.MenuCommands;
+import com.fortunategoods.application.ord.menu.browsing.MenuCommands;
 import java.util.List;
 import java.util.Set;
 

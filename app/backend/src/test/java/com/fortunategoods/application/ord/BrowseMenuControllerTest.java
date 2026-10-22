@@ -20,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.ord.menu.MenuService;
-import com.fortunategoods.application.ord.restaurants.RestaurantController;
+import com.fortunategoods.application.ord.menu.MenuController;
 import com.fortunategoods.application.ord.restaurants.RestaurantService;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
@@ -38,7 +38,7 @@ import com.fortunategoods.technical.security.session.SpringSecuritySessionValida
 
 // Test for controller that returns a restaurant's menu, with fake repositories instead of the database. The controller is read-only, so no changes are made to the data.
 @WebMvcTest(
-    controllers = RestaurantController.class,
+    controllers = MenuController.class,
     properties = {
         "app.cors.allowed-origin=http://localhost:5173",
         "spring.application.name=fortunategoods-test"
@@ -147,7 +147,7 @@ class BrowseMenuControllerTest {
         // Not used by these tests, but RestaurantController needs one.
         @Bean
         RestaurantService restaurantService() {
-            return new RestaurantService(null);
+            return new RestaurantService(null, null);
         }
 
         @Bean

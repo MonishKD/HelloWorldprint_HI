@@ -119,7 +119,7 @@ class RestaurantControllerTest {
                     return STORED;
                 }
             };
-            return new RestaurantService(restaurants);
+            return new RestaurantService(restaurants, null);
         }
 
         @Bean

@@ -179,6 +179,37 @@ public class Order {
         //each State implementation like Accepted returns ACCEPTED for getStatus()
         this.status = next.getStatus();
     }
+    public void acceptIncoming() {
+        // Check if order has been placed
+        if (status != OrderStatus.PLACED) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not accept order as it was not in the status PLACED");
+        }
+        accept();
+    }
+
+    public void rejectIncoming(String reason) {
+        // Check if order has been placed
+        if (status != OrderStatus.PLACED) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Could not reject order as it was not in the status PLACED");
+        }
+        reject(reason);
+    }
+
+    public void requireAcceptedForPreparation() {
+        // Cannot prepare an order that isn't ACCEPTED
+        if (status != OrderStatus.ACCEPTED) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only accepted orders can enter preparation");
+        }
+    }
+
+    public void markReadyFromPreparation() {
+        // Check if order has been prepared
+        if (status != OrderStatus.PREPARING) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only pending orders (PREPARED) can be marked ready");
+        }
+        markReady();
+    }
+
     //adding the state functins
     public void accept(){
         state.accept(this);

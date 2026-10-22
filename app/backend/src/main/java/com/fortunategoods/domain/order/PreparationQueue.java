@@ -43,6 +43,13 @@ public class PreparationQueue {
         return e == null ? null: e.order();
     }
 
+    public synchronized void requireHead(String orderId) {
+        Order next = peek();
+        if (next == null || !next.getId().equals(orderId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order does not match the next order in the queue for this restaurant!");
+        }
+    }
+
     //returns null when empty
     public synchronized Order dequeue() {
         Entry e = queue.poll(); // won't throw an exception
