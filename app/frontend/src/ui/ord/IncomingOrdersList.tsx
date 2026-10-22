@@ -36,33 +36,50 @@ export default function IncomingOrdersList({
   emptyText: string;
   /** Preparation-queue position of each queued order (1 = next). Only the first may start preparing. */
   positions?: Record<string, number>;
-  onChanged: () => void;
+  /** Refreshes the views behind this list; the buttons stay disabled until it has finished. */
+  onChanged: () => Promise<unknown> | void;
 }) {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
-  const [error, setError] = useState('');
+  const [error, setError] = useState<{ id: string; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
 
   async function changeStatus(order: Order, status: OrderStatus, rejectReason?: string) {
-    setError('');
+    setError(null);
+    setBusy(true);
+    const why = rejectReason?.trim();
     try {
-      const detail = rejectReason ? ` (reason: ${rejectReason.trim()})` : '';
-      await send(`Order #${order.id}: ${order.status} → ${status}${detail}`, () => updateOrderStatus(order.id, status, rejectReason));
+      await send(`Order #${order.id}: ${order.status} → ${status}${why ? ` (reason: ${why})` : ''}`, () => updateOrderStatus(order.id, status, why));
       setRejectingId(null);
     } catch (e) {
-      setError(errorMessage(e));
+      // The order stays where it is (nothing is removed before the backend agrees) and the reject form keeps what was typed.
+      setError({ id: order.id, text: errorMessage(e) });
     }
-    onChanged();
+    await onChanged();
+    setBusy(false);
   }
 
-  if (orders.length === 0) return <Empty icon={emptyIcon} title={emptyText} />;
+  // The error sits on the order it belongs to; if that order has since moved on, it shows above the list instead.
+  const onCard = !!error && orders.some((o) => o.id === error.id && NEXT_STEP[o.status]);
+  const listError =
+    error && !onCard ? (
+      <p className="alert alert-error" role="alert">
+        {error.text}
+      </p>
+    ) : null;
+
+  if (orders.length === 0) {
+    return (
+      <>
+        {listError}
+        <Empty icon={emptyIcon} title={emptyText} />
+      </>
+    );
+  }
 
   return (
     <div className="order-list">
-      {error && (
-        <p className="alert alert-error" role="alert">
-          {error}
-        </p>
-      )}
+      {listError}
       {orders.map((o, i) => {
         const next = NEXT_STEP[o.status];
         const position = positions?.[o.id];
@@ -95,10 +112,10 @@ export default function IncomingOrdersList({
                         />
                       </label>
                       <div className="order-actions">
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setRejectingId(null)}>
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setRejectingId(null)}>
                           Back
                         </button>
-                        <button className="btn btn-danger btn-sm" disabled={!reason.trim()}>
+                        <button className="btn btn-danger btn-sm" disabled={busy || !reason.trim()}>
                           Confirm reject
                         </button>
                       </div>
@@ -106,6 +123,7 @@ export default function IncomingOrdersList({
                   ) : (
                     <button
                       className="btn btn-danger"
+                      disabled={busy}
                       onClick={() => {
                         setRejectingId(o.id);
                         setReason('');
@@ -118,9 +136,14 @@ export default function IncomingOrdersList({
                   <ConfirmButton
                     label={next.label}
                     question={`${next.label} order #${o.id}?`}
-                    disabled={o.status === 'accepted' && position !== undefined && position > 1}
+                    disabled={busy || (o.status === 'accepted' && position !== undefined && position > 1)}
                     onConfirm={() => changeStatus(o, next.status)}
                   />
+                )}
+                {onCard && error.id === o.id && (
+                  <p className="alert alert-error" role="alert">
+                    {error.text}
+                  </p>
                 )}
               </>
             )}
