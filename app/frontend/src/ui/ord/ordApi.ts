@@ -176,12 +176,23 @@ export async function assignCourier(orderId: string, courier: { id: string; name
   return copy(order);
 }
 
+/** Mock-only: the order's accepted orders in preparation-queue order (first accepted, first prepared). */
+export function acceptedQueue(restaurantId: string): Order[] {
+  return db.orders
+    .filter((o) => o.restaurantId === restaurantId && o.status === 'accepted')
+    .sort((a, b) => (a.acceptedAt ?? a.createdAt).localeCompare(b.acceptedAt ?? b.createdAt));
+}
+
 // TODO: replace with fetch() to the real backend: POST /orders/{id}/transitions  { status, reason? }
 export async function updateOrderStatus(orderId: string, status: OrderStatus, rejectReason?: string): Promise<Order> {
   const order = db.orders.find((o) => o.id === orderId);
   if (!order) throw new Error('Order not found.');
+  if (status === 'preparing' && acceptedQueue(order.restaurantId)[0]?.id !== orderId) {
+    throw new Error('Order does not match the next order in the queue for this restaurant!');
+  }
   order.status = status;
   if (rejectReason) order.rejectReason = rejectReason.trim();
+  if (status === 'accepted') order.acceptedAt = new Date().toISOString();
   if (status === 'picked_up') order.pickedUpAt = new Date().toISOString();
   if (order.courierId) syncCourierState(order.courierId);
   return copy(order);

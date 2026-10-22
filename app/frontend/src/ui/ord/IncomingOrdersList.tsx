@@ -28,11 +28,14 @@ export default function IncomingOrdersList({
   orders,
   emptyIcon,
   emptyText,
+  positions,
   onChanged,
 }: {
   orders: Order[];
   emptyIcon: IconName;
   emptyText: string;
+  /** Preparation-queue position of each queued order (1 = next). Only the first may start preparing. */
+  positions?: Record<string, number>;
   onChanged: () => void;
 }) {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
@@ -62,8 +65,14 @@ export default function IncomingOrdersList({
       )}
       {orders.map((o, i) => {
         const next = NEXT_STEP[o.status];
+        const position = positions?.[o.id];
+        const queueNote = position && (
+          <>
+            <Icon name="hourglass" size={16} /> {position === 1 ? 'Next in the queue' : `Position ${position} in the queue`}
+          </>
+        );
         return (
-          <OrderCard key={o.id} order={o} title={o.customerName} subtitle={courierNote(o)} style={stagger(i)}>
+          <OrderCard key={o.id} order={o} title={o.customerName} subtitle={courierNote(o) ?? queueNote} style={stagger(i)}>
             {next && (
               <>
                 {o.status === 'placed' &&
@@ -106,7 +115,12 @@ export default function IncomingOrdersList({
                     </button>
                   ))}
                 {rejectingId !== o.id && (
-                  <ConfirmButton label={next.label} question={`${next.label} order #${o.id}?`} onConfirm={() => changeStatus(o, next.status)} />
+                  <ConfirmButton
+                    label={next.label}
+                    question={`${next.label} order #${o.id}?`}
+                    disabled={o.status === 'accepted' && position !== undefined && position > 1}
+                    onConfirm={() => changeStatus(o, next.status)}
+                  />
                 )}
               </>
             )}

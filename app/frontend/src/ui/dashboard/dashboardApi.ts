@@ -4,8 +4,9 @@ import { useSyncExternalStore } from 'react';
 // (customer order statuses, the restaurant's preparation queue).
 // TODO: if the backend exposes CommandLog (OutputConsoleFeed), the console can read it instead of this client-side log.
 import { db } from '../../mockData';
-import type { Order } from '../../domain';
+import type { Order, OrderStatus } from '../../domain';
 import { ApiError, takeResponseNote } from '../http';
+import { acceptedQueue } from '../ord/ordApi';
 
 export interface LogEntry {
   id: number;
@@ -109,15 +110,18 @@ export async function getCustomerOrderStatuses(customerId: string): Promise<Orde
   return copy(db.orders.filter((o) => o.customerId === customerId));
 }
 
+/** One row of the preparation queue (a2: PreparationQueueView): position 1 is next. Order details are not part of it. */
+export interface QueueSlot {
+  position: number;
+  orderId: string;
+  status: OrderStatus;
+}
+
 /**
- * The restaurant's preparation queue (a2: PreparationQueueView, R-ORD-03): accepted and preparing orders,
- * first in first out. The ordering belongs to the backend; the UI shows the list exactly as received.
+ * The restaurant's preparation queue (a2: PreparationQueueView, R-ORD-03): accepted orders, first accepted first prepared.
+ * The ordering belongs to the backend and the UI keeps it as received; only the first order may start preparing.
  */
-// TODO: replace with fetch() to the real backend: GET /restaurants/{id}/preparation-queue
-export async function getPreparationQueue(restaurantId: string): Promise<Order[]> {
-  return copy(
-    db.orders
-      .filter((o) => o.restaurantId === restaurantId && (o.status === 'accepted' || o.status === 'preparing'))
-      .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
-  );
+// TODO: replace with fetch() to the real backend: GET /restaurants/{id}/queue  ->  [{ position, orderId, status }]
+export async function getPreparationQueue(restaurantId: string): Promise<QueueSlot[]> {
+  return acceptedQueue(restaurantId).map((o, i) => ({ position: i + 1, orderId: o.id, status: o.status }));
 }
