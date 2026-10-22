@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Role } from './domain';
 import { setUnauthorizedHandler } from './ui/http';
+import { clearLogs } from './ui/dashboard/dashboardApi';
 import type { SessionUser } from './ui/reg/regApi';
 
 // Fake session: held in React state only, so a page reload logs you out.
@@ -18,6 +19,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [user, setUserState] = useState<SessionUser | null>(null);
   const [notice, setNotice] = useState('');
   const setUser = (next: SessionUser | null, message = '') => {
+    if (!next) clearLogs(); // logout or expiry: the next person to sign in must not see this user's console
     setUserState(next);
     setNotice(message);
   };
