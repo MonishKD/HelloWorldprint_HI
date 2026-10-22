@@ -40,9 +40,8 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
     } catch (e) {
       setActionError(errorMessage(e));
     }
+    await Promise.all([reload(), onChanged?.()]);
     setBusy(false);
-    reload();
-    onChanged?.();
   }
 
   const toggle = (item: MenuItem) => {
