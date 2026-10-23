@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.User;
+import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.registration.CourierRegistration;
 import com.fortunategoods.technical.security.registration.CustomerRegistration;
 import com.fortunategoods.technical.security.registration.RestaurantRegistration;
@@ -30,14 +31,16 @@ public class AuthenticationService {
     private final RestaurantRegistration restaurantRegistration;
     private final Login login;
     private final Logout logout;
+    private final UserRepository userRepository;
 
     public AuthenticationService(CustomerRegistration customerRegistration, CourierRegistration courierRegistration,
-            RestaurantRegistration restaurantRegistration, Login login, Logout logout) {
+            RestaurantRegistration restaurantRegistration, Login login, Logout logout, UserRepository userRepository) {
         this.customerRegistration = customerRegistration;
         this.courierRegistration = courierRegistration;
         this.restaurantRegistration = restaurantRegistration;
         this.login = login;
         this.logout = logout;
+        this.userRepository = userRepository;
     }
 
     // Each sign-up returns the new account with its id.
@@ -55,6 +58,12 @@ public class AuthenticationService {
     public User registerRestaurant(String username, String email, String password, Restaurant newRestaurant,
             String address) {
         return restaurantRegistration.register(username, email, password, newRestaurant, address);
+    }
+
+    // The id of the restaurant a RESTAURANT account owns or works for, or null if it has none.
+    // RegController sends it back after a restaurant sign-up, so the frontend can open that restaurant's dashboard (#59).
+    public String restaurantIdOf(String userId) {
+        return userRepository.findRestaurantIdByUserId(userId);
     }
 
     // Logs in with a username or email and a password, and returns the account.

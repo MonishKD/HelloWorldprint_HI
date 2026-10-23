@@ -1,4 +1,5 @@
 import { db } from '../../mockData';
+import { request } from '../http';
 import type { CourierLocation, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus } from '../../domain';
 
 export type RestaurantSummary = Restaurant & { itemCount: number; availableCount: number; bestDiscount: number };
@@ -33,11 +34,24 @@ export async function listCourierLocations(): Promise<CourierLocation[]> {
     .map((u) => ({ id: u.id, name: u.name, lat: u.lat!, lng: u.lng!, courierState: u.courierState ?? 'offline' }));
 }
 
-// TODO: replace with fetch() to the real backend: GET /restaurants/{id}
+/** What GET /restaurants/{id}/menu sends back (RestaurantMenu on the backend). Statuses come in capitals, e.g. "CLOSED". */
+interface RestaurantMenuResponse {
+  restaurantId: string;
+  restaurantName: string;
+  restaurantStatus: string;
+}
+
+// GET /restaurants/{id}/menu: the backend has no separate "one restaurant" route, the menu response carries its name and status.
+// Address and cuisine aren't in it, so they stay empty.
 export async function getRestaurant(id: string): Promise<Restaurant> {
-  const restaurant = db.restaurants.find((r) => r.id === id);
-  if (!restaurant) throw new Error('Restaurant not found.');
-  return copy(restaurant);
+  const menu = await request<RestaurantMenuResponse>(`/restaurants/${id}/menu`);
+  return {
+    id: menu.restaurantId,
+    name: menu.restaurantName,
+    cuisine: '',
+    address: '',
+    status: menu.restaurantStatus.toLowerCase() as RestaurantStatus,
+  };
 }
 
 // TODO: replace with fetch() to the real backend: PATCH /restaurants/{id}/status  { status }

@@ -1,5 +1,6 @@
 package com.fortunategoods.technical.persistence;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -94,12 +95,15 @@ public class MenuItemRepository {
 
     // Turns one row of the menu_items table into a MenuItem of this restaurant.
     private MenuItem toMenuItem(ResultSet row, String restaurantId) throws SQLException {
+        // original_price is a numeric column, and the Postgres driver cannot read numeric straight into a Double,
+        // so it is read as a BigDecimal first. It is empty (null) for an item that is not discounted.
+        BigDecimal originalPrice = row.getBigDecimal("original_price");
         return new MenuItem(
                 row.getString("id"),
                 restaurantId,
                 row.getString("name"),
                 MenuItemStatus.valueOf(row.getString("status")),
                 row.getDouble("price"),
-                row.getObject("original_price", Double.class));
+                originalPrice == null ? null : originalPrice.doubleValue());
     }
 }
