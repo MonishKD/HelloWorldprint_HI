@@ -1,7 +1,5 @@
 package com.fortunategoods.domain.order;
 
-import com.fortunategoods.domain.order.validation.OrderVerify;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -9,98 +7,49 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.handlers.BaseOrderHandler;
 import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
 import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
+import com.fortunategoods.domain.order.validation.OrderRequest;
+import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
 
-public class CoRTest {
-    private BaseOrderHandler restaurantHandler;
-    //https://www.baeldung.com/junit-before-beforeclass-beforeeach-beforeall
+// The order-checking chain: RestaurantStatusHandler first, then ItemAvailabilityHandler.
+class CoRTest {
+
+    private BaseOrderHandler chain;
+
     @BeforeEach
-    void init(){
-        restaurantHandler = new RestaurantStatusHandler();
-        BaseOrderHandler itemHandler = new ItemAvailabilityHandler();
-        //needs this so that item handler goes next
-        restaurantHandler.setNextHandler(itemHandler);
-    }
-   
-
-    @Test
-    void testRestaurantClosed(){
-        List<MenuItem> menu = new ArrayList<>();
-        menu.add(new MenuItem("m1", "r1", "Wrap", MenuItemStatus.AVAILABLE, 4.50));
-        //have to match the restaurant IDs
-        Restaurant restaurant = new Restaurant("r1","name",RestaurantStatus.CLOSED,1,2,menu);
-        //random for orderLines since not testing that
-        OrderLine line = OrderLine.fromMenuItem(menu.get(0), 1);
-        OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), List.of(line));
-
-        assertThrows(DomainRuleViolation.class,() -> OrderVerify.validate(orderReq, restaurantHandler));
+    void init() {
+        chain = new RestaurantStatusHandler();
+        chain.setNextHandler(new ItemAvailabilityHandler());
     }
 
     @Test
-    void testRestaurantOpen(){
-         List<MenuItem> menu = new ArrayList<>();
-        menu.add(new MenuItem("m1", "r2", "Wrap", MenuItemStatus.AVAILABLE, 4.50));
-        //have to match the restaurant IDs
-        Restaurant restaurant = new Restaurant("r2","name",RestaurantStatus.OPEN,1,2,menu);
-        //random for orderLines since not testing that
-        OrderLine line = OrderLine.fromMenuItem(menu.get(0), 1);
-        OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), List.of(line));
-        //wont return true here since sending it to the next handler, so doing assertDoesNotThrow
-        assertDoesNotThrow(() -> OrderVerify.validate(orderReq, restaurantHandler));
-    }
-
-    @Test 
-    void testItemSoldOut(){
-         List<MenuItem> menu = new ArrayList<>();
-        menu.add(new MenuItem("m1", "r3", "Wrap", MenuItemStatus.SOLD_OUT, 4.50));
-        
-        Restaurant restaurant = new Restaurant("r3","name",RestaurantStatus.OPEN,1,2,menu);
-        //need to actually create OrderLine now and then the list of order lines for the order request
-        OrderLine orderLine = new OrderLine("1", "m1", 1, "name", 0.0, 0.0, menu.get(0));
-        List<OrderLine> orderLines = new ArrayList<>();
-        orderLines.add(orderLine);
-        OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), orderLines);
-        //calling the restaurant handler first since its gonna call the menuHandler after
-        assertThrows(DomainRuleViolation.class,() -> OrderVerify.validate(orderReq, restaurantHandler));
-
+    void openRestaurantWithAvailableItemPasses() {
+        assertDoesNotThrow(() -> OrderVerify.validate(request(RestaurantStatus.OPEN, MenuItemStatus.AVAILABLE), chain));
     }
 
     @Test
-    void testItemAvailable(){
-        List<MenuItem> menu = new ArrayList<>();
-        menu.add(new MenuItem("m1", "r4", "Wrap", MenuItemStatus.AVAILABLE, 4.50));
-        
-        Restaurant restaurant = new Restaurant("r4","name",RestaurantStatus.OPEN,1,2,menu);
-        //need to actually create OrderLine now and then the list of order lines for the order request
-        OrderLine orderLine = new OrderLine("1", "m1", 1, "name", 0.0, 0.0, menu.get(0));
-        List<OrderLine> orderLines = new ArrayList<>();
-        orderLines.add(orderLine);
-        OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), orderLines);
-        //calling the restaurant handler first since its gonna call the menuHandler after
-        assertDoesNotThrow(() -> OrderVerify.validate(orderReq, restaurantHandler));
+    void closedRestaurantIsRefused() {
+        assertThrows(DomainRuleViolation.class, () -> OrderVerify.validate(request(RestaurantStatus.CLOSED, MenuItemStatus.AVAILABLE), chain));
     }
 
-    @Test 
-    void testItemWasAvailableThenSoldOut(){
-        List<MenuItem> menu = new ArrayList<>();
-        menu.add(new MenuItem("m1", "r5", "Wrap", MenuItemStatus.AVAILABLE, 4.50));
-        
-        Restaurant restaurant = new Restaurant("r5","name",RestaurantStatus.OPEN,1,2,menu);
-        //making it sold out after
-        menu.get(0).setStatus(MenuItemStatus.SOLD_OUT);
+    // The item was available when the menu was loaded and sold out before the order was checked.
+    @Test
+    void itemSoldOutBeforeCheckingIsRefused() {
+        OrderRequest request = request(RestaurantStatus.OPEN, MenuItemStatus.AVAILABLE);
+        request.getOrderLines().get(0).getMenuItem().setStatus(MenuItemStatus.SOLD_OUT);
 
-        OrderLine orderLine = new OrderLine("1", "m1", 1, "name", 0.0, 0.0, menu.get(0));
-        List<OrderLine> orderLines = new ArrayList<>();
-        orderLines.add(orderLine);
-        OrderRequest orderReq = new OrderRequest(restaurant, "12345678", menu.get(0), orderLines);
-        //calling the restaurant handler first since its gonna call the menuHandler after
-        assertThrows(DomainRuleViolation.class,() -> OrderVerify.validate(orderReq, restaurantHandler));
+        assertThrows(DomainRuleViolation.class, () -> OrderVerify.validate(request, chain));
+    }
+
+    private static OrderRequest request(RestaurantStatus restaurantStatus, MenuItemStatus itemStatus) {
+        MenuItem item = new MenuItem("m1", "r1", "Wrap", itemStatus, 4.50);
+        Restaurant restaurant = new Restaurant("r1", "name", restaurantStatus, 1, 2, List.of(item));
+        return new OrderRequest(restaurant, "12345678", item, List.of(OrderLine.fromMenuItem(item, 1)));
     }
 }

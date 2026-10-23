@@ -17,22 +17,18 @@ import static org.mockito.Mockito.when;
 import com.fortunategoods.application.ord.orders.RestaurantOrderService;
 import com.fortunategoods.application.ord.orders.preparation.GetPreparationQueueResponse;
 import com.fortunategoods.domain.order.DomainRuleViolation;
-import com.fortunategoods.domain.order.Order;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 // The repositories are mocked: customer 7 has orders 101 and 100, staff 8 works for restaurant "1", staff 9 has none.
 class DashboardServiceTest {
 
-    private static final MenuItem WRAP = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50, 9.00);
 
     private OrderRepository orders;
     private RestaurantOrderService restaurantOrders;
@@ -45,7 +41,7 @@ class DashboardServiceTest {
         RestaurantRepository restaurants = mock(RestaurantRepository.class);
         restaurantOrders = mock(RestaurantOrderService.class);
 
-        when(orders.findByCustomerId("7")).thenReturn(List.of(order("101", OrderStatus.PLACED, null), order("100", OrderStatus.REJECTED, "Sold out")));
+        when(orders.findByCustomerId("7")).thenReturn(List.of(order("101", OrderStatus.PLACED), order("100", OrderStatus.REJECTED, "Sold out")));
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
         when(restaurants.findById("1")).thenReturn(new Restaurant("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of()));
         when(restaurantOrders.getPreparationQueue("8", UserRole.RESTAURANT, "1")).thenReturn(List.of(
@@ -112,10 +108,5 @@ class DashboardServiceTest {
     private void assertRefused(DomainRuleViolation.Reason reason, Runnable read) {
         DomainRuleViolation e = assertThrows(DomainRuleViolation.class, read::run);
         assertEquals(reason, e.getReason());
-    }
-
-    private static Order order(String id, OrderStatus status, String rejectReason) {
-        return new Order(id, "7", "1", null, status, "No onions", null, null, null, rejectReason,
-                List.of(OrderLine.fromMenuItem(WRAP, 2)));
     }
 }

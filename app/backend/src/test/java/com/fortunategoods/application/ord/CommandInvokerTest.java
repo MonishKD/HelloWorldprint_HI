@@ -37,6 +37,8 @@ import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.MenuItemRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.SessionValidator;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 
 /*
@@ -242,22 +244,9 @@ class CommandInvokerTest {
     }
 
     // Domain failure tests ----------
-    @Test 
-    void invalidDomain400(){
-        checkDomainFailure(DomainRuleViolation.Reason.INVALID, 400);
-    }
-
-    @Test 
-    void notFoundDomain404(){
-        checkDomainFailure(DomainRuleViolation.Reason.NOT_FOUND, 404);
-    }
-
-    @Test 
-    void conflictDomain409(){
-        checkDomainFailure(DomainRuleViolation.Reason.CONFLICT, 409);
-    }
-
-    private void checkDomainFailure(DomainRuleViolation.Reason reason, int expectedStatus) {
+    @ParameterizedTest
+    @CsvSource({"INVALID, 400", "NOT_FOUND, 404", "CONFLICT, 409"})
+    void domainFailuresKeepTheirStatus(DomainRuleViolation.Reason reason, int expectedStatus) {
         Session customer = new Session(7, UserRole.CUSTOMER);
 
         // Will be thrown by one of the domain services

@@ -1,95 +1,77 @@
 package com.fortunategoods.technical.security.session;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.*;
-import org.springframework.mock.web.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.web.context.request.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.fortunategoods.application.reg.Session;
-import com.fortunategoods.domain.user.*;
-import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.security.role.RoleCheck;
+import static com.fortunategoods.testsupport.TestData.PASSWORD;
+import static com.fortunategoods.testsupport.TestData.login;
 
+// Story #15: logging in starts a session and logging out ends it. Uses the real Login, Logout and SessionValidator.
+// Each "request" is a MockHttpServletRequest; giving the next one the same MockHttpSession
+// plays the part of the browser's session cookie.
 class SessionLifecycleTest {
 
-    private static final String PASSWORD = "secret";
-
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final SpringSecuritySessionValidator sessionValidator = new SpringSecuritySessionValidator(new RoleCheck());
-
-    // Where Spring Security keeps the logged-in user between requests (the server-side session).
     private final HttpSessionSecurityContextRepository sessionStore = new HttpSessionSecurityContextRepository();
+    private final Login login = login(UserRole.CUSTOMER);
+    private final MockHttpSession browserSession = new MockHttpSession();
 
-    // One customer account with id 1. The fake accounts table always finds it.
-    private final User account = new User("1", "tester", "tester@mail.com", null, passwordEncoder.encode(PASSWORD), UserRole.CUSTOMER);
-    private final UserRepository accounts = new UserRepository(null) {
-        @Override
-        public User findByUsername(String username) {
-            return username.equals("tester") ? account : null;
-        }
-    };
-
-    private final Login login = new Login(accounts, passwordEncoder);
-
-    // Clear the logged-in user so one test can't leak into the next.
     @AfterEach
     void forgetLoggedInUser() {
         SecurityContextHolder.clearContext();
         RequestContextHolder.resetRequestAttributes();
     }
 
-    // After login, the user's id and role live in the session: the next request knows who they are.
     @Test
     void loginPutsIdAndRoleInTheSession() {
-        MockHttpSession browserSession = new MockHttpSession();
-
-        newRequest(browserSession);
+        newRequest();
         login.login("tester", PASSWORD);
 
-        newRequest(browserSession);
+        newRequest();
         assertEquals(new Session(1, UserRole.CUSTOMER), sessionValidator.currentSession());
     }
 
-    // A wrong password is refused and starts no session.
     @Test
     void wrongPasswordStartsNoSession() {
-        MockHttpSession browserSession = new MockHttpSession();
-
-        newRequest(browserSession);
+        newRequest();
         assertThrows(BadCredentialsException.class, () -> login.login("tester", "wrong"));
 
-        newRequest(browserSession);
+        newRequest();
         assertThrows(AuthenticationException.class, sessionValidator::currentSession);
     }
 
-    // After logout, the next request is no longer logged in (it would get a 401).
     @Test
     void logoutEndsTheSession() {
-        MockHttpSession browserSession = new MockHttpSession();
-
-        newRequest(browserSession);
+        newRequest();
         login.login("tester", PASSWORD);
-
-        newRequest(browserSession);
+        newRequest();
         new Logout().logout();
 
-        newRequest(browserSession);
+        newRequest();
         assertThrows(AuthenticationException.class, sessionValidator::currentSession);
     }
 
-    // Starts a new fake request carrying this session, and loads whoever is saved in it,
-    private void newRequest(MockHttpSession browserSession) {
+    // Starts a new request carrying the browser's session and loads whoever is saved in it,
+    // which is what Spring Security does at the start of every real request.
+    private void newRequest() {
         SecurityContextHolder.clearContext();
         MockHttpServletRequest request = new MockHttpServletRequest();
         request.setSession(browserSession);
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request, new MockHttpServletResponse()));
-
         SecurityContextHolder.setContext(sessionStore.loadDeferredContext(request).get());
     }
 }
