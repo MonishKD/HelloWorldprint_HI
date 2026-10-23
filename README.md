@@ -163,4 +163,29 @@ Try `docker compose up --build` first. If it still acts weird, do `docker compos
 
 ## Running the app
 
-Use the Docker startup above: `docker compose up --build`, then open the website at `http://localhost:5173`. The frontend pages are still being built, so some screens may be empty for now.
+Use the Docker startup above: `docker compose up --build`, then open the website at `http://localhost:5173`.
+Every seeded account uses the password `demo123` (customers `alice` and `bob`, restaurants such as `pouletrouge` and `uniburger`,
+courier `carl`, operator `operator`). Couriers and operators can sign in, but their dashboards aren't part of Phase II.
+
+## Phase II demo
+
+Start from a fresh database (`SEED_MODE=reset` once, then back to `keep`). Use two browser windows, a normal one and a private
+one, because both tabs of the same window share one sign-in.
+
+1. **Customer** (`alice`): the restaurant list shows open, paused and closed restaurants. Open Poulet Rouge, add a bowl to the
+   cart, enter an address and place the order. My orders shows it as `placed`.
+2. **Restaurant** (`pouletrouge`, private window): the order is under New. Accept it (it enters the preparation queue as next),
+   start preparing, mark it ready. Each step shows up in the customer's My orders after a refresh.
+3. **Output console**: every action and the backend's answer (with the order event id) is listed on the right.
+
+Things that must be refused, each with the backend's reason shown on screen:
+
+| Try | Answer |
+|---|---|
+| Open `http://localhost:8080/api/restaurants` without signing in | 401, sign in first |
+| Register with the operator role (not offered in the form; the API refuses it too) | 400, operators can't be registered |
+| Order from Boustan (paused) | ordering is disabled; the API answers 409 "Restaurant is paused" |
+| Order Poulet Rouge's sold-out Lentil soup | the item can't be added; the API answers 409 "sold out" |
+| Customer cancels after the restaurant accepted | Cancel is gone; the API answers 409 "Only PLACED orders can be cancelled" |
+| A customer accepting an order (wrong role) | 403 |
+| Marking ready an order that is still placed (skipped state) | Mark ready isn't offered; the API answers 409 |
