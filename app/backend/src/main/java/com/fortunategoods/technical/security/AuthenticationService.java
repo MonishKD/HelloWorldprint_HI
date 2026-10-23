@@ -7,16 +7,18 @@ import com.fortunategoods.domain.user.User;
 import com.fortunategoods.technical.security.registration.CourierRegistration;
 import com.fortunategoods.technical.security.registration.CustomerRegistration;
 import com.fortunategoods.technical.security.registration.RestaurantRegistration;
+import com.fortunategoods.technical.security.session.CurrentAccount;
 import com.fortunategoods.technical.security.session.Login;
 import com.fortunategoods.technical.security.session.Logout;
 
-// The one class RegController (#57, #62) calls for registration, login and logout, as in A2 (#28).
+// The one class RegController (#57, #62) calls for registration, login, logout and the current session, as in A2 (#28).
 // It does no work itself: each method hands the request to the class that does that one job.
 //   registerCustomer()    -> registration/CustomerRegistration
 //   registerCourier()     -> registration/CourierRegistration
 //   registerRestaurant()  -> registration/RestaurantRegistration   (restaurant owner, #143)
 //   login()               -> session/Login
 //   logout()              -> session/Logout
+//   currentAccount()      -> session/CurrentAccount   (#66)
 // So RegController never touches passwords, the database or the session.
 // There is no Operator sign-up: Operators only come from the seed file (#25).
 //
@@ -30,14 +32,16 @@ public class AuthenticationService {
     private final RestaurantRegistration restaurantRegistration;
     private final Login login;
     private final Logout logout;
+    private final CurrentAccount currentAccount;
 
     public AuthenticationService(CustomerRegistration customerRegistration, CourierRegistration courierRegistration,
-            RestaurantRegistration restaurantRegistration, Login login, Logout logout) {
+            RestaurantRegistration restaurantRegistration, Login login, Logout logout, CurrentAccount currentAccount) {
         this.customerRegistration = customerRegistration;
         this.courierRegistration = courierRegistration;
         this.restaurantRegistration = restaurantRegistration;
         this.login = login;
         this.logout = logout;
+        this.currentAccount = currentAccount;
     }
 
     // Each sign-up returns the new account with its id.
@@ -66,5 +70,11 @@ public class AuthenticationService {
     // Ends the session. RegController calls it from POST /api/auth/logout (#62, #65).
     public void logout() {
         logout.logout();
+    }
+
+    // The signed-in account and, for restaurant staff, their restaurant. RegController calls it from
+    // GET /api/auth/session (#66).
+    public CurrentAccount.Account currentAccount() {
+        return currentAccount.find();
     }
 }

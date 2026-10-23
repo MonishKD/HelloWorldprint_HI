@@ -1,5 +1,6 @@
 package com.fortunategoods.application.reg;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,9 +12,11 @@ import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 
 import com.fortunategoods.technical.security.AuthenticationService;
+import com.fortunategoods.technical.security.session.CurrentAccount;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -43,6 +46,21 @@ public class RegController {
             case INVALID_CREDENTIALS -> error(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS",
                     "Wrong username, email or password.");
         };
+    }
+
+    // POST /api/auth/register (#60): { username, email, password, role, restaurantName?, address? }.
+    // 201 with the new account (never the password). Registering doesn't log in: the frontend logs in right after.
+    @PostMapping("/register")
+    public ResponseEntity<?> registerAccount(@RequestBody RegisterRequest request) {
+        try {
+            RegistrationResult account = register(request.username(), request.email(), request.password(),
+                    request.role(), request.restaurantName(), request.address());
+            return ResponseEntity.status(HttpStatus.CREATED).body(account);
+        } catch (DomainRuleViolation e) {
+            return error(HttpStatus.BAD_REQUEST, "INVALID", e.getMessage());
+        } catch (DuplicateKeyException e) {
+            return error(HttpStatus.CONFLICT, "CONFLICT", "That username or email is already taken.");
+        }
     }
 
     private LoginResult authenticate(String usernameOrEmail, String password) {
@@ -108,6 +126,16 @@ public class RegController {
         return value != null && !value.isBlank();
     }
 
+    // GET /api/auth/session (#66): who the session cookie belongs to. The frontend calls it after login and on reload,
+    // so it never decides the role itself. Not signed in: Spring Security answers 401 before this runs.
+    @GetMapping("/session")
+    public CurrentSessionResponse currentSession() {
+        CurrentAccount.Account account = authenticationService.currentAccount();
+        User user = account.user();
+        return new CurrentSessionResponse(user.getId(), user.getUsername(), user.getEmail(),
+                user.getRole().name().toLowerCase(java.util.Locale.ROOT), account.restaurantId());
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
         authenticationService.logout();
@@ -156,6 +184,17 @@ public class RegController {
     public String toString() {
         return "LoginRequest[usernameOrEmail=" + usernameOrEmail + ", password=***]";
         }
+    }
+
+    public record RegisterRequest(String username, String email, String password, String role,
+            String restaurantName, String address) {
+        @Override
+        public String toString() {
+            return "RegisterRequest[username=" + username + ", email=" + email + ", password=***, role=" + role + "]";
+        }
+    }
+
+    public record CurrentSessionResponse(String userId, String username, String email, String role, String restaurantId) {
     }
 
     public record SessionResponse(UserRole role) {

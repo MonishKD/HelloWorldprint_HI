@@ -24,7 +24,7 @@ class RegControllerTest {
     private Restaurant savedRestaurant;
     private String savedAddress;
 
-    private final AuthenticationService authenticationService = new AuthenticationService(null, null, null, null, null) {
+    private final AuthenticationService authenticationService = new AuthenticationService(null, null, null, null, null, null) {
         @Override
         public User registerCustomer(String username, String email, String password) {
             return save("CUSTOMER", username, email, password);
