@@ -9,32 +9,55 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.technical.security.SessionValidator;
 
 /*
-    REST endpoints for the dashboards (#140). For now: the output console feed.
+    REST endpoints for the dashboards: the output console feed, and each role's own dashboard data.
     @RestController: Spring sends every request that matches the paths below to this class,
     and turns what the method returns into JSON.
     Reading the console is not a command, so it does not go through CommandInvoker
-    (otherwise every refresh would itself be logged).
+    (otherwise every refresh would itself be logged). The dashboard reads do, so their role is checked.
 */
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
     private final OutputConsoleFeed outputConsoleFeed; // builds the console entries
-    private final CustomerOrderStatusView customerOrderStatusView; // a customer's own orders
-    private final PreparationQueueView preparationQueueView;       // a restaurant's orders
+    private final CustomerOrderList customerOrderList;     // a customer's own orders
+    private final RestaurantOrderList restaurantOrderList; // a restaurant's orders
     private final SessionValidator sessionValidator;   // gives the session of the signed-in user
+    private final CommandInvoker invoker;
+    private final DashboardService dashboardService;
 
-    // Spring gives us both of these.
-    public DashboardController(OutputConsoleFeed outputConsoleFeed, CustomerOrderStatusView customerOrderStatusView,
-            PreparationQueueView preparationQueueView, SessionValidator sessionValidator) {
+    // Spring gives us all of these.
+    public DashboardController(OutputConsoleFeed outputConsoleFeed, CustomerOrderList customerOrderList,
+            RestaurantOrderList restaurantOrderList, SessionValidator sessionValidator,
+            CommandInvoker invoker, DashboardService dashboardService) {
         this.outputConsoleFeed = outputConsoleFeed;
-        this.customerOrderStatusView = customerOrderStatusView;
-        this.preparationQueueView = preparationQueueView;
+        this.customerOrderList = customerOrderList;
+        this.restaurantOrderList = restaurantOrderList;
         this.sessionValidator = sessionValidator;
+        this.invoker = invoker;
+        this.dashboardService = dashboardService;
+    }
+
+    // Customers only (403 otherwise). Which customer comes from the session, so nobody can read another's orders.
+    @GetMapping("/customer")
+    public ResponseEntity<CommandSuccess<CustomerOrderStatusView>> getCustomerDashboard() {
+        Session session = sessionValidator.currentSession();
+        GetCustomerDashboardCommand command = new GetCustomerDashboardCommand(dashboardService, session);
+        return ResponseEntity.ok(invoker.process(command, session));
+    }
+
+    // Restaurant staff only (403 otherwise). Their restaurant comes from their account, not the request.
+    @GetMapping("/restaurant")
+    public ResponseEntity<CommandSuccess<PreparationQueueView>> getRestaurantDashboard() {
+        Session session = sessionValidator.currentSession();
+        GetRestaurantDashboardCommand command = new GetRestaurantDashboardCommand(dashboardService, session);
+        return ResponseEntity.ok(invoker.process(command, session));
     }
 
     // GET /api/dashboard/console              -> the newest 100 entries of the signed-in user, oldest first
@@ -52,14 +75,14 @@ public class DashboardController {
         return ResponseEntity.ok(entries);
     }
 
-    // GET /api/dashboard/orders (#132, #135): a customer's own orders (CustomerOrderStatusView), or the signed-in
-    // staff's restaurant orders (PreparationQueueView). Couriers and operators have no orders dashboard in Phase II: 403.
+    // GET /api/dashboard/orders (#132): a customer's own orders (CustomerOrderList), or the signed-in
+    // staff's restaurant orders (RestaurantOrderList), with every order's details. Couriers and operators have no orders dashboard in Phase II: 403.
     @GetMapping("/orders")
     public List<DashboardOrder> getOrders() {
         Session session = sessionValidator.currentSession();
         return switch (session.getRole()) {
-            case CUSTOMER -> customerOrderStatusView.ordersOf(session);
-            case RESTAURANT -> preparationQueueView.ordersOf(session);
+            case CUSTOMER -> customerOrderList.ordersOf(session);
+            case RESTAURANT -> restaurantOrderList.ordersOf(session);
             default -> throw new AccessDeniedException("Only customers and restaurant staff have orders to show");
         };
     }

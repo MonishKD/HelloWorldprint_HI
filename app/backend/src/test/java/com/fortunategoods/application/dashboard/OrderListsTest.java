@@ -23,21 +23,21 @@ import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
-// CustomerOrderStatusView and PreparationQueueView (#132): each reads only the signed-in user's own orders,
+// CustomerOrderList and RestaurantOrderList (#132): each reads only the signed-in user's own orders,
 // and both shape them the same way for the dashboards.
-public class OrderStatusViewsTest {
+public class OrderListsTest {
 
     private OrderRepository orders;
     private UserRepository users;
-    private CustomerOrderStatusView customerView;
-    private PreparationQueueView restaurantView;
+    private CustomerOrderList customerView;
+    private RestaurantOrderList restaurantView;
 
     @BeforeEach
     void setup() {
         orders = mock(OrderRepository.class);
         users = mock(UserRepository.class);
-        customerView = new CustomerOrderStatusView(orders);
-        restaurantView = new PreparationQueueView(orders, users);
+        customerView = new CustomerOrderList(orders);
+        restaurantView = new RestaurantOrderList(orders, users);
     }
 
     @Test

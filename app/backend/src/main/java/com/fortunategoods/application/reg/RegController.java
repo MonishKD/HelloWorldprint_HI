@@ -1,10 +1,12 @@
 package com.fortunategoods.application.reg;
 
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.dao.DuplicateKeyException;
+
+import com.fortunategoods.application.reg.RegistrationResult.RegistrationOutcome;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.SignUpRules;
@@ -25,6 +27,7 @@ import com.fortunategoods.application.ord.execution.CommandError;
 /*  
 Login and logout orchestration for #62, against AuthenticationService (#28).
  This has now been refactored for step #65 too!
+ Registration (#57) is the register() method below.
 */ 
 @RestController
 @RequestMapping("/api/auth")
@@ -48,21 +51,6 @@ public class RegController {
         };
     }
 
-    // POST /api/auth/register (#60): { username, email, password, role, restaurantName?, address? }.
-    // 201 with the new account (never the password). Registering doesn't log in: the frontend logs in right after.
-    @PostMapping("/register")
-    public ResponseEntity<?> registerAccount(@RequestBody RegisterRequest request) {
-        try {
-            RegistrationResult account = register(request.username(), request.email(), request.password(),
-                    request.role(), request.restaurantName(), request.address());
-            return ResponseEntity.status(HttpStatus.CREATED).body(account);
-        } catch (DomainRuleViolation e) {
-            return error(HttpStatus.BAD_REQUEST, "INVALID", e.getMessage());
-        } catch (DuplicateKeyException e) {
-            return error(HttpStatus.CONFLICT, "CONFLICT", "That username or email is already taken.");
-        }
-    }
-
     private LoginResult authenticate(String usernameOrEmail, String password) {
         if (isBlank(usernameOrEmail) || isBlank(password) || usernameOrEmail.length() > 255 || password.length() > 255) {
             return LoginResult.failure(LoginOutcome.INVALID_INPUT);
@@ -76,54 +64,101 @@ public class RegController {
         }
     }
 
-    // Registers a new account, checking the input and the Domain rules. Returns the new account's id, username, email and role.
+    /*
+        The registration URL (#60): POST /api/auth/register.
+        SecurityConfig already lets anyone call it without being logged in.
+
+        @RequestBody tells Spring to turn the JSON the frontend sends into a RegisterReqJSON (its own file).
+        The real work is done by register() just below (#57); this method only translates its answer into HTTP:
+          SUCCESS        -> 201 Created, with the new account (no password)
+          INVALID_INPUT  -> 400 Bad Request, in the shared error shape { status, code, message }
+          ACCOUNT_TAKEN  -> 409 Conflict, in the same shared error shape
+    */
+    @PostMapping("/register")
+    public ResponseEntity<?> registerAccount(@RequestBody RegisterReqJSON request) {
+        RegistrationResult result = register(request.getUsername(), request.getEmail(), request.getPassword(),
+                request.getRole(), request.getRestaurantName(), request.getAddress());
+        return switch (result.outcome()) {
+            case SUCCESS -> ResponseEntity.status(HttpStatus.CREATED).body(RegisterResponse.of(result));
+            case INVALID_INPUT -> error(HttpStatus.BAD_REQUEST, "INVALID_INPUT", result.message());
+            case ACCOUNT_TAKEN -> error(HttpStatus.CONFLICT, "ACCOUNT_TAKEN", result.message());
+        };
+    }
+
+    /*
+        Registration (#57): signs up one account with one public role.
+        This is a plain method on purpose: the HTTP route (POST /api/auth/register) and the JSON body
+        are added by #60, which will call this method and turn the result into a response.
+
+        The steps, in order:
+          1. Check the fields typed in the form are there and not too long.
+          2. Ask the Domain's sign-up rules (SignUpRules) which role this is, and whether the
+             restaurant name and address fit that role. Operator is refused here.
+          3. Hand the account to AuthenticationService, which hashes the password and saves it.
+             For a restaurant, it also saves the new closed restaurant and the owner link, all together (#143).
+        Any refusal comes back as a RegistrationResult failure with a message, never as a crash.
+    */
     public RegistrationResult register(String username, String email, String password, String role,
             String restaurantName, String address) {
-        // 1. Required fields
-        requireFilled(username, "Username");
-        requireFilled(email, "Email");
-        requireFilled(password, "Password");
 
-        // 2. Domain rule: one public role, never operator
-        UserRole chosenRole = SignUpRules.publicRole(role);
-
-        // 3. Restaurant name and address only for the restaurant role
-        boolean hasRestaurantFields = filled(restaurantName) || filled(address);
-        if (chosenRole == UserRole.RESTAURANT) {
-            requireFilled(restaurantName, "Restaurant name");
-            requireFilled(address, "Address");
-        } else if (hasRestaurantFields) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
-                    "Restaurant name and address are only for restaurant accounts");
+        // 1. Required fields. 255 matches the limit used for login above.
+        if (isBlank(username) || isBlank(email) || isBlank(password)) {
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT,
+                    "Username, email and password are required.");
+        }
+        if (username.length() > 255 || email.length() > 255 || password.length() > 255) {
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT,
+                    "Username, email and password must be at most 255 characters.");
         }
 
-        // 4. Save the account through AuthenticationService, which hashes the password
+        // Spaces around the username or email are typing mistakes, so they are not saved.
+        // The email is also saved in lower case, so "Ann@Mail.com" and "ann@mail.com" count as the same email.
         String cleanUsername = username.trim();
-        String cleanEmail = email.trim();
-        User account = switch (chosenRole) {
-            case CUSTOMER -> authenticationService.registerCustomer(cleanUsername, cleanEmail, password);
-            case COURIER -> authenticationService.registerCourier(cleanUsername, cleanEmail, password);
-            case RESTAURANT -> {
-                // The account, its new closed restaurant and the owner link are saved together (#28)
-                Restaurant newRestaurant = SignUpRules.newRestaurant(restaurantName);
-                yield authenticationService.registerRestaurant(cleanUsername, cleanEmail, password, newRestaurant, address.trim());
+        String cleanEmail = email.trim().toLowerCase();
+
+        try {
+            // 2. The Domain's rules. Each one throws a DomainRuleViolation if the input breaks it.
+            UserRole chosenRole = SignUpRules.publicRole(role);
+            SignUpRules.checkRestaurantDetails(chosenRole, restaurantName, address);
+
+            // 3. Save the account the way its role needs.
+            User newAccount = saveAccount(chosenRole, cleanUsername, cleanEmail, password, restaurantName, address);
+            // A restaurant account also gets back the id of the restaurant just created for it (#144).
+            String restaurantId = null;
+            if (chosenRole == UserRole.RESTAURANT) {
+                restaurantId = authenticationService.restaurantIdOf(newAccount.getId());
             }
-            case OPERATOR -> throw new IllegalStateException("SignUpRules already refuses operators");
-        };
+            return RegistrationResult.success(newAccount, restaurantId);
 
-        return RegistrationResult.of(account);
-    }
+        } catch (DomainRuleViolation brokenRule) {
+            // The message was written by SignUpRules for the user, e.g. "Operator accounts cannot be registered".
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT, brokenRule.getMessage());
 
-    // Throws INVALID with "<field> is required" when the value is missing or only spaces.
-    private static void requireFilled(String value, String field) {
-        if (!filled(value)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, field + " is required");
+        } catch (DuplicateKeyException taken) {
+            // AuthenticationService throws this when the username or email is already used.
+            // Its message says which one, e.g. "This username is already taken".
+            return RegistrationResult.failure(RegistrationOutcome.ACCOUNT_TAKEN, taken.getMessage());
         }
     }
 
-    // true when the value has something other than spaces.
-    private static boolean filled(String value) {
-        return value != null && !value.isBlank();
+    // Picks the AuthenticationService method for the role. SignUpRules.publicRole() already refused OPERATOR,
+    // so only these three roles can reach this method.
+    private User saveAccount(UserRole role, String username, String email, String password,
+            String restaurantName, String address) {
+        switch (role) {
+            case CUSTOMER:
+                return authenticationService.registerCustomer(username, email, password);
+            case COURIER:
+                return authenticationService.registerCourier(username, email, password);
+            case RESTAURANT:
+                // The Domain builds the new restaurant: closed, with an empty menu (#144).
+                Restaurant newRestaurant = SignUpRules.newRestaurant(restaurantName);
+                return authenticationService.registerRestaurant(username, email, password, newRestaurant,
+                        address.trim());
+            default:
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
+                        "Operator accounts cannot be registered");
+        }
     }
 
     // GET /api/auth/session (#66): who the session cookie belongs to. The frontend calls it after login and on reload,
@@ -183,14 +218,6 @@ public class RegController {
     @Override
     public String toString() {
         return "LoginRequest[usernameOrEmail=" + usernameOrEmail + ", password=***]";
-        }
-    }
-
-    public record RegisterRequest(String username, String email, String password, String role,
-            String restaurantName, String address) {
-        @Override
-        public String toString() {
-            return "RegisterRequest[username=" + username + ", email=" + email + ", password=***, role=" + role + "]";
         }
     }
 

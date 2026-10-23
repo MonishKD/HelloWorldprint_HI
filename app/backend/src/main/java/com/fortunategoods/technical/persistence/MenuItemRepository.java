@@ -95,7 +95,8 @@ public class MenuItemRepository {
 
     // Turns one row of the menu_items table into a MenuItem of this restaurant.
     private MenuItem toMenuItem(ResultSet row, String restaurantId) throws SQLException {
-        // DECIMAL arrives as BigDecimal: Postgres' driver can't hand it over as a Double. Empty stays null.
+        // original_price is a numeric column, and the Postgres driver cannot read numeric straight into a Double,
+        // so it is read as a BigDecimal first. It is empty (null) for an item that is not discounted.
         BigDecimal originalPrice = row.getBigDecimal("original_price");
         return new MenuItem(
                 row.getString("id"),

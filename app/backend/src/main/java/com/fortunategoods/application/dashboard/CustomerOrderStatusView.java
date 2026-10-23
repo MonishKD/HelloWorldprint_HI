@@ -1,25 +1,44 @@
 package com.fortunategoods.application.dashboard;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-import org.springframework.stereotype.Service;
-
-import com.fortunategoods.application.reg.Session;
-import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.domain.order.Order;
 
 /*
-    A2 CustomerOrderStatusView (#132): the signed-in customer's own orders and their current state, oldest first.
-    Reading is not a command (like the console feed), so it is not logged.
+    The customer dashboard: the signed-in customer's own orders with their current status, newest first.
+    Field names match what the frontend's adapters.ts reads for an order.
+    status is lowercase ("placed"), like the other order responses.
 */
-@Service
-public class CustomerOrderStatusView {
-    private final OrderRepository orders;
+public record CustomerOrderStatusView(List<OrderRow> orders) {
 
-    public CustomerOrderStatusView(OrderRepository orders) {
-        this.orders = orders;
+    public CustomerOrderStatusView {
+        orders = List.copyOf(orders);
     }
 
-    public List<DashboardOrder> ordersOf(Session session) {
-        return orders.findByCustomer(String.valueOf(session.getUserID())).stream().map(DashboardOrder::of).toList();
+    public record OrderRow(String id, String restaurantId, String restaurantName, String status, double total,
+            String deliveryAddress, String specialInstructions, String rejectReason, List<LineRow> lines) {
+    }
+
+    // name and price are the copy saved when the order was placed.
+    public record LineRow(String menuItemId, String name, int quantity, double price, Double originalPrice) {
+    }
+
+    // restaurantNames: restaurant id -> name, for the restaurants these orders come from.
+    public static CustomerOrderStatusView of(List<Order> orders, Map<String, String> restaurantNames) {
+        return new CustomerOrderStatusView(orders.stream()
+                .map(order -> row(order, restaurantNames.get(order.getRestaurantId())))
+                .toList());
+    }
+
+    private static OrderRow row(Order order, String restaurantName) {
+        List<LineRow> lines = order.getLines().stream()
+                .map(line -> new LineRow(line.getMenuItemId(), line.getName(), line.getQuantity(), line.getPrice(), line.getOriginalPrice()))
+                .toList();
+        double total = order.getLines().stream().mapToDouble(line -> line.getPrice() * line.getQuantity()).sum();
+        return new OrderRow(order.getId(), order.getRestaurantId(), restaurantName,
+                order.getStatus().name().toLowerCase(Locale.ROOT), total, order.getDeliveryAddress(),
+                order.getSpecialInstructions(), order.getRejectReason(), lines);
     }
 }

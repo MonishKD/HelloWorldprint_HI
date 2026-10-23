@@ -1,33 +1,58 @@
 package com.fortunategoods.domain.restaurant;
 
-import java.util.Map;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.fortunategoods.application.ord.FakeMenuDatabase;
+import com.fortunategoods.application.ord.menu.MenuService;
 import com.fortunategoods.application.ord.menu.management.MenuItemInput;
 import com.fortunategoods.application.ord.menu.management.MenuItemResponse;
-import com.fortunategoods.application.ord.menu.MenuService;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.MenuItemRepository;
+import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
 
-// The database is FakeMenuDatabase: restaurant "1" (staff user 8, item "10" Wrap) and restaurant "2" (staff user 9, item "30" Soup).
-// Tests the MenuService's add, edit and remove menu item commands, through the domain rules in MenuItemRules across all the scenarios: valid, invalid, forbidden and not found.
+// Tests the MenuService's add, edit and remove menu item operations, through the domain rules in MenuItemRules:
+// valid, invalid, forbidden and not found. The repositories are mocked:
+// restaurant "1" (staff user 8, item "10" Wrap) and restaurant "2" (staff user 9, item "30" Soup).
 class MenuEditingTest {
 
-    private final FakeMenuDatabase db = new FakeMenuDatabase();
-    private final MenuService menuService = db.menuService();
-
+    private static final MenuItem WRAP = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50, 9.00);
+    private static final MenuItem SOUP = new MenuItem("30", "2", "Soup", MenuItemStatus.AVAILABLE, 3.00, 6.00);
     private static final MenuItemInput SALAD = new MenuItemInput(" Salad ", " Fresh greens ", 5.00, 10.00, MenuItemStatus.AVAILABLE);
-    
+
+    private MenuItemRepository items;
+    private MenuService menuService;
+
+    @BeforeEach
+    void setup() {
+        items = mock(MenuItemRepository.class);
+        UserRepository users = mock(UserRepository.class);
+        when(users.findRestaurantIdByUserId("8")).thenReturn("1");
+        when(users.findRestaurantIdByUserId("9")).thenReturn("2");
+        when(items.findByRestaurantId("1")).thenReturn(List.of(WRAP));
+        when(items.findByRestaurantId("2")).thenReturn(List.of(SOUP));
+        when(items.add(eq("1"), any(), any(), any())).thenReturn("20");
+
+        menuService = new MenuService(mock(RestaurantRepository.class), users, items);
+    }
+
     @Test
     void staffAddsAnItemToTheirOwnMenu() {
         MenuItemResponse added = menuService.addMenuItem("8", UserRole.RESTAURANT, "1", SALAD);
@@ -38,7 +63,10 @@ class MenuEditingTest {
         assertEquals(5.00, added.price());
         assertEquals(10.00, added.originalPrice());
         assertEquals(MenuItemStatus.AVAILABLE, added.status());
-        assertTrue(customerMenuHas("20"));
+
+        ArgumentCaptor<MenuItem> saved = ArgumentCaptor.forClass(MenuItem.class);
+        verify(items).add(eq("1"), saved.capture(), eq("Fresh greens"), eq(10.00));
+        assertEquals("Salad", saved.getValue().getName());
     }
 
     @Test
@@ -48,21 +76,23 @@ class MenuEditingTest {
         MenuItemResponse edited = menuService.editMenuItem("8", UserRole.RESTAURANT, "1", "10", edit);
 
         assertEquals("Big Wrap", edited.name());
-        assertEquals("Big Wrap", db.items.get("10").getName());
-        assertEquals(6.00, db.items.get("10").getPrice());
-        assertNull(db.items.get("10").getOriginalPrice());
-        assertEquals(MenuItemStatus.SOLD_OUT, db.items.get("10").getStatus());
-        assertEquals("Now bigger", db.descriptions.get("10"));
+        ArgumentCaptor<MenuItem> saved = ArgumentCaptor.forClass(MenuItem.class);
+        verify(items).update(saved.capture(), eq("Now bigger"), isNull());
+        assertEquals("10", saved.getValue().getId());
+        assertEquals("Big Wrap", saved.getValue().getName());
+        assertEquals(6.00, saved.getValue().getPrice());
+        assertNull(saved.getValue().getOriginalPrice());
+        assertEquals(MenuItemStatus.SOLD_OUT, saved.getValue().getStatus());
     }
 
+    // Removing only hides the item; a past order line keeps its own name and price.
     @Test
-    void removedItemLeavesTheMenuButPastOrdersKeepIt() {
-        OrderLine pastOrderLine = OrderLine.fromMenuItem(db.items.get("10"), 2);
+    void removedItemIsHiddenAndPastOrdersKeepIt() {
+        OrderLine pastOrderLine = OrderLine.fromMenuItem(WRAP, 2);
 
         menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "10");
 
-        assertFalse(customerMenuHas("10"));
-        assertNotNull(db.items.get("10"));                // hidden, not deleted
+        verify(items).hide("10");
         assertEquals("Wrap", pastOrderLine.getName());
         assertEquals(4.50, pastOrderLine.getPrice());
         assertEquals("10", pastOrderLine.getMenuItemId());
@@ -70,27 +100,27 @@ class MenuEditingTest {
 
     @Test
     void anotherRestaurantsMenuIsRefused() {
-        Map<String, MenuItem> before = Map.copyOf(db.items);
-
         assertRefused(DomainRuleViolation.Reason.FORBIDDEN, () -> menuService.addMenuItem("8", UserRole.RESTAURANT, "2", SALAD));
         assertRefused(DomainRuleViolation.Reason.FORBIDDEN, () -> menuService.editMenuItem("8", UserRole.RESTAURANT, "2", "30", SALAD));
         assertRefused(DomainRuleViolation.Reason.FORBIDDEN, () -> menuService.removeMenuItem("8", UserRole.RESTAURANT, "2", "30"));
 
-        assertEquals(before, db.items);
-        assertTrue(db.hidden.isEmpty());
+        verifyNothingSaved();
     }
 
     @Test
     void otherRestaurantsItemThroughOwnUrlIsNotFound() {
         assertRefused(DomainRuleViolation.Reason.NOT_FOUND, () -> menuService.editMenuItem("8", UserRole.RESTAURANT, "1", "30", SALAD));
         assertRefused(DomainRuleViolation.Reason.NOT_FOUND, () -> menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "30"));
-        assertFalse(db.hidden.contains("30"));
+
+        verifyNothingSaved();
     }
 
     @Test
     void otherRolesAreRefused() {
         assertRefused(DomainRuleViolation.Reason.FORBIDDEN, () -> menuService.addMenuItem("7", UserRole.CUSTOMER, "1", SALAD));
         assertRefused(DomainRuleViolation.Reason.FORBIDDEN, () -> menuService.removeMenuItem("7", UserRole.COURIER, "1", "10"));
+
+        verifyNothingSaved();
     }
 
     @Test
@@ -104,22 +134,26 @@ class MenuEditingTest {
         assertInvalid(new MenuItemInput("Salad", null, 5.00, null, null), "Status must be available or sold_out");
         assertInvalid(new MenuItemInput("x".repeat(101), null, 5.00, null, MenuItemStatus.AVAILABLE), "The name can have at most 100 characters");
 
-        assertEquals(2, db.items.size());
+        verifyNothingSaved();
     }
 
+    // The repository leaves removed items out of the menu, so they can't be edited or removed again.
     @Test
     void removedUnknownAndBadItemIdsAreRefused() {
-        menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "10");
+        when(items.findByRestaurantId("1")).thenReturn(List.of());
 
         assertRefused(DomainRuleViolation.Reason.NOT_FOUND, () -> menuService.editMenuItem("8", UserRole.RESTAURANT, "1", "10", SALAD));
         assertRefused(DomainRuleViolation.Reason.NOT_FOUND, () -> menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "10"));
         assertRefused(DomainRuleViolation.Reason.NOT_FOUND, () -> menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "99"));
         assertRefused(DomainRuleViolation.Reason.INVALID, () -> menuService.removeMenuItem("8", UserRole.RESTAURANT, "1", "abc"));
+
+        verifyNothingSaved();
     }
 
-    private boolean customerMenuHas(String itemId) {
-        return menuService.browseMenu("1", "7", UserRole.CUSTOMER).items().stream()
-                .anyMatch(item -> item.getId().equals(itemId));
+    private void verifyNothingSaved() {
+        verify(items, never()).add(anyString(), any(), any(), any());
+        verify(items, never()).update(any(), any(), any());
+        verify(items, never()).hide(anyString());
     }
 
     private void assertInvalid(MenuItemInput input, String message) {

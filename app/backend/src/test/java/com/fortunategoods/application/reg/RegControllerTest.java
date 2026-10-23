@@ -2,12 +2,14 @@ package com.fortunategoods.application.reg;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.Test;
 
-import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.application.reg.RegistrationResult.RegistrationOutcome;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.User;
@@ -24,7 +26,7 @@ class RegControllerTest {
     private Restaurant savedRestaurant;
     private String savedAddress;
 
-    private final AuthenticationService authenticationService = new AuthenticationService(null, null, null, null, null, null) {
+    private final AuthenticationService authenticationService = new AuthenticationService(null, null, null, null, null, null, null) {
         @Override
         public User registerCustomer(String username, String email, String password) {
             return save("CUSTOMER", username, email, password);
@@ -41,6 +43,12 @@ class RegControllerTest {
             savedAddress = address;
             return save("RESTAURANT", username, email, password);
         }
+
+        // A restaurant sign-up also asks for the new restaurant's id (#144). The database would give it one; here it is 1.
+        @Override
+        public String restaurantIdOf(String userId) {
+            return "1";
+        }
     };
 
     private final RegController regController = new RegController(authenticationService);
@@ -52,7 +60,11 @@ class RegControllerTest {
 
         assertEquals("CUSTOMER", savedRole);
         assertEquals("alice", savedUsername); // spaces trimmed
-        assertEquals(new RegistrationResult("5", "alice", "alice@mail.com", UserRole.CUSTOMER), result);
+        assertEquals(RegistrationOutcome.SUCCESS, result.outcome());
+        assertEquals("5", result.userId());
+        assertEquals("alice", result.username());
+        assertEquals("alice@mail.com", result.email());
+        assertEquals(UserRole.CUSTOMER, result.role());
         assertFalse(result.toString().contains("secret"));
     }
 
@@ -76,6 +88,7 @@ class RegControllerTest {
         assertEquals(RestaurantStatus.CLOSED, savedRestaurant.getStatus());
         assertTrue(savedRestaurant.getMenu().isEmpty());
         assertEquals("1 Main St", savedAddress);
+        assertEquals("1", result.restaurantId());
     }
 
     // Operators can't sign up, and nothing is saved.
@@ -107,10 +120,11 @@ class RegControllerTest {
         assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "customer", "Green Leaf", null));
     }
 
-    // Checks that the call is refused as INVALID and that AuthenticationService was never asked to save anything.
-    private void assertInvalid(Runnable registration) {
-        DomainRuleViolation e = assertThrows(DomainRuleViolation.class, registration::run);
-        assertEquals(DomainRuleViolation.Reason.INVALID, e.getReason());
+    // Checks that the sign-up comes back as INVALID_INPUT with a message, and that AuthenticationService was never asked to save anything.
+    private void assertInvalid(Supplier<RegistrationResult> registration) {
+        RegistrationResult result = registration.get();
+        assertEquals(RegistrationOutcome.INVALID_INPUT, result.outcome());
+        assertNotNull(result.message());
         assertNull(savedRole);
     }
 
