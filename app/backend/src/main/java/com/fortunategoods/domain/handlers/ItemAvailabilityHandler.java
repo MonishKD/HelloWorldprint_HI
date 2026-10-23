@@ -6,6 +6,7 @@ import com.fortunategoods.domain.order.OrderLine;
 public class ItemAvailabilityHandler extends BaseOrderHandler {
     @Override 
     public boolean handle(OrderRequest orderRequest){
+
         for (OrderLine order: orderRequest.getOrderLines()){
             if(order.getMenuItem().getStatus() == com.fortunategoods.domain.restaurant.MenuItemStatus.SOLD_OUT){
                 //changed to get name from orderLine instead just to make it more clean
@@ -23,9 +24,6 @@ public class ItemAvailabilityHandler extends BaseOrderHandler {
             }
             return true;
         
-    }
-    public void setNextHandler(BaseOrderHandler nextHandler){
-        this.nextHandler = nextHandler;
     }
     
 }
