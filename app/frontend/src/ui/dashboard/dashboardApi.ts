@@ -2,7 +2,8 @@ import { useSyncExternalStore } from 'react';
 
 // dashboardApi (a2: ui.dashboard): the output-console log, plus the data the dashboards display
 // (customer order statuses, the restaurant's preparation queue).
-// TODO: the backend's own command log (GET /dashboard/console, OutputConsoleFeed) could feed the console too.
+// The console shows the backend's command log (GET /dashboard/console, a2 OutputConsoleFeed) next to this browser-side log,
+// which only keeps what the backend never records: what was just sent, sign-in/out, and errors that never reached a command.
 import type { Order, OrderStatus } from '../../domain';
 import { toOrder } from '../adapters';
 import { ApiError, request, takeResponseNote } from '../http';
@@ -51,8 +52,18 @@ export function errorMessage(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
+const commandListeners = new Set<() => void>();
+
+/** OutputConsolePanel listens here to reload the backend's command log after each command (#140). */
+export function onCommandFinished(listener: () => void) {
+  commandListeners.add(listener);
+  return () => {
+    commandListeners.delete(listener);
+  };
+}
+
 /**
- * Every user action goes through here (R-DASH-06): logs what was sent, then the response (OK or the error),
+ * Every user action goes through here (R-DASH-06): logs what was sent, then makes sure its outcome reaches the console,
  * and rethrows errors so the caller can show them.
  */
 export async function send<T>(action: string, run: () => Promise<T>): Promise<T> {
@@ -60,14 +71,16 @@ export async function send<T>(action: string, run: () => Promise<T>): Promise<T>
   takeResponseNote(); // forget anything left over from an earlier request
   try {
     const result = await run();
-    // With the real backend, show what it answered ("Order accepted") and the transition's event id (R-ORD-05).
-    const note = takeResponseNote();
-    const detail = [note?.message, note?.eventId != null ? `event #${note.eventId}` : ''].filter(Boolean).join(' · ');
-    logOk(detail ? `${action}: ${detail}` : action);
+    // A command answers in the { data, message, eventId } envelope and the backend logs it (CommandLog): the console
+    // shows that entry. Anything else (sign-in, sign-out) is only logged here.
+    if (takeResponseNote()) commandListeners.forEach((listener) => listener());
+    else logOk(action);
     return result;
   } catch (e) {
-    const code = e instanceof ApiError && e.code ? ` [${e.status} ${e.code}]` : '';
-    logError(`${action}: ${errorMessage(e)}${code}`);
+    // ponytail: a refusal with a status is taken as logged by the backend; a 400 from malformed JSON isn't, but the UI never sends one.
+    // A 401, a network failure or an error raised in the browser never reaches a command, so those are logged here.
+    if (e instanceof ApiError && e.status >= 400 && e.status !== 401) commandListeners.forEach((listener) => listener());
+    else logError(`${action}: ${errorMessage(e)}${e instanceof ApiError && e.code ? ` [${e.status} ${e.code}]` : ''}`);
     throw e;
   }
 }
@@ -86,18 +99,32 @@ export interface CommandLogRow {
   eventId?: number | null;
 }
 
-/** Turns a backend log row into a console line: SUCCESS is OK, REFUSED and ERROR are shown as errors. */
+/** "PlaceOrderCommand" -> "Place order" */
+const commandLabel = (name: string) => name.replace(/Command$/, '').replace(/(?!^)([A-Z])/g, ' $1').replace(/^(.)(.*)$/, (_, a, b) => a + b.toLowerCase());
+
+/**
+ * Turns a backend log row into a console line: SUCCESS is OK, REFUSED and ERROR are shown as errors.
+ * The time comes without a zone; the database clock is UTC (Docker), so it is read as UTC.
+ */
 export function toLogEntry(row: CommandLogRow): LogEntry {
   const text = row.statusMessage || row.statusCode;
+  const at = /(Z|[+-]\d\d:\d\d)$/.test(row.createdAt) ? row.createdAt : `${row.createdAt}Z`;
   return {
     id: Number(row.id),
-    at: new Date(row.createdAt),
+    at: new Date(at),
     kind: row.result === 'SUCCESS' ? 'ok' : 'error',
-    message: `${row.commandName}: ${text}${row.eventId != null ? ` (event #${row.eventId})` : ''}`,
+    message: `${commandLabel(row.commandName)}: ${text}${row.eventId != null ? ` · event #${row.eventId}` : ''}`,
   };
 }
-// TODO: when #140 exposes the feed, load it with request<CommandLogRow[]>('/console') and show it in OutputConsolePanel
-// next to (or instead of) the client-side log above.
+
+/** The backend sends the console 100 entries at a time. */
+export const CONSOLE_PAGE = 100;
+
+/** GET /dashboard/console: the signed-in user's newest command log entries, oldest first; `before` loads the page before that entry. */
+export async function getConsoleFeed(before?: number): Promise<LogEntry[]> {
+  const rows = await request<CommandLogRow[]>(`/dashboard/console${before ? `?before=${before}` : ''}`);
+  return rows.map(toLogEntry);
+}
 
 // ---------- Dashboard data ----------
 
