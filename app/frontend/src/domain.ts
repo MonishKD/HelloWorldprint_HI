@@ -94,4 +94,6 @@ export interface Order {
   courierName?: string;
   /** When the courier collected the order; drives the live map on the demo. */
   pickedUpAt?: string;
+  /** When the restaurant accepted the order; the preparation queue is ordered by this (first accepted, first prepared). */
+  acceptedAt?: string;
 }
