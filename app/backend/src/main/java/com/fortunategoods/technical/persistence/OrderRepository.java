@@ -81,6 +81,18 @@ public class OrderRepository {
         return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId), status.name());
     }
 
+    // A customer's orders, oldest first, whatever their status (dashboard read, #132).
+    public List<Order> findByCustomer(String customerId) {
+        String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(customerId));
+    }
+
+    // A restaurant's orders, oldest first, whatever their status (dashboard read, #132).
+    public List<Order> findByRestaurant(String restaurantId) {
+        String sql = "SELECT * FROM orders WHERE restaurant_id = ? ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId));
+    }
+
     private List<OrderLine> findLines(String orderId) {
         String sql = "SELECT * FROM order_lines WHERE order_id = ? ORDER BY id";
         return jdbc.query(sql, (row, rowNumber) -> toOrderLine(row), Integer.parseInt(orderId));

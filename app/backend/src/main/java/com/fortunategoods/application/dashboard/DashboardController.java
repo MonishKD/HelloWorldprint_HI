@@ -3,6 +3,7 @@ package com.fortunategoods.application.dashboard;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,11 +24,16 @@ import com.fortunategoods.technical.security.SessionValidator;
 public class DashboardController {
 
     private final OutputConsoleFeed outputConsoleFeed; // builds the console entries
+    private final CustomerOrderStatusView customerOrderStatusView; // a customer's own orders
+    private final PreparationQueueView preparationQueueView;       // a restaurant's orders
     private final SessionValidator sessionValidator;   // gives the session of the signed-in user
 
     // Spring gives us both of these.
-    public DashboardController(OutputConsoleFeed outputConsoleFeed, SessionValidator sessionValidator) {
+    public DashboardController(OutputConsoleFeed outputConsoleFeed, CustomerOrderStatusView customerOrderStatusView,
+            PreparationQueueView preparationQueueView, SessionValidator sessionValidator) {
         this.outputConsoleFeed = outputConsoleFeed;
+        this.customerOrderStatusView = customerOrderStatusView;
+        this.preparationQueueView = preparationQueueView;
         this.sessionValidator = sessionValidator;
     }
 
@@ -44,5 +50,17 @@ public class DashboardController {
 
         List<ConsoleEntry> entries = outputConsoleFeed.entriesFor(session, beforeId);
         return ResponseEntity.ok(entries);
+    }
+
+    // GET /api/dashboard/orders (#132, #135): a customer's own orders (CustomerOrderStatusView), or the signed-in
+    // staff's restaurant orders (PreparationQueueView). Couriers and operators have no orders dashboard in Phase II: 403.
+    @GetMapping("/orders")
+    public List<DashboardOrder> getOrders() {
+        Session session = sessionValidator.currentSession();
+        return switch (session.getRole()) {
+            case CUSTOMER -> customerOrderStatusView.ordersOf(session);
+            case RESTAURANT -> preparationQueueView.ordersOf(session);
+            default -> throw new AccessDeniedException("Only customers and restaurant staff have orders to show");
+        };
     }
 }
