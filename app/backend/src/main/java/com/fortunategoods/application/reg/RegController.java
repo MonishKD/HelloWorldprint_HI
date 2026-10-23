@@ -4,6 +4,12 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.dao.DuplicateKeyException;
+
+import com.fortunategoods.application.reg.RegistrationResult.RegistrationOutcome;
+import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.SignUpRules;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 
@@ -19,6 +25,7 @@ import com.fortunategoods.application.ord.execution.CommandError;
 /*  
 Login and logout orchestration for #62, against AuthenticationService (#28).
  This has now been refactored for step #65 too!
+ Registration (#57) is the register() method below.
 */ 
 @RestController
 @RequestMapping("/api/auth")
@@ -52,6 +59,77 @@ public class RegController {
         } catch (BadCredentialsException e) {
             // Same outcome for an unknown user and a wrong password, so neither is revealed.
             return LoginResult.failure(LoginOutcome.INVALID_CREDENTIALS);
+        }
+    }
+
+    /*
+        Registration (#57): signs up one account with one public role.
+        This is a plain method on purpose: the HTTP route (POST /api/auth/register) and the JSON body
+        are added by #60, which will call this method and turn the result into a response.
+
+        The steps, in order:
+          1. Check the fields typed in the form are there and not too long.
+          2. Ask the Domain's sign-up rules (SignUpRules) which role this is, and whether the
+             restaurant name and address fit that role. Operator is refused here.
+          3. Hand the account to AuthenticationService, which hashes the password and saves it.
+             For a restaurant, it also saves the new closed restaurant and the owner link, all together (#143).
+        Any refusal comes back as a RegistrationResult failure with a message, never as a crash.
+    */
+    public RegistrationResult register(String username, String email, String password, String role,
+            String restaurantName, String address) {
+
+        // 1. Required fields. 255 matches the limit used for login above.
+        if (isBlank(username) || isBlank(email) || isBlank(password)) {
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT,
+                    "Username, email and password are required.");
+        }
+        if (username.length() > 255 || email.length() > 255 || password.length() > 255) {
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT,
+                    "Username, email and password must be at most 255 characters.");
+        }
+
+        // Spaces around the username or email are typing mistakes, so they are not saved.
+        // The email is also saved in lower case, so "Ann@Mail.com" and "ann@mail.com" count as the same email.
+        String cleanUsername = username.trim();
+        String cleanEmail = email.trim().toLowerCase();
+
+        try {
+            // 2. The Domain's rules. Each one throws a DomainRuleViolation if the input breaks it.
+            UserRole chosenRole = SignUpRules.publicRole(role);
+            SignUpRules.checkRestaurantDetails(chosenRole, restaurantName, address);
+
+            // 3. Save the account the way its role needs.
+            User newAccount = saveAccount(chosenRole, cleanUsername, cleanEmail, password, restaurantName, address);
+            return RegistrationResult.success(newAccount);
+
+        } catch (DomainRuleViolation brokenRule) {
+            // The message was written by SignUpRules for the user, e.g. "Operator accounts cannot be registered".
+            return RegistrationResult.failure(RegistrationOutcome.INVALID_INPUT, brokenRule.getMessage());
+
+        } catch (DuplicateKeyException taken) {
+            // AuthenticationService throws this when the username or email is already used.
+            // Its message says which one, e.g. "This username is already taken".
+            return RegistrationResult.failure(RegistrationOutcome.ACCOUNT_TAKEN, taken.getMessage());
+        }
+    }
+
+    // Picks the AuthenticationService method for the role. SignUpRules.publicRole() already refused OPERATOR,
+    // so only these three roles can reach this method.
+    private User saveAccount(UserRole role, String username, String email, String password,
+            String restaurantName, String address) {
+        switch (role) {
+            case CUSTOMER:
+                return authenticationService.registerCustomer(username, email, password);
+            case COURIER:
+                return authenticationService.registerCourier(username, email, password);
+            case RESTAURANT:
+                // The Domain builds the new restaurant: closed, with an empty menu (#144).
+                Restaurant newRestaurant = SignUpRules.newRestaurant(restaurantName);
+                return authenticationService.registerRestaurant(username, email, password, newRestaurant,
+                        address.trim());
+            default:
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
+                        "Operator accounts cannot be registered");
         }
     }
 
