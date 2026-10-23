@@ -1,0 +1,80 @@
+package com.fortunategoods.application.dashboard;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.fortunategoods.application.ord.orders.RestaurantOrderService;
+import com.fortunategoods.application.ord.orders.preparation.GetPreparationQueueResponse;
+import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrdModulePermissions;
+import com.fortunategoods.domain.order.validation.OrderVerify;
+import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.technical.persistence.RestaurantRepository;
+import com.fortunategoods.technical.persistence.UserRepository;
+
+/*
+    Receiver of the dashboard commands. Each role only gets its own data:
+    the customer and the staff member's restaurant come from the session, never from the request.
+*/
+@Service
+public class DashboardService {
+
+    private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
+    private final RestaurantRepository restaurantRepository;
+    private final RestaurantOrderService restaurantOrderService; // already builds the queue for one restaurant
+
+    public DashboardService(OrderRepository orderRepository, UserRepository userRepository,
+            RestaurantRepository restaurantRepository, RestaurantOrderService restaurantOrderService) {
+        this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+        this.restaurantRepository = restaurantRepository;
+        this.restaurantOrderService = restaurantOrderService;
+    }
+
+    // Throws FORBIDDEN for any other role. No orders yet gives an empty list.
+    public CustomerOrderStatusView customerDashboard(String userId, UserRole role) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.viewOwnOrdersRoles(), "Only customers have an order status dashboard");
+        OrderVerify.requireId(userId, "Customer ID");
+
+        List<Order> orders = orderRepository.findByCustomerId(userId);
+        // Each restaurant is looked up once, however many orders come from it.
+        Map<String, String> restaurantNames = new HashMap<>();
+        for (Order order : orders) {
+            restaurantNames.computeIfAbsent(order.getRestaurantId(), this::restaurantName);
+        }
+        return CustomerOrderStatusView.of(orders, restaurantNames);
+    }
+
+    // Throws FORBIDDEN for any other role or a staff account with no restaurant. An empty queue gives an empty list.
+    public PreparationQueueView restaurantDashboard(String userId, UserRole role) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.viewPreparationQueueRoles(), "Only restaurant staff have a restaurant dashboard");
+        OrderVerify.requireId(userId, "Staff ID");
+
+        String ownRestaurantId = userRepository.findRestaurantIdByUserId(userId);
+        if (ownRestaurantId == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Your account is not linked to a restaurant");
+        }
+        Restaurant restaurant = restaurantRepository.findById(ownRestaurantId);
+        if (restaurant == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Restaurant not found");
+        }
+
+        List<GetPreparationQueueResponse> queue = restaurantOrderService.getPreparationQueue(userId, role, ownRestaurantId);
+        return new PreparationQueueView(restaurant.getId(), restaurant.getName(),
+                restaurant.getStatus().name().toLowerCase(Locale.ROOT), queue);
+    }
+
+    // null when the restaurant no longer exists.
+    private String restaurantName(String restaurantId) {
+        Restaurant restaurant = restaurantRepository.findById(restaurantId);
+        return restaurant == null ? null : restaurant.getName();
+    }
+}
