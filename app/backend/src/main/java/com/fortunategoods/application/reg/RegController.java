@@ -63,6 +63,27 @@ public class RegController {
     }
 
     /*
+        The registration URL (#60): POST /api/auth/register.
+        SecurityConfig already lets anyone call it without being logged in.
+
+        @RequestBody tells Spring to turn the JSON the frontend sends into a RegisterReqJSON (its own file).
+        The real work is done by register() just below (#57); this method only translates its answer into HTTP:
+          SUCCESS        -> 201 Created, with the new account (no password)
+          INVALID_INPUT  -> 400 Bad Request, in the shared error shape { status, code, message }
+          ACCOUNT_TAKEN  -> 409 Conflict, in the same shared error shape
+    */
+    @PostMapping("/register")
+    public ResponseEntity<?> registerAccount(@RequestBody RegisterReqJSON request) {
+        RegistrationResult result = register(request.getUsername(), request.getEmail(), request.getPassword(),
+                request.getRole(), request.getRestaurantName(), request.getAddress());
+        return switch (result.outcome()) {
+            case SUCCESS -> ResponseEntity.status(HttpStatus.CREATED).body(RegisterResponse.of(result));
+            case INVALID_INPUT -> error(HttpStatus.BAD_REQUEST, "INVALID_INPUT", result.message());
+            case ACCOUNT_TAKEN -> error(HttpStatus.CONFLICT, "ACCOUNT_TAKEN", result.message());
+        };
+    }
+
+    /*
         Registration (#57): signs up one account with one public role.
         This is a plain method on purpose: the HTTP route (POST /api/auth/register) and the JSON body
         are added by #60, which will call this method and turn the result into a response.
@@ -184,5 +205,4 @@ public class RegController {
     }
 
     public record SessionResponse(UserRole role) {
-    }
-}
+    }}
