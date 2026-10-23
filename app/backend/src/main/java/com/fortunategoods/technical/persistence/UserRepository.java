@@ -40,6 +40,16 @@ public class UserRepository {
     }
 
     // Returns the user with this email, or null if there is none.
+    // The signed-in user's account, for the current-session read (#66). null if the id doesn't exist.
+    public User findById(String id) {
+        String sql = "SELECT * FROM users WHERE id = ?";
+        List<User> found = jdbc.query(sql, (row, rowNumber) -> toUser(row), Integer.parseInt(id));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     public User findByEmail(String email) {
         String sql = "SELECT * FROM users WHERE email = ?";
         List<User> found = jdbc.query(sql, (row, rowNumber) -> toUser(row), email.toLowerCase());

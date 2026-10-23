@@ -4,8 +4,8 @@ import { useUser } from '../../session';
 import { Empty, LoadError, Loading, money, restaurantHue, stagger, useLoad } from '../common';
 import { Icon } from '../icons';
 import CityMap from '../map/CityMap';
-import { getCustomerOrderStatuses } from '../dashboard/dashboardApi';
-import { listCourierLocations, listRestaurants } from './ordApi';
+import { getDashboardOrders } from '../dashboard/dashboardApi';
+import { listRestaurantSummaries } from './ordApi';
 
 // Rough per-meal estimate used by food-waste apps; display only.
 const KG_CO2E_PER_MEAL = 2.5;
@@ -18,7 +18,7 @@ function greeting() {
 export default function RestaurantListPage() {
   const user = useUser();
   const navigate = useNavigate();
-  const { data, error, reload } = useLoad(() => Promise.all([listRestaurants(), getCustomerOrderStatuses(user.id), listCourierLocations()]), [user.id]);
+  const { data, error, reload } = useLoad(() => Promise.all([listRestaurantSummaries(), getDashboardOrders()]), [user.id]);
   const [query, setQuery] = useState('');
   const [cuisine, setCuisine] = useState('All');
   const [openOnly, setOpenOnly] = useState(false);
@@ -26,7 +26,7 @@ export default function RestaurantListPage() {
   if (error) return <LoadError what="restaurants" message={error} onRetry={reload} />;
   if (!data) return <Loading what="restaurants" />;
 
-  const [restaurants, orders, couriers] = data;
+  const [restaurants, orders] = data;
   const rescued = orders.filter((o) => !['rejected', 'cancelled', 'refunded'].includes(o.status)).flatMap((o) => o.lines);
   const meals = rescued.reduce((n, l) => n + l.quantity, 0);
   const saved = rescued.reduce((n, l) => n + (l.originalPrice - l.price) * l.quantity, 0);
@@ -86,7 +86,6 @@ export default function RestaurantListPage() {
 
       <CityMap
         restaurants={shown}
-        couriers={couriers.filter((c) => c.courierState !== 'offline')}
         homes={user.lat !== undefined && user.lng !== undefined ? [{ id: user.id, lat: user.lat, lng: user.lng, label: 'You' }] : []}
         onSelectRestaurant={(id) => navigate(`/customer/r/${id}`)}
       />

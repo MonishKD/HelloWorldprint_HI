@@ -79,6 +79,13 @@ class DashboardControllerTest {
     @MockitoBean
     private CommandLogRepository logs;
 
+    // Used by GET /api/dashboard/orders, which DashboardOrdersRouteTest covers.
+    @MockitoBean
+    private CustomerOrderList customerOrderList;
+
+    @MockitoBean
+    private RestaurantOrderList restaurantOrderList;
+
     @BeforeEach
     void setup() {
         when(orders.findByCustomerId("7")).thenReturn(List.of(order("101", OrderStatus.PLACED, null), order("100", OrderStatus.REJECTED, "Sold out")));

@@ -1,5 +1,9 @@
 package com.fortunategoods.domain.user;
 
+import com.fortunategoods.domain.order.DomainRuleViolation;
+
+// One account with exactly one role (#56). The enum rules out unknown roles and the single field rules out several;
+// the constructor rules out none.
 public class User {
 
     private String id;
@@ -10,6 +14,9 @@ public class User {
     private UserRole role;
 
     public User(String id, String username, String email, String phoneNumber, String passwordHash, UserRole role) {
+        if (role == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "An account needs a role");
+        }
         this.id = id;
         this.username = username;
         this.email = email;

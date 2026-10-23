@@ -3,6 +3,7 @@ package com.fortunategoods.application.dashboard;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,13 +26,19 @@ import com.fortunategoods.technical.security.SessionValidator;
 public class DashboardController {
 
     private final OutputConsoleFeed outputConsoleFeed; // builds the console entries
+    private final CustomerOrderList customerOrderList;     // a customer's own orders
+    private final RestaurantOrderList restaurantOrderList; // a restaurant's orders
     private final SessionValidator sessionValidator;   // gives the session of the signed-in user
     private final CommandInvoker invoker;
     private final DashboardService dashboardService;
 
-    public DashboardController(OutputConsoleFeed outputConsoleFeed, SessionValidator sessionValidator,
+    // Spring gives us all of these.
+    public DashboardController(OutputConsoleFeed outputConsoleFeed, CustomerOrderList customerOrderList,
+            RestaurantOrderList restaurantOrderList, SessionValidator sessionValidator,
             CommandInvoker invoker, DashboardService dashboardService) {
         this.outputConsoleFeed = outputConsoleFeed;
+        this.customerOrderList = customerOrderList;
+        this.restaurantOrderList = restaurantOrderList;
         this.sessionValidator = sessionValidator;
         this.invoker = invoker;
         this.dashboardService = dashboardService;
@@ -66,5 +73,17 @@ public class DashboardController {
 
         List<ConsoleEntry> entries = outputConsoleFeed.entriesFor(session, beforeId);
         return ResponseEntity.ok(entries);
+    }
+
+    // GET /api/dashboard/orders (#132): a customer's own orders (CustomerOrderList), or the signed-in
+    // staff's restaurant orders (RestaurantOrderList), with every order's details. Couriers and operators have no orders dashboard in Phase II: 403.
+    @GetMapping("/orders")
+    public List<DashboardOrder> getOrders() {
+        Session session = sessionValidator.currentSession();
+        return switch (session.getRole()) {
+            case CUSTOMER -> customerOrderList.ordersOf(session);
+            case RESTAURANT -> restaurantOrderList.ordersOf(session);
+            default -> throw new AccessDeniedException("Only customers and restaurant staff have orders to show");
+        };
     }
 }

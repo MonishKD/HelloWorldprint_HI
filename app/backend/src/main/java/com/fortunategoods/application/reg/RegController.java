@@ -14,9 +14,11 @@ import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 
 import com.fortunategoods.technical.security.AuthenticationService;
+import com.fortunategoods.technical.security.session.CurrentAccount;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -159,6 +161,16 @@ public class RegController {
         }
     }
 
+    // GET /api/auth/session (#66): who the session cookie belongs to. The frontend calls it after login and on reload,
+    // so it never decides the role itself. Not signed in: Spring Security answers 401 before this runs.
+    @GetMapping("/session")
+    public CurrentSessionResponse currentSession() {
+        CurrentAccount.Account account = authenticationService.currentAccount();
+        User user = account.user();
+        return new CurrentSessionResponse(user.getId(), user.getUsername(), user.getEmail(),
+                user.getRole().name().toLowerCase(java.util.Locale.ROOT), account.restaurantId());
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
         authenticationService.logout();
@@ -209,5 +221,9 @@ public class RegController {
         }
     }
 
+    public record CurrentSessionResponse(String userId, String username, String email, String role, String restaurantId) {
+    }
+
     public record SessionResponse(UserRole role) {
-    }}
+    }
+}

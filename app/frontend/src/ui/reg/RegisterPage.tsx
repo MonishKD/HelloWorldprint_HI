@@ -16,7 +16,6 @@ export default function RegisterPage() {
   const { user, setUser } = useSession();
   const [role, setRole] = useState<RegisterRole>('customer');
   const [username, setUsername] = useState('');
-  const [name, setName] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
@@ -31,7 +30,7 @@ export default function RegisterPage() {
     setBusy(true);
     setError('');
     try {
-      setUser(await send(`Register ${role} ${email}`, () => register({ username, email, password, role, restaurantName, address })));
+      setUser(await send(`Register ${role} ${username}`, () => register({ username, email, password, role, restaurantName, address })));
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -73,22 +72,17 @@ export default function RegisterPage() {
             onChange={(e) => setUsername(e.target.value)}
           />
         </label>
-        {role === 'restaurant' ? (
-          <label className="field">
-            <span>Restaurant name</span>
-            <input required pattern=".*\S.*" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
-          </label>
-        ) : (
-          <label className="field">
-            <span>Your name</span>
-            <input required pattern=".*\S.*" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
-          </label>
-        )}
-        {role !== 'courier' && (
-          <label className="field">
-            <span>{role === 'restaurant' ? 'Restaurant address' : 'Delivery address'}</span>
-            <input required pattern=".*\S.*" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
-          </label>
+        {role === 'restaurant' && (
+          <>
+            <label className="field">
+              <span>Restaurant name</span>
+              <input required pattern=".*\S.*" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} />
+            </label>
+            <label className="field">
+              <span>Restaurant address</span>
+              <input required pattern=".*\S.*" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+            </label>
+          </>
         )}
         <label className="field">
           <span>Email</span>
