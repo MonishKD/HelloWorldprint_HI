@@ -1,16 +1,10 @@
 import { db } from '../../mockData';
+import { request } from '../http';
 import type { Role, User } from '../../domain';
 
 /** What the UI keeps after login (a2: Session = user and role). The backend keeps the session itself in a cookie. */
 export type SessionUser = Omit<User, 'password'>;
 export type RegisterRole = Exclude<Role, 'operator'>;
-const PUBLIC_ROLES: Role[] = ['customer', 'restaurant', 'courier'];
-
-// ponytail: no geocoding, new accounts are dropped near downtown Montreal.
-// The real backend should geocode the address (e.g. with Nominatim) instead.
-function roughLocation() {
-  return { lat: 45.5017 + (Math.random() - 0.5) * 0.03, lng: -73.5673 + (Math.random() - 0.5) * 0.04 };
-}
 
 function toSession({ password: _password, ...user }: User): SessionUser {
   return { ...user };
@@ -24,41 +18,49 @@ export async function login(usernameOrEmail: string, password: string): Promise<
   return toSession(user);
 }
 
-// TODO: replace with fetch() to the real backend: POST /auth/register
-// { username, email, password, role, restaurantName?, address? }. A restaurant is created together with its owner account.
+/** What POST /auth/register sends back (RegisterResponse on the backend). The role comes in capitals, e.g. "CUSTOMER". */
+interface RegisterResponse {
+  userId: string;
+  username: string;
+  email: string;
+  role: string;
+  /** Only for a restaurant account: the restaurant created with it (#144). */
+  restaurantId: string | null;
+}
+
+// POST /auth/register (#60), body = RegisterReqJSON on the backend.
+// The backend is the authority: it refuses operator, a taken username/email (409) and missing fields (400),
+// and saves a restaurant account together with its closed restaurant and owner link (#144).
+// Registering doesn't log in, so a POST /auth/login follows to start the session cookie.
 export async function register(input: {
   username: string;
-  name: string;
   email: string;
   password: string;
   role: RegisterRole;
   restaurantName?: string;
   address?: string;
 }): Promise<SessionUser> {
-  // The operator is seeded, never registered (R-REG-01). The form doesn't offer it; the backend must refuse it too.
-  if (!PUBLIC_ROLES.includes(input.role)) throw new Error('That role cannot be registered.');
-  const email = input.email.trim().toLowerCase();
-  const username = input.username.trim();
-  if (db.users.some((u) => u.username.toLowerCase() === username.toLowerCase())) throw new Error('That username is already taken.');
-  if (db.users.some((u) => u.email === email)) throw new Error('An account with this email already exists.');
-
-  const id = `u-${Date.now().toString(36)}`;
-  const user: User = { id, username, name: input.name.trim(), email, password: input.password, role: input.role };
-  if (input.role === 'restaurant') {
-    user.restaurantId = `r-${id}`;
-    db.restaurants.push({
-      id: user.restaurantId,
-      name: input.restaurantName!.trim(),
-      cuisine: '', // sign-up doesn't ask for it
-      address: input.address?.trim() ?? '',
-      status: 'closed', // a new restaurant has no menu yet, so customers see it but can't order (R-ORD-02)
-      // no lat/lng: the real sign-up doesn't ask for coordinates, so a new restaurant has no map pin until it is geocoded
-    });
-  }
-  if (input.role === 'customer') Object.assign(user, { address: input.address?.trim() }, roughLocation());
-  if (input.role === 'courier') user.courierState = 'offline';
-  db.users.push(user);
-  return toSession(user);
+  const account = await request<RegisterResponse>('/auth/register', {
+    method: 'POST',
+    body: {
+      username: input.username.trim(),
+      email: input.email.trim(),
+      password: input.password,
+      role: input.role,
+      // Only a restaurant sends these; the backend refuses them for other roles.
+      restaurantName: input.role === 'restaurant' ? input.restaurantName : undefined,
+      address: input.role === 'restaurant' ? input.address : undefined,
+    },
+  });
+  await request('/auth/login', { method: 'POST', body: { usernameOrEmail: account.username, password: input.password } });
+  return {
+    id: account.userId,
+    username: account.username,
+    name: account.username, // the backend has no separate display name
+    email: account.email,
+    role: account.role.toLowerCase() as Role,
+    restaurantId: account.restaurantId ?? undefined,
+  };
 }
 
 // TODO: replace with fetch() to the real backend: POST /auth/logout

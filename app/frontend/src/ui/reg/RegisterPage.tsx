@@ -31,7 +31,7 @@ export default function RegisterPage() {
     setBusy(true);
     setError('');
     try {
-      setUser(await send(`Register ${role} ${email}`, () => register({ username, name: role === 'restaurant' ? restaurantName : name, email, password, role, restaurantName, address })));
+      setUser(await send(`Register ${role} ${email}`, () => register({ username, email, password, role, restaurantName, address })));
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
