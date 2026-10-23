@@ -52,15 +52,10 @@ export default function OrderCart({
     try {
       const order = await send(`Place order at ${restaurant.name} (${money(total)})`, () =>
         placeOrder({
-          customerId: user.id,
-          customerName: user.name,
+          restaurantId: restaurant.id,
+          lines: lines.map((l) => ({ itemId: l.itemId, quantity: l.quantity })),
+          instructions,
           deliveryAddress: address,
-          // ponytail: coordinates come from the profile, so editing the address here doesn't move the map pin
-          deliveryLat: user.lat ?? 45.5017,
-          deliveryLng: user.lng ?? -73.5673,
-          restaurant,
-          lines,
-          specialInstructions: instructions,
         }),
       );
       navigate('/customer/orders', { state: { placed: { id: order.id, status: order.status } } });

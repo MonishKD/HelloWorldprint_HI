@@ -1,6 +1,4 @@
-// Thin fetch wrapper for the real backend. Nothing uses it yet: the *Api.ts files still serve mock data.
-// When the backend is ready, each stub in regApi / ordApi should become one `request(...)` call
-// (each stub has a TODO comment naming the endpoint it should call).
+// Thin fetch wrapper for the backend. Every call in regApi / ordApi / dashboardApi goes through request().
 
 /** Base URL of the Spring Boot API. Set VITE_API_URL in .env (see .env.example). */
 export const API_URL: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8080/api';

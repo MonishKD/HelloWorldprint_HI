@@ -2,11 +2,10 @@ import { useSyncExternalStore } from 'react';
 
 // dashboardApi (a2: ui.dashboard): the output-console log, plus the data the dashboards display
 // (customer order statuses, the restaurant's preparation queue).
-// TODO: if the backend exposes CommandLog (OutputConsoleFeed), the console can read it instead of this client-side log.
-import { db } from '../../mockData';
+// TODO: the backend's own command log (GET /dashboard/console, OutputConsoleFeed) could feed the console too.
 import type { Order, OrderStatus } from '../../domain';
-import { ApiError, takeResponseNote } from '../http';
-import { acceptedQueue } from '../ord/ordApi';
+import { toOrder } from '../adapters';
+import { ApiError, request, takeResponseNote } from '../http';
 
 export interface LogEntry {
   id: number;
@@ -102,12 +101,12 @@ export function toLogEntry(row: CommandLogRow): LogEntry {
 
 // ---------- Dashboard data ----------
 
-const copy = <T>(value: T): T => structuredClone(value);
-
-/** Customer's own orders with their current status (a2: CustomerOrderStatusView). */
-// TODO: replace with fetch() to the real backend: GET /customers/{id}/orders
-export async function getCustomerOrderStatuses(customerId: string): Promise<Order[]> {
-  return copy(db.orders.filter((o) => o.customerId === customerId));
+/**
+ * GET /dashboard/orders (a2: CustomerOrderStatusView): the signed-in user's orders, oldest first.
+ * A customer gets their own, restaurant staff get their restaurant's; the backend picks from the session.
+ */
+export async function getDashboardOrders(): Promise<Order[]> {
+  return (await request<unknown[]>('/dashboard/orders')).map(toOrder);
 }
 
 /** One row of the preparation queue (a2: PreparationQueueView): position 1 is next. Order details are not part of it. */
@@ -118,10 +117,9 @@ export interface QueueSlot {
 }
 
 /**
- * The restaurant's preparation queue (a2: PreparationQueueView, R-ORD-03): accepted orders, first accepted first prepared.
+ * GET /restaurants/{id}/queue (R-ORD-03): accepted orders, first accepted first prepared.
  * The ordering belongs to the backend and the UI keeps it as received; only the first order may start preparing.
  */
-// TODO: replace with fetch() to the real backend: GET /restaurants/{id}/queue  ->  [{ position, orderId, status }]
 export async function getPreparationQueue(restaurantId: string): Promise<QueueSlot[]> {
-  return acceptedQueue(restaurantId).map((o, i) => ({ position: i + 1, orderId: o.id, status: o.status }));
+  return request<QueueSlot[]>(`/restaurants/${restaurantId}/queue`);
 }

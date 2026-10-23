@@ -7,7 +7,7 @@ import { errorMessage, send } from '../dashboard/dashboardApi';
 import { Icon } from '../icons';
 import OrderCart, { type Cart } from './OrderCart';
 import MenuItemForm from './MenuItemForm';
-import { addMenuItem, getRestaurant, listMenu, removeMenuItem, setMenuItemStatus, updateMenuItem } from './ordApi';
+import { addMenuItem, getRestaurantMenu, removeMenuItem, setMenuItemStatus, updateMenuItem } from './ordApi';
 
 /**
  * One MenuPage, two views (a2: ui.ord): a customer browses a restaurant's menu and adds items to the cart,
@@ -24,7 +24,7 @@ export default function MenuPage({ onChanged }: { onChanged?: () => void }) {
 
 function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
   const restaurantId = useUser().restaurantId ?? '';
-  const { data, error, reload } = useLoad(() => Promise.all([getRestaurant(restaurantId), listMenu(restaurantId)]), [restaurantId]);
+  const { data, error, reload } = useLoad(() => getRestaurantMenu(restaurantId), [restaurantId]);
   const [actionError, setActionError] = useState('');
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -46,7 +46,7 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
 
   const toggle = (item: MenuItem) => {
     const status = item.status === 'available' ? 'sold_out' : 'available';
-    return run(`Mark "${item.name}" ${status.replace('_', ' ')}`, () => setMenuItemStatus(item.id, status));
+    return run(`Mark "${item.name}" ${status.replace('_', ' ')}`, () => setMenuItemStatus(restaurantId, item.id, status));
   };
 
   if (error) return <LoadError what="your menu" message={error} onRetry={reload} />;
@@ -134,7 +134,7 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
 
 function CustomerMenu() {
   const { restaurantId = '' } = useParams();
-  const { data, error, reload } = useLoad(() => Promise.all([getRestaurant(restaurantId), listMenu(restaurantId)]), [restaurantId]);
+  const { data, error, reload } = useLoad(() => getRestaurantMenu(restaurantId), [restaurantId]);
   const [cart, setCart] = useState<Cart>({});
 
   const back = (

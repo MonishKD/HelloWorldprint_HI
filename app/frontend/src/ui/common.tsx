@@ -385,7 +385,8 @@ export function OrderCard({
           <StatusBadge status={order.status} />
         </div>
         <span className="order-meta">
-          {minutesSince(order.createdAt)} · <strong>{money(order.total)}</strong>
+          {order.createdAt && `${minutesSince(order.createdAt)} · `}
+          <strong>{money(order.total)}</strong>
         </span>
       </div>
       {subtitle && <div className="order-sub">{subtitle}</div>}
