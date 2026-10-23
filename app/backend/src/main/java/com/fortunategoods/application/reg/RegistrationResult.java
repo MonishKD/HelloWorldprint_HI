@@ -1,4 +1,3 @@
-//written by Monish. had a merge conflict issue with two RegControllers made by different people.
 package com.fortunategoods.application.reg;
 
 import com.fortunategoods.domain.user.User;
