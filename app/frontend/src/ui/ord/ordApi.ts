@@ -176,12 +176,39 @@ export async function assignCourier(orderId: string, courier: { id: string; name
   return copy(order);
 }
 
-// TODO: replace with fetch() to the real backend: POST /orders/{id}/transitions  { status, reason? }
+/** Mock-only: the order's accepted orders in preparation-queue order (first accepted, first prepared). */
+export function acceptedQueue(restaurantId: string): Order[] {
+  return db.orders
+    .filter((o) => o.restaurantId === restaurantId && o.status === 'accepted')
+    .sort((a, b) => (a.acceptedAt ?? a.createdAt).localeCompare(b.acceptedAt ?? b.createdAt));
+}
+
+/** Mock-only: the moves the backend allows. An order that is still active can also be cancelled (operator). */
+const NEXT: Partial<Record<OrderStatus, OrderStatus[]>> = {
+  placed: ['accepted', 'rejected'],
+  accepted: ['preparing'],
+  preparing: ['ready'],
+  ready: ['picked_up'],
+  picked_up: ['delivered'],
+};
+
+// TODO: replace with fetch() to the real backend, one call per move:
+// POST /orders/{id}/accept, POST /orders/{id}/reject { reason }, POST /orders/{id}/prepare, POST /orders/{id}/ready
+// (pickup, delivery and operator cancel have no endpoint yet). The backend refuses (409) a move the order's state doesn't allow,
+// preparing any order but the head of the queue, and (400) a reject without a reason. The mock mirrors that so the UI's refusal path is real.
 export async function updateOrderStatus(orderId: string, status: OrderStatus, rejectReason?: string): Promise<Order> {
   const order = db.orders.find((o) => o.id === orderId);
   if (!order) throw new Error('Order not found.');
+  if (!NEXT[order.status]?.includes(status) && !(status === 'cancelled' && ACTIVE.includes(order.status))) {
+    throw new Error("Action not allowed due to order's state");
+  }
+  if (status === 'rejected' && !rejectReason?.trim()) throw new Error('A reason is required to reject an order.');
+  if (status === 'preparing' && acceptedQueue(order.restaurantId)[0]?.id !== orderId) {
+    throw new Error('Order does not match the next order in the queue for this restaurant!');
+  }
   order.status = status;
   if (rejectReason) order.rejectReason = rejectReason.trim();
+  if (status === 'accepted') order.acceptedAt = new Date().toISOString();
   if (status === 'picked_up') order.pickedUpAt = new Date().toISOString();
   if (order.courierId) syncCourierState(order.courierId);
   return copy(order);

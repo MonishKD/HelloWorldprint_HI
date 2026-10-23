@@ -291,7 +291,7 @@ export function useLoad<T>(load: () => Promise<T>, deps: DependencyList) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState('');
   const reload = useCallback(() => {
-    load().then(
+    return load().then(
       (result) => {
         setData(result);
         setError('');
@@ -302,7 +302,9 @@ export function useLoad<T>(load: () => Promise<T>, deps: DependencyList) {
       },
     );
   }, deps);
-  useEffect(reload, [reload]);
+  useEffect(() => {
+    reload();
+  }, [reload]);
   return { data, error, reload };
 }
 

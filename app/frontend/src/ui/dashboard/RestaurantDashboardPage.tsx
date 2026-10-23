@@ -43,8 +43,14 @@ function RestaurantDashboard() {
   const [restaurant, menu, orders, queue] = data;
   const byArrival = [...orders].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const incoming = byArrival.filter((o) => o.status === 'placed');
-  // The preparation queue (R-ORD-03) arrives already ordered by the backend; it is shown exactly as received.
-  const kitchen = queue;
+  // The preparation queue (R-ORD-03) arrives already ordered by the backend and is kept in that order. It only lists ids,
+  // so each one is matched with its order; the order being prepared has left the queue and comes first.
+  const orderById = new Map(orders.map((o) => [o.id, o]));
+  const queued = queue.flatMap((slot) => orderById.get(slot.orderId) ?? []);
+  const unmatched = queue.length - queued.length;
+  const preparing = orders.filter((o) => o.status === 'preparing').sort((a, b) => (a.acceptedAt ?? a.createdAt).localeCompare(b.acceptedAt ?? b.createdAt));
+  const kitchen = [...preparing, ...queued];
+  const positions = Object.fromEntries(queue.map((slot) => [slot.orderId, slot.position]));
   const ready = byArrival.filter((o) => o.status === 'ready');
   const history = byArrival.filter((o) => o.status === 'picked_up' || TERMINAL.includes(o.status)).reverse();
   const earning = orders.filter((o) => !['rejected', 'cancelled', 'refunded'].includes(o.status));
@@ -110,9 +116,14 @@ function RestaurantDashboard() {
         <section className="board-col">
           <h2 className="section-title">
             Preparation queue <span className="count">{kitchen.length}</span>
-            <small className="muted">oldest first</small>
+            <small className="muted">first in, first out</small>
           </h2>
-          <IncomingOrdersList orders={kitchen} emptyIcon="pot" emptyText="Nothing to prepare" onChanged={reload} />
+          {unmatched > 0 && (
+            <p className="alert alert-warn" role="alert">
+              {unmatched} queued order{unmatched > 1 ? 's' : ''} couldn't be loaded. Refresh to try again.
+            </p>
+          )}
+          <IncomingOrdersList orders={kitchen} emptyIcon="pot" emptyText="Nothing to prepare" positions={positions} onChanged={reload} />
         </section>
         <section className="board-col">
           <h2 className="section-title">

@@ -4,7 +4,7 @@ import type { Role } from '../../domain';
 import { dashboardPath, useSession, useUser } from '../../session';
 import { initials, Logo, ThemeToggle } from '../common';
 import { logout as logoutApi } from '../reg/regApi';
-import { clearLogs, send } from './dashboardApi';
+import { send } from './dashboardApi';
 import OutputConsolePanel from './OutputConsolePanel';
 
 /** Catch-all route: send users to their own dashboard, or to login when signed out. */
@@ -41,7 +41,6 @@ export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; child
       // already shown in the output console
     }
     setUser(null, 'You have been logged out.');
-    clearLogs();
   }
 
   return (
