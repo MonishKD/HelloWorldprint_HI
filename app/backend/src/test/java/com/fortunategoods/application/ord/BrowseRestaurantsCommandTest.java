@@ -1,9 +1,5 @@
 package com.fortunategoods.application.ord;
 
-import com.fortunategoods.application.ord.execution.CommandInvoker;
-import com.fortunategoods.application.ord.execution.CommandLog;
-import com.fortunategoods.application.ord.execution.CommandSuccess;
-import com.fortunategoods.application.ord.restaurants.RestaurantCommands;
 import java.util.List;
 import java.util.Set;
 
@@ -13,8 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 
-import com.fortunategoods.application.reg.Session;
+import com.fortunategoods.application.ord.execution.CommandInvoker;
+import com.fortunategoods.application.ord.execution.CommandLog;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.application.ord.restaurants.browsing.RestaurantCommands;
 import com.fortunategoods.application.ord.restaurants.RestaurantService;
+import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.restaurant.RestaurantSummary;
 import com.fortunategoods.domain.user.UserRole;
@@ -24,9 +24,11 @@ import com.fortunategoods.technical.security.SessionValidator;
 class BrowseRestaurantsCommandTest {
 
     // Fake RestaurantService: always returns one open restaurant.
-    private final RestaurantService restaurantService = new RestaurantService(null) {
+    private final RestaurantService restaurantService = new RestaurantService(null, null) {
         @Override
-        public List<RestaurantSummary> browseRestaurants() {
+        public List<RestaurantSummary> browseRestaurants(String userId, UserRole role) {
+            assertEquals("7", userId);
+            assertEquals(UserRole.CUSTOMER, role);
             return List.of(new RestaurantSummary("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6));
         }
     };

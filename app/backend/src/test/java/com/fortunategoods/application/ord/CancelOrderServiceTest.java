@@ -114,6 +114,32 @@ public class CancelOrderServiceTest {
         DomainRuleViolation error = assertThrows(DomainRuleViolation.class, () -> service.cancelOrder("7", "100"));
 
         assertEquals(DomainRuleViolation.Reason.CONFLICT,error.getReason());
+        assertEquals("Order changed before it could be cancelled", error.getMessage());
+    }
+
+    @Test
+    void missingEventHistoryIsRejected() {
+        when(events.findByOrderId("100")).thenReturn(List.of());
+
+        IllegalStateException error = assertThrows(IllegalStateException.class,
+            () -> service.cancelOrder("7", "100"));
+
+        assertEquals("Order has no event history", error.getMessage());
+        verifyNothingSaved();
+    }
+
+    @Test
+    void changedEventHistoryIsRejected() {
+        OrderEvent accepted = new OrderEvent("701", "100", null, OrderStatus.PLACED,
+            OrderStatus.ACCEPTED, LocalDateTime.now());
+        when(events.findByOrderId("100")).thenReturn(List.of(accepted));
+
+        DomainRuleViolation error = assertThrows(DomainRuleViolation.class,
+            () -> service.cancelOrder("7", "100"));
+
+        assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+        assertEquals("Order is no longer placed", error.getMessage());
+        verifyNothingSaved();
     }
 
     private void verifyNothingSaved() {

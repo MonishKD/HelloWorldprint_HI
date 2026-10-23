@@ -82,4 +82,14 @@ class MenuServiceTest {
         assertEquals(DomainRuleViolation.Reason.INVALID, e.getReason());
     }
 
+    @Test
+    void unsupportedRolesCannotBrowseMenusDirectly() {
+        for (UserRole role : new UserRole[] {null, UserRole.COURIER, UserRole.OPERATOR}) {
+            DomainRuleViolation error = assertThrows(DomainRuleViolation.class,
+                () -> menuService.browseMenu("1", "7", role));
+
+            assertEquals(DomainRuleViolation.Reason.FORBIDDEN, error.getReason());
+        }
+    }
+
 }

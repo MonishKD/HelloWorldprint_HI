@@ -1,6 +1,8 @@
 package com.fortunategoods.domain.restaurant;
 
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
+import com.fortunategoods.domain.restaurant.menu.MenuItemRules;
+import com.fortunategoods.domain.order.DomainRuleViolation;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +75,53 @@ class MenuItemTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> new Restaurant("r1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, items));
+    }
+
+    @Test
+    void domainBuildsACheckedMenuItem() {
+        MenuItem item = MenuItemRules.checkedItem("10", "1", " Wrap ",
+            4.50, 9.00, MenuItemStatus.AVAILABLE);
+
+        assertEquals("10", item.getId());
+        assertEquals("1", item.getRestaurantId());
+        assertEquals("Wrap", item.getName());
+        assertEquals(4.50, item.getPrice());
+        assertEquals(9.00, item.getOriginalPrice());
+        assertEquals(MenuItemStatus.AVAILABLE, item.getStatus());
+    }
+
+    @Test
+    void domainRefusesInvalidMenuItemValues() {
+        assertRuleRefused(DomainRuleViolation.Reason.INVALID,
+            () -> MenuItemRules.checkedItem("10", "1", "Wrap", 0.0, null, MenuItemStatus.AVAILABLE));
+        assertRuleRefused(DomainRuleViolation.Reason.INVALID,
+            () -> MenuItemRules.checkedItem("10", "1", "Wrap", 4.50, null, null));
+    }
+
+    @Test
+    void missingAvailabilityDoesNotChangeTheItem() {
+        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
+
+        assertRuleRefused(DomainRuleViolation.Reason.INVALID,
+            () -> item.changeAvailability("1", null));
+
+        assertEquals(MenuItemStatus.AVAILABLE, item.getStatus());
+    }
+
+    @Test
+    void itemMustExistOnTheRequestedMenu() {
+        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
+
+        MenuItemRules.requireItemOnMenu(item, "1");
+        assertRuleRefused(DomainRuleViolation.Reason.NOT_FOUND,
+            () -> MenuItemRules.requireItemOnMenu(null, "1"));
+        assertRuleRefused(DomainRuleViolation.Reason.NOT_FOUND,
+            () -> MenuItemRules.requireItemOnMenu(item, "2"));
+    }
+
+    private void assertRuleRefused(DomainRuleViolation.Reason reason, Runnable action) {
+        DomainRuleViolation error = assertThrows(DomainRuleViolation.class, action::run);
+        assertEquals(reason, error.getReason());
     }
 
 }

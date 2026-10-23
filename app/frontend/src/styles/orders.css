@@ -22,6 +22,7 @@
 .qty-pill { display: inline-block; min-width: 1.9rem; font-weight: 800; color: var(--brand-text); }
 .note { font-size: 0.87rem; color: var(--ink-2); font-style: italic; border-left: 3px solid var(--line-strong); padding-left: 0.65rem; }
 .order-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; justify-content: flex-end; }
+.order-actions .alert { width: 100%; }
 .reject-form { display: grid; gap: 0.65rem; width: 100%; background: var(--bad-bg); padding: 0.85rem; border-radius: 16px; }
 .reject-form textarea { background: var(--surface); }
 

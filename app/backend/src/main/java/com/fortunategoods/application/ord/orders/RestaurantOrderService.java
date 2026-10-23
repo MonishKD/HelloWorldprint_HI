@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.fortunategoods.application.ord.orders.preparation.GetPreparationQueueResponse;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
-import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.PreparationQueue;
@@ -34,9 +34,7 @@ public class RestaurantOrderService {
 
     public List<Order> getPendingOrders(String staffId, UserRole role, String restaurantId) {
         // Only restaurant staff may use this operation.
-        if (role != UserRole.RESTAURANT) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN,"Only restaurant staff can view pending orders");
-        }
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.viewPlacedOrdersRoles(), "Only restaurant staff can view pending orders");
 
         OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(restaurantId, "Restaurant ID");
@@ -45,9 +43,7 @@ public class RestaurantOrderService {
         String ownRestaurantId = users.findRestaurantIdByUserId(staffId);
 
         // If RestaurantId of the invoker is not the same as the one found under her name in the UserRepo, throw FORBIDDEN
-        if (!restaurantId.equals(ownRestaurantId)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "You can only view your own restaurant's orders");
-        }
+        OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only view your own restaurant's orders");
 
         // The repository already filters and orders the results.
         List<Order> pendingOrders = orders.findByRestaurantAndStatus(ownRestaurantId, OrderStatus.PLACED);
@@ -58,18 +54,14 @@ public class RestaurantOrderService {
 
     public List<GetPreparationQueueResponse> getPreparationQueue(String staffId, UserRole role, String restaurantId) {
 
-        if (role != UserRole.RESTAURANT) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only restaurant staff can view the preparation queue");
-        }
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.viewPreparationQueueRoles(), "Only restaurant staff can view the preparation queue");
         // Verify ID validity
         OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(restaurantId, "Restaurant ID");
         // Find staff's restaurant
         String ownRestaurantId = users.findRestaurantIdByUserId(staffId);
         // Compare PQ's restaurant to staff's restaurant
-        if (!restaurantId.equals(ownRestaurantId)) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "You can only view your own restaurant's queue");
-        }
+        OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only view your own restaurant's queue");
         // Create a PQ with all ACCEPTED orders from that restaurant
         PreparationQueue queue = pq.forRestaurant(ownRestaurantId);
         // Initialize an array to hold a response object for the PQs
