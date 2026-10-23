@@ -5,7 +5,8 @@ import com.fortunategoods.domain.user.UserRole;
 /*
     What a successful POST /api/auth/register sends back to the frontend (#60): the new account, without its password.
     Spring turns it into JSON through the getters, e.g.
-      { "userId": "7", "username": "ann", "email": "ann@mail.com", "role": "CUSTOMER" }
+      { "userId": "7", "username": "ann", "email": "ann@mail.com", "role": "CUSTOMER", "restaurantId": null }
+    restaurantId is only filled for a restaurant account: the id of the restaurant it owns.
 */
 public class RegisterResponse {
 
@@ -13,17 +14,19 @@ public class RegisterResponse {
     private String username;
     private String email;
     private UserRole role;
+    private String restaurantId;
 
-    public RegisterResponse(String userId, String username, String email, UserRole role) {
+    public RegisterResponse(String userId, String username, String email, UserRole role, String restaurantId) {
         this.userId = userId;
         this.username = username;
         this.email = email;
         this.role = role;
+        this.restaurantId = restaurantId;
     }
 
     // Copies the safe details out of a successful RegistrationResult (#57).
     public static RegisterResponse of(RegistrationResult result) {
-        return new RegisterResponse(result.userId(), result.username(), result.email(), result.role());
+        return new RegisterResponse(result.userId(), result.username(), result.email(), result.role(), result.restaurantId());
     }
 
     public String getUserId() {
@@ -40,5 +43,9 @@ public class RegisterResponse {
 
     public UserRole getRole() {
         return role;
+    }
+
+    public String getRestaurantId() {
+        return restaurantId;
     }
 }

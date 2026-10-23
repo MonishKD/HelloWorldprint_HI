@@ -121,7 +121,12 @@ public class RegController {
 
             // 3. Save the account the way its role needs.
             User newAccount = saveAccount(chosenRole, cleanUsername, cleanEmail, password, restaurantName, address);
-            return RegistrationResult.success(newAccount);
+            // A restaurant account also gets back the id of the restaurant just created for it (#144).
+            String restaurantId = null;
+            if (chosenRole == UserRole.RESTAURANT) {
+                restaurantId = authenticationService.restaurantIdOf(newAccount.getId());
+            }
+            return RegistrationResult.success(newAccount, restaurantId);
 
         } catch (DomainRuleViolation brokenRule) {
             // The message was written by SignUpRules for the user, e.g. "Operator accounts cannot be registered".
