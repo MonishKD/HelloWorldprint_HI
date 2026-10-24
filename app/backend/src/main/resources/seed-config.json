@@ -1,0 +1,111 @@
+{
+  "accounts": [
+    { "username": "alice",       "email": "alice@example.com",       "password": "demo123", "role": "CUSTOMER" },
+    { "username": "bob",         "email": "bob@example.com",         "password": "demo123", "role": "CUSTOMER" },
+    { "username": "carl",        "email": "carl@example.com",        "password": "demo123", "role": "COURIER" },
+    { "username": "operator",    "email": "operator@example.com",    "password": "demo123", "role": "OPERATOR" },
+    { "username": "pouletrouge", "email": "pouletrouge@example.com", "password": "demo123", "role": "RESTAURANT" },
+    { "username": "uniburger",   "email": "uniburger@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "boustan",     "email": "boustan@example.com",     "password": "demo123", "role": "RESTAURANT" },
+    { "username": "lolarosa",    "email": "lolarosa@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "myriade",     "email": "myriade@example.com",     "password": "demo123", "role": "RESTAURANT" },
+    { "username": "fromagerie",  "email": "fromagerie@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "atwater",     "email": "atwater@example.com",       "password": "demo123", "role": "RESTAURANT" },
+    { "username": "pholambert",  "email": "pholambert@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "pizzeriaguy", "email": "pizzeriaguy@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "bagelclark",  "email": "bagelclark@example.com",    "password": "demo123", "role": "RESTAURANT" },
+    { "username": "sushibishop", "email": "sushibishop@example.com",   "password": "demo123", "role": "RESTAURANT" },
+    { "username": "taqueria",    "email": "taqueria@example.com",      "password": "demo123", "role": "RESTAURANT" }
+  ],
+  "restaurants": [
+    {
+      "name": "Poulet Rouge", "owner": "pouletrouge", "status": "OPEN", "cuisine": "Chicken",
+      "address": "1623 Rue Sainte-Catherine O, Montréal", "latitude": 45.4957, "longitude": -73.5795,
+      "menu": [
+        { "id": "pr-1", "name": "Poulet Rouge bowl", "description": "Grilled chicken, rice, greens and red sauce.", "price": 7.50, "originalPrice": 15.25, "status": "AVAILABLE" },
+        { "id": "pr-2", "name": "Quarter chicken plate", "description": "Roasted quarter chicken with rice and salad.", "price": 13.95, "originalPrice": null, "status": "AVAILABLE" },
+        { "id": "pr-3", "name": "Lentil soup", "description": "Made this morning.", "price": 2.50, "originalPrice": 5.50, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Uniburger", "owner": "uniburger", "status": "OPEN", "cuisine": "Burgers",
+      "address": "2001 Rue Saint-Denis, Montréal", "latitude": 45.5150, "longitude": -73.5641,
+      "menu": [
+        { "id": "ub-1", "name": "Classic burger", "description": "Beef patty, cheddar and house sauce.", "price": 6.50, "originalPrice": 13.00, "status": "AVAILABLE" },
+        { "id": "ub-2", "name": "Veggie burger", "description": "Plant-based patty, pickles and onions.", "price": 6.50, "originalPrice": 13.00, "status": "AVAILABLE" },
+        { "id": "ub-3", "name": "Fries", "description": "Hand-cut and salted.", "price": 2.00, "originalPrice": 5.00, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Boustan", "owner": "boustan", "status": "PAUSED", "cuisine": "Lebanese",
+      "address": "2020A Rue Crescent, Montréal", "latitude": 45.4990, "longitude": -73.5776,
+      "menu": [
+        { "id": "bo-1", "name": "Chicken shawarma wrap", "description": "Garlic sauce, pickles and turnips.", "price": 5.00, "originalPrice": 10.50, "status": "AVAILABLE" },
+        { "id": "bo-2", "name": "Falafel plate", "description": "Six falafels, hummus and salad.", "price": 7.00, "originalPrice": 14.50, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Lola Rosa", "owner": "lolarosa", "status": "CLOSED", "cuisine": "Vegetarian",
+      "address": "545 Rue Milton, Montréal", "latitude": 45.5072, "longitude": -73.5745,
+      "menu": [
+        { "id": "lr-1", "name": "Burrito", "description": "Black beans, rice and guacamole.", "price": 7.50, "originalPrice": 16.00, "status": "SOLD_OUT" },
+        { "id": "lr-2", "name": "Nachos", "description": "Melted cheese, salsa and sour cream.", "price": 6.00, "originalPrice": 13.50, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Café Myriade", "owner": "myriade", "status": "CLOSED", "cuisine": "Café",
+      "address": "1432 Rue Mackay, Montréal", "latitude": 45.4966, "longitude": -73.5786,
+      "menu": []
+    },
+    {
+      "name": "Fromagerie Saint-Laurent", "owner": "fromagerie", "status": "OPEN", "cuisine": "Cheese shop",
+      "address": "3700 Boulevard Saint-Laurent, Montréal", "latitude": 45.5145, "longitude": -73.5760,
+      "menu": [
+        { "id": "fr-1", "name": "Cheese platter", "description": "Three Québec cheeses with bread.", "price": 8.00, "originalPrice": 17.00, "status": "SOLD_OUT" },
+        { "id": "fr-2", "name": "Grilled cheese", "description": "Aged cheddar on sourdough.", "price": 6.25, "originalPrice": null, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Bistro Atwater", "owner": "atwater", "status": "OPEN", "cuisine": "French",
+      "address": "1200 Avenue Atwater, Montréal", "latitude": 45.4890, "longitude": -73.5850,
+      "menu": []
+    },
+    {
+      "name": "Pho Lambert", "owner": "pholambert", "status": "PAUSED", "cuisine": "Vietnamese",
+      "address": "1100 Boulevard De Maisonneuve O, Montréal", "latitude": 45.5010, "longitude": -73.5730,
+      "menu": [
+        { "id": "pl-1", "name": "Beef pho", "description": "Rice noodles in beef broth.", "price": 6.00, "originalPrice": 12.50, "status": "AVAILABLE" },
+        { "id": "pl-2", "name": "Spring rolls", "description": "Two fresh rolls with peanut sauce.", "price": 4.50, "originalPrice": null, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Pizzeria Guy", "owner": "pizzeriaguy", "status": "PAUSED", "cuisine": "Pizza",
+      "address": "1450 Rue Guy, Montréal", "latitude": 45.4950, "longitude": -73.5790,
+      "menu": [
+        { "id": "pg-1", "name": "Margherita slice", "description": "Tomato, mozzarella and basil.", "price": 2.50, "originalPrice": 5.00, "status": "SOLD_OUT" },
+        { "id": "pg-2", "name": "Pepperoni slice", "description": "Tomato, mozzarella and pepperoni.", "price": 3.00, "originalPrice": 6.00, "status": "SOLD_OUT" }
+      ]
+    },
+    {
+      "name": "Bagel Clark", "owner": "bagelclark", "status": "PAUSED", "cuisine": "Bakery",
+      "address": "4500 Rue Clark, Montréal", "latitude": 45.5210, "longitude": -73.5890,
+      "menu": []
+    },
+    {
+      "name": "Sushi Bishop", "owner": "sushibishop", "status": "CLOSED", "cuisine": "Japanese",
+      "address": "1400 Rue Bishop, Montréal", "latitude": 45.4975, "longitude": -73.5780,
+      "menu": [
+        { "id": "sb-1", "name": "Salmon maki", "description": "Eight pieces.", "price": 5.50, "originalPrice": 11.00, "status": "AVAILABLE" },
+        { "id": "sb-2", "name": "Miso soup", "description": "Tofu, seaweed and green onion.", "price": 2.00, "originalPrice": null, "status": "AVAILABLE" }
+      ]
+    },
+    {
+      "name": "Taqueria Peel", "owner": "taqueria", "status": "CLOSED", "cuisine": "Mexican",
+      "address": "1250 Rue Peel, Montréal", "latitude": 45.4995, "longitude": -73.5720,
+      "menu": [
+        { "id": "tp-1", "name": "Al pastor tacos", "description": "Three tacos with pineapple.", "price": 6.00, "originalPrice": 12.00, "status": "AVAILABLE" },
+        { "id": "tp-2", "name": "Churros", "description": "With chocolate sauce.", "price": 3.00, "originalPrice": 6.50, "status": "SOLD_OUT" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+@startuml MenuControllerVersionCOMMAND
+
+class MenuController {
+
+}
+CommandInvoker "1" <-down- MenuController: calls
+
+note "The Controller has methods that will call the \nCommandInvoker by creating a new Command, with \nthe information from the request of the REST Endpoints" as N1
+N1 -down- MenuController
+'Command, CommandInvoker, CommandLog
+class CommandInvoker {
+    - sessionValidator: SessionValidator
+    - commandLogRepo: CommandLogRepository
+    + process<T>(command: Command<T>, userSession: Session): CommandSuccess<T>
+}
+note "process(...) will use the session validator to validate the user's session, \nand check the user's roles against the command's permitted roles, and it will \nlog the result (success or failure) of the command into the command log repository" as N2
+N2 -down- CommandInvoker
+
+CommandInvoker .down.> Command : executes
+interface Command <<interface>> {
+    + {abstract} validRoles(): Set<UserRole>
+    + {abstract} execute(): CommandSuccess<T>
+}
+
+note left of Command
+    - validRoles() will return a set of valid user roles under which
+    the command is allowed to execute.
+    - execute() delegates the responsibility of the command to MenuService
+    and returns CommandSuccess<T>, where T is the response type associated 
+    with the concrete command being executed.
+end note
+
+MenuController ..> ConcreteCommands : creates
+rectangle ConcreteCommands {
+    class UpdateItemAvailabilityCommand{
+        - session: Session
+        - service: MenuService
+        - restaurantId: String
+        - itemId: String
+        - newStatus: MenuItemStatus
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class AddMenuItemCommand{
+        - session: Session
+        - service: MenuService
+        - restaurantId: String
+        - input: MenuItemInput
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class EditMenuItemCommand {
+        - session: Session
+        - service: MenuService
+        - restaurantId: String
+        - itemId: String
+        - input: MenuItemInput
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class RemoveMenuItemCommand {
+        - session: Session
+        - service: MenuService
+        - restaurantId: String
+        - itemId: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+    class BrowseMenuCommand {
+        - session: Session
+        - menuService: MenuService
+        - restaurantId: String
+        + execute(): CommandSuccess<T>
+        + validRoles(): Set<UserRole>
+    }
+
+}
+
+Command <|.. UpdateItemAvailabilityCommand
+Command <|.. AddMenuItemCommand
+Command <|.. EditMenuItemCommand
+Command <|.. RemoveMenuItemCommand
+Command <|.. BrowseMenuCommand
+
+MenuService <.up. UpdateItemAvailabilityCommand
+MenuService <.up. AddMenuItemCommand
+MenuService <.up. EditMenuItemCommand
+MenuService <.up. RemoveMenuItemCommand
+MenuService <.up. BrowseMenuCommand
+
+
+class MenuService {
+    + updateItemAvailability(userId: String, role: UserRole, restaurantId: String, itemId: String, newStat: MenuItemStatus): MenuItem
+    + addMenuItem(userId: String, role: UserRole, restaurantId: String, input: MenuItemInput): MenuItemResponse
+    + editMenuItem(userId: String, role: UserRole, restaurantId: String, itemId: String, input: MenuItemInput): MenuItemResponse
+    + removeMenuItem(userId: String, role: UserRole, restaurantId: String, itemId: String): MenuItemResponse
+    + browseMenu(restaurantId: String, userId: String, role: UserRole): RestaurantMenu
+}
+
+@enduml
