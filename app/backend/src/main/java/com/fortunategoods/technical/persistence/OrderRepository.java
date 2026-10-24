@@ -1,5 +1,6 @@
 package com.fortunategoods.technical.persistence;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -81,6 +82,24 @@ public class OrderRepository {
         return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId), status.name());
     }
 
+    // A customer's orders, oldest first, whatever their status (dashboard read, #132).
+    public List<Order> findByCustomer(String customerId) {
+        String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(customerId));
+    }
+
+    // A restaurant's orders, oldest first, whatever their status (dashboard read, #132).
+    public List<Order> findByRestaurant(String restaurantId) {
+        String sql = "SELECT * FROM orders WHERE restaurant_id = ? ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId));
+    }
+
+    // Returns a customer's orders, newest first.
+    public List<Order> findByCustomerId(String customerId) {
+        String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id DESC";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(customerId));
+    }
+
     private List<OrderLine> findLines(String orderId) {
         String sql = "SELECT * FROM order_lines WHERE order_id = ? ORDER BY id";
         return jdbc.query(sql, (row, rowNumber) -> toOrderLine(row), Integer.parseInt(orderId));
@@ -105,16 +124,19 @@ public class OrderRepository {
 
     // Turns one row of the order_lines table into an OrderLine, with the MenuItem it points to (#97).
     // name, price and original_price stay the copy saved when the order was placed.
-    // original_price is empty when the item was not on discount. getObject keeps it null (getDouble would give 0.0).
+    // original_price is empty when the item was not on discount, so it must stay null (getDouble would give 0.0).
+    // It is a numeric column, and the Postgres driver cannot read numeric straight into a Double,
+    // so it is read as a BigDecimal first.
     private OrderLine toOrderLine(ResultSet row) throws SQLException {
         String menuItemId = row.getString("menu_item_id");
+        BigDecimal originalPrice = row.getBigDecimal("original_price");
         return new OrderLine(
                 row.getString("id"),
                 menuItemId,
                 row.getInt("quantity"),
                 row.getString("name"),
                 row.getDouble("price"),
-                row.getObject("original_price", Double.class),
+                originalPrice == null ? null : originalPrice.doubleValue(),
                 menuItemRepository.findById(menuItemId));
     }
 

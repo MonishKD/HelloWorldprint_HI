@@ -1,80 +1,45 @@
-import { db } from '../../mockData';
+// regApi (a2: ui.reg): register, log in, log out, and read who is signed in.
+// The session itself is Spring Security's cookie; the UI never decides who is logged in or what role they have.
 import type { Role, User } from '../../domain';
+import { toSessionUser } from '../adapters';
+import { request } from '../http';
 
-/** What the UI keeps after login (a2: Session = user and role). The backend keeps the session itself in a cookie. */
+/** What the UI keeps after login (a2: Session = user and role). */
 export type SessionUser = Omit<User, 'password'>;
 export type RegisterRole = Exclude<Role, 'operator'>;
-const PUBLIC_ROLES: Role[] = ['customer', 'restaurant', 'courier'];
 
-// ponytail: no geocoding, new accounts are dropped near downtown Montreal.
-// The real backend should geocode the address (e.g. with Nominatim) instead.
-function roughLocation() {
-  return { lat: 45.5017 + (Math.random() - 0.5) * 0.03, lng: -73.5673 + (Math.random() - 0.5) * 0.04 };
+/** GET /auth/session: who the session cookie belongs to. A 401 means nobody is signed in. */
+export async function currentSession(): Promise<SessionUser> {
+  return toSessionUser(await request('/auth/session'));
 }
 
-function toSession({ password: _password, ...user }: User): SessionUser {
-  return { ...user };
-}
-
-// TODO: replace with fetch() to the real backend: POST /auth/login  { usernameOrEmail, password }
+/** POST /auth/login { usernameOrEmail, password } starts the session; the session read then says who it is. */
 export async function login(usernameOrEmail: string, password: string): Promise<SessionUser> {
-  const id = usernameOrEmail.trim().toLowerCase();
-  const user = db.users.find((u) => (u.email === id || u.username.toLowerCase() === id) && u.password === password);
-  if (!user) throw new Error('Invalid username/email or password.');
-  return toSession(user);
+  await request('/auth/login', { method: 'POST', body: { usernameOrEmail: usernameOrEmail.trim(), password } });
+  return currentSession();
 }
 
-// TODO: replace with fetch() to the real backend: POST /auth/register
-// { username, email, password, role, restaurantName?, address? }. A restaurant is created together with its owner account.
+/**
+ * POST /auth/register, then log in: registering doesn't start a session. A restaurant account comes with its own
+ * closed restaurant, so only that role sends a restaurant name and address. The backend refuses operator and taken names.
+ */
 export async function register(input: {
   username: string;
-  name: string;
   email: string;
   password: string;
   role: RegisterRole;
   restaurantName?: string;
   address?: string;
 }): Promise<SessionUser> {
-  // The operator is seeded, never registered (R-REG-01). The form doesn't offer it; the backend must refuse it too.
-  if (!PUBLIC_ROLES.includes(input.role)) throw new Error('That role cannot be registered.');
-  const email = input.email.trim().toLowerCase();
-  const username = input.username.trim();
-  if (db.users.some((u) => u.username.toLowerCase() === username.toLowerCase())) throw new Error('That username is already taken.');
-  if (db.users.some((u) => u.email === email)) throw new Error('An account with this email already exists.');
-
-  const id = `u-${Date.now().toString(36)}`;
-  const user: User = { id, username, name: input.name.trim(), email, password: input.password, role: input.role };
-  if (input.role === 'restaurant') {
-    user.restaurantId = `r-${id}`;
-    db.restaurants.push({
-      id: user.restaurantId,
-      name: input.restaurantName!.trim(),
-      cuisine: '', // sign-up doesn't ask for it
-      address: input.address?.trim() ?? '',
-      status: 'closed', // a new restaurant has no menu yet, so customers see it but can't order (R-ORD-02)
-      // no lat/lng: the real sign-up doesn't ask for coordinates, so a new restaurant has no map pin until it is geocoded
-    });
-  }
-  if (input.role === 'customer') Object.assign(user, { address: input.address?.trim() }, roughLocation());
-  if (input.role === 'courier') user.courierState = 'offline';
-  db.users.push(user);
-  return toSession(user);
+  const restaurant = input.role === 'restaurant' ? { restaurantName: input.restaurantName, address: input.address } : {};
+  await request('/auth/register', {
+    method: 'POST',
+    body: { username: input.username.trim(), email: input.email.trim(), password: input.password, role: input.role, ...restaurant },
+  });
+  return login(input.username, input.password);
 }
 
-// TODO: replace with fetch() to the real backend: POST /auth/logout
-export async function logout(_userId: string): Promise<void> {
-  // Mock: nothing to invalidate. The real backend should end the session / revoke the token.
-}
-
-// TODO: replace with fetch() to the real backend: GET /couriers
-export async function listCouriers(): Promise<SessionUser[]> {
-  return db.users.filter((u) => u.role === 'courier').map(toSession);
-}
-
-// TODO: replace with fetch() to the real backend: PATCH /couriers/{id}/availability
-export async function setCourierOnline(courierId: string, online: boolean): Promise<SessionUser> {
-  const courier = db.users.find((u) => u.id === courierId && u.role === 'courier');
-  if (!courier) throw new Error('Courier not found.');
-  courier.courierState = online ? 'idle' : 'offline';
-  return toSession(courier);
+/** POST /auth/logout ends the session. */
+export async function logout(): Promise<void> {
+  await request('/auth/logout', { method: 'POST' });
 }

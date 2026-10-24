@@ -1,15 +1,13 @@
 // Adapters: turn what the Spring Boot backend sends into the shapes in domain.ts, so no screen has to know
-// about backend naming. When a *Api stub becomes a real call, map the response through these, for example:
-//   export const listMenu = (id: string) => request<unknown>(`/restaurants/${id}/menu`).then(toMenuItems);
+// about backend naming. Every *Api call maps its response through these.
 //
 // What differs from the frontend types:
 //   - enums are UPPERCASE on the backend (OPEN, PICKED_UP, SOLD_OUT), lowercase here
 //   - coordinates are `latitude` / `longitude` (and `deliveryLatitude` / `deliveryLongitude`), `lat` / `lng` here
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
-//   - orders carry `lines`; some display fields (customerName, total, createdAt...) may not be sent yet
-// The backend's controllers and DTOs don't exist yet, so the field names below follow its domain classes and the SQL
-// schema (phase2). Adjust here, and only here, when the DTOs are final.
-import type { CourierLocation, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus, Role } from '../domain';
+//   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
+// Adjust here, and only here, when a response changes.
+import type { CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus, Role } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -24,15 +22,19 @@ const optionalNumber = (value: unknown): number | undefined => (value === null |
 /** Frontend enum value -> what the backend expects (`'picked_up'` -> `'PICKED_UP'`), for request bodies. */
 export const toBackendEnum = (value: string): string => value.toUpperCase();
 
+/** A restaurant registered through sign-up has no position yet and comes as 0, 0: it gets no map pin. */
 export function toRestaurant(j: Raw): Restaurant {
+  const lat = optionalNumber(j.latitude ?? j.lat);
+  const lng = optionalNumber(j.longitude ?? j.lng);
+  const placed = !(lat === 0 && lng === 0);
   return {
     id: text(j.id),
     name: text(j.name),
     cuisine: text(j.cuisine),
     address: text(j.address),
     status: lower<RestaurantStatus>(j.status),
-    lat: optionalNumber(j.latitude ?? j.lat),
-    lng: optionalNumber(j.longitude ?? j.lng),
+    lat: placed ? lat : undefined,
+    lng: placed ? lng : undefined,
   };
 }
 
@@ -74,16 +76,16 @@ export function toOrderLine(j: Raw): OrderLine {
 export function toOrder(j: Raw): Order {
   const lines: OrderLine[] = (j.lines ?? []).map(toOrderLine);
   return {
-    id: text(j.id),
+    id: text(j.orderId ?? j.id),
     customerId: text(j.customerId),
-    customerName: text(j.customerName, 'Customer'),
+    customerName: text(j.customerName, j.customerId ? `Customer #${j.customerId}` : 'Customer'),
     deliveryAddress: text(j.deliveryAddress),
     deliveryLat: optionalNumber(j.deliveryLatitude ?? j.deliveryLat),
     deliveryLng: optionalNumber(j.deliveryLongitude ?? j.deliveryLng),
     restaurantId: text(j.restaurantId),
     restaurantName: text(j.restaurantName, 'Restaurant'),
     lines,
-    specialInstructions: text(j.specialInstructions),
+    specialInstructions: text(j.instructions ?? j.specialInstructions),
     status: lower<OrderStatus>(j.status),
     total: optionalNumber(j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
     createdAt: text(j.createdAt),
@@ -94,17 +96,7 @@ export function toOrder(j: Raw): Order {
   };
 }
 
-/** Couriers without a known position can't be drawn, so they are left out. */
-export function toCourierLocations(list: Raw[]): CourierLocation[] {
-  return list.flatMap((j) => {
-    const lat = optionalNumber(j.latitude ?? j.lat);
-    const lng = optionalNumber(j.longitude ?? j.lng);
-    if (lat === undefined || lng === undefined) return [];
-    return [{ id: text(j.id ?? j.userId), name: text(j.name, 'Courier'), lat, lng, courierState: lower<CourierState>(j.courierState ?? j.status ?? 'offline') }];
-  });
-}
-
-/** The signed-in user (login response, `GET /auth/me`, or a courier row). */
+/** The signed-in user (`GET /auth/session`). The username doubles as the display name. */
 export function toSessionUser(j: Raw): SessionUser {
   const username = text(j.username);
   return {

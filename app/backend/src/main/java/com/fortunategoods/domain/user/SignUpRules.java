@@ -1,4 +1,3 @@
-//written by Monish. had a merge conflict issue with two RegControllers made by different people.
 package com.fortunategoods.domain.user;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
@@ -27,6 +26,23 @@ public final class SignUpRules {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Operator accounts cannot be registered");
         }
         return parsed;
+    }
+
+    // A restaurant account must give its restaurant's name and address (#144).
+    // Any other role must leave both empty, since only restaurant owners get a restaurant.
+    public static void checkRestaurantDetails(UserRole role, String restaurantName, String address) {
+        boolean hasName = restaurantName != null && !restaurantName.isBlank();
+        boolean hasAddress = address != null && !address.isBlank();
+
+        if (role == UserRole.RESTAURANT) {
+            if (!hasName || !hasAddress) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
+                        "A restaurant account needs the restaurant's name and address");
+            }
+        } else if (hasName || hasAddress) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
+                    "Only a restaurant account can have a restaurant name or address");
+        }
     }
 
     // The restaurant a new restaurant account owns: CLOSED, empty menu, no id yet (the database gives it one).

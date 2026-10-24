@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Navigate, NavLink, useLocation } from 'react-router-dom';
 import type { Role } from '../../domain';
 import { dashboardPath, useSession, useUser } from '../../session';
-import { initials, Logo, ThemeToggle } from '../common';
+import { Empty, initials, Logo, ThemeToggle } from '../common';
 import { logout as logoutApi } from '../reg/regApi';
 import { send } from './dashboardApi';
 import OutputConsolePanel from './OutputConsolePanel';
@@ -21,6 +21,18 @@ export function RequireRole({ role, children }: { role: Role; children: ReactNod
   return <>{children}</>;
 }
 
+/** Couriers and operators can sign in, but their dashboards aren't part of Phase II (a2: ui.dashboard). */
+export function NotInThisPhase() {
+  const { role } = useUser();
+  return (
+    <DashboardLayout>
+      <Empty icon="hourglass" title={`The ${role} dashboard isn't part of Phase II`}>
+        You're signed in. Couriers and operators get their dashboards in a later phase.
+      </Empty>
+    </DashboardLayout>
+  );
+}
+
 export interface NavItem {
   to: string;
   label: string;
@@ -36,7 +48,7 @@ export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; child
   async function logout() {
     // Goes through send() like every other action; the session ends even if the backend call fails.
     try {
-      await send('Log out', () => logoutApi(user.id));
+      await send('Log out', logoutApi);
     } catch {
       // already shown in the output console
     }

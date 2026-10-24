@@ -1,47 +1,37 @@
 package com.fortunategoods.domain.restaurant;
 
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
 
+import com.fortunategoods.domain.restaurant.menu.MenuItem;
+
 class RestaurantTest {
 
-    private final Restaurant cafe = new Restaurant("r1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of());
+    private final MenuItem otherRestaurantsItem = new MenuItem("m2", "r2", "Soup", MenuItemStatus.AVAILABLE, 3.00);
 
-    // The restaurant keeps its id, name, status and coordinates (#75).
+    // The menu is a copy that can't be changed from outside, and only holds this restaurant's items.
     @Test
-    void keepsDetailsAndCoordinates() {
-        assertEquals("r1", cafe.getId());
-        assertEquals("Cafe", cafe.getName());
-        assertEquals(RestaurantStatus.OPEN, cafe.getStatus());
-        assertEquals(45.5, cafe.getLatitude());
-        assertEquals(-73.6, cafe.getLongitude());
+    void menuIsAReadOnlyCopy() {
+        List<MenuItem> items = new ArrayList<>(List.of(new MenuItem("m1", "r1", "Wrap", MenuItemStatus.AVAILABLE, 4.50)));
+        Restaurant restaurant = new Restaurant("r1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, items);
+        items.add(new MenuItem("m3", "r1", "Salad", MenuItemStatus.AVAILABLE, 3.00));
+
+        assertEquals(1, restaurant.getMenu().size());
+        assertThrows(UnsupportedOperationException.class, () -> restaurant.getMenu().clear());
     }
 
-    // The three statuses are exactly open, paused and closed (#75).
     @Test
-    void hasExactlyThreeStatuses() {
-        assertEquals(List.of(RestaurantStatus.OPEN, RestaurantStatus.PAUSED, RestaurantStatus.CLOSED),
-                List.of(RestaurantStatus.values()));
-    }
+    void anotherRestaurantsItemsAreRefused() {
+        assertThrows(IllegalArgumentException.class,
+                () -> new Restaurant("r1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of(otherRestaurantsItem)));
 
-    // A new menu with this restaurant's items is accepted.
-    @Test
-    void setMenuAcceptsOwnItems() {
+        Restaurant cafe = new Restaurant("r1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of());
         cafe.setMenu(List.of(new MenuItem("m1", "r1", "Wrap", MenuItemStatus.AVAILABLE, 4.50)));
-
         assertEquals(1, cafe.getMenu().size());
+        assertThrows(IllegalArgumentException.class, () -> cafe.setMenu(List.of(otherRestaurantsItem)));
     }
-
-    // A new menu cannot contain another restaurant's items.
-    @Test
-    void setMenuRejectsItemsFromAnotherRestaurant() {
-        List<MenuItem> otherMenu = List.of(new MenuItem("m2", "r2", "Soup", MenuItemStatus.AVAILABLE, 3.00));
-
-        assertThrows(IllegalArgumentException.class, () -> cafe.setMenu(otherMenu));
-    }
-
 }

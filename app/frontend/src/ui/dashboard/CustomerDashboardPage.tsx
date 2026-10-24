@@ -8,7 +8,7 @@ import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
-import { errorMessage, getCustomerOrderStatuses, send } from './dashboardApi';
+import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
 import { DashboardLayout, type NavItem } from './DashboardRouter';
 
@@ -60,7 +60,7 @@ function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) 
 function MyOrders() {
   const user = useUser();
   const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
-  const { data, error, reload } = useLoad(() => Promise.all([getCustomerOrderStatuses(user.id), listRestaurants()]), [user.id]);
+  const { data, error, reload } = useLoad(() => Promise.all([getDashboardOrders(), listRestaurants()]), [user.id]);
   const [actionError, setActionError] = useState('');
   const [cancelled, setCancelled] = useState('');
   const now = useNow(data?.[0].some((o) => o.status === 'picked_up') ? 1000 : null);
@@ -93,7 +93,7 @@ function MyOrders() {
     <OrderCard
       key={o.id}
       order={o}
-      title={o.restaurantName}
+      title={restaurantOf(o)?.name ?? o.restaurantName}
       subtitle={courierLine(o, restaurantOf(o), now)}
       tracker
       media={showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}

@@ -4,8 +4,8 @@ import { useUser } from '../../session';
 import { LoadError, Loading, money, Monogram, restaurantHue, Segmented, Stat, TERMINAL, useLoad } from '../common';
 import IncomingOrdersList from '../ord/IncomingOrdersList';
 import MenuPage from '../ord/MenuPage';
-import { getRestaurant, listMenu, listRestaurantOrders, setRestaurantStatus } from '../ord/ordApi';
-import { errorMessage, getPreparationQueue, send } from './dashboardApi';
+import { getRestaurantMenu, setRestaurantStatus } from '../ord/ordApi';
+import { errorMessage, getDashboardOrders, getPreparationQueue, send } from './dashboardApi';
 import { DashboardLayout } from './DashboardRouter';
 
 export default function RestaurantDashboardPage() {
@@ -20,7 +20,7 @@ function RestaurantDashboard() {
   const user = useUser();
   const restaurantId = user.restaurantId ?? '';
   const { data, error, reload } = useLoad(
-    () => Promise.all([getRestaurant(restaurantId), listMenu(restaurantId), listRestaurantOrders(restaurantId), getPreparationQueue(restaurantId)]),
+    () => Promise.all([getRestaurantMenu(restaurantId), getDashboardOrders(), getPreparationQueue(restaurantId)]),
     [restaurantId],
   );
   const [actionError, setActionError] = useState('');
@@ -40,15 +40,15 @@ function RestaurantDashboard() {
   if (error) return <LoadError what="your restaurant" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your restaurant" />;
 
-  const [restaurant, menu, orders, queue] = data;
-  const byArrival = [...orders].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+  const [[restaurant, menu], orders, queue] = data;
+  const byArrival = orders; // the backend sends them oldest first
   const incoming = byArrival.filter((o) => o.status === 'placed');
   // The preparation queue (R-ORD-03) arrives already ordered by the backend and is kept in that order. It only lists ids,
   // so each one is matched with its order; the order being prepared has left the queue and comes first.
   const orderById = new Map(orders.map((o) => [o.id, o]));
   const queued = queue.flatMap((slot) => orderById.get(slot.orderId) ?? []);
   const unmatched = queue.length - queued.length;
-  const preparing = orders.filter((o) => o.status === 'preparing').sort((a, b) => (a.acceptedAt ?? a.createdAt).localeCompare(b.acceptedAt ?? b.createdAt));
+  const preparing = byArrival.filter((o) => o.status === 'preparing');
   const kitchen = [...preparing, ...queued];
   const positions = Object.fromEntries(queue.map((slot) => [slot.orderId, slot.position]));
   const ready = byArrival.filter((o) => o.status === 'ready');

@@ -22,7 +22,10 @@ import com.fortunategoods.domain.restaurant.Restaurant;
         - createPlacedOrder() will create an order with those orderLines
 */
 public class OrderVerify {
-    
+
+    // Most of one item a customer can order at once, so a typo like 100000 is refused
+    private static final int MAX_QUANTITY_PER_ITEM = 20;
+
     // The instance of this class will not be initialized
     private OrderVerify(){} 
 
@@ -60,6 +63,10 @@ public class OrderVerify {
 
         if (quantity <= 0) {
             throw DomainRuleInvalid("Quantity for item " + requestedItem.getMenuItemId() + " cannot be zero or negative.");
+        }
+
+        if (quantity > MAX_QUANTITY_PER_ITEM) {
+            throw DomainRuleInvalid("Quantity for item " + requestedItem.getMenuItemId() + " cannot be more than " + MAX_QUANTITY_PER_ITEM + ".");
         }
 
         return quantity;
@@ -148,7 +155,11 @@ public class OrderVerify {
 
     // Create order with the validated order lines
     public static Order createPlacedOrder(String customerId, String restaurantId, String instructions, String deliveryAddress, List<OrderLine> lines) {
-        if (deliveryAddress != null && deliveryAddress.length() > 255) {
+        // The frontend blocks a blank address, but the backend must refuse it too in case the request is sent directly
+        if (deliveryAddress == null || deliveryAddress.isBlank()) {
+            throw DomainRuleInvalid("Delivery address is required");
+        }
+        if (deliveryAddress.length() > 255) {
             throw DomainRuleInvalid("Delivery address must not exceed 255 characters");
         }
         // Create a new Order and change the transition to
