@@ -21,15 +21,13 @@ import com.fortunategoods.application.ord.orders.preparation.RegisterPreparation
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 class ReadyOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
@@ -40,7 +38,7 @@ class ReadyOrderServiceTest {
 
     @BeforeEach
     void setup() {
-        order = createOrder(OrderStatus.PREPARING);
+        order = order("100", OrderStatus.PREPARING);
         when(orders.findById("100")).thenReturn(order);
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
         when(events.findByOrderId("100")).thenReturn(List.of(new OrderEvent("700", "100", "699", OrderStatus.ACCEPTED, OrderStatus.PREPARING, LocalDateTime.now())));
@@ -66,7 +64,7 @@ class ReadyOrderServiceTest {
     void customerIsForbidden() {
         var error = assertThrows(DomainRuleViolation.class, () -> service.markAsReadyOrder("7", UserRole.CUSTOMER, "100"));
         assertEquals(DomainRuleViolation.Reason.FORBIDDEN, error.getReason());
-        verifyNoInteractions(orders, events, users, mock(RegisterPreparationQueue.class));
+        verifyNoInteractions(orders, events, users);
     }
 
     @Test
@@ -90,7 +88,7 @@ class ReadyOrderServiceTest {
     void otherStatusesAreRejected() {
         for (OrderStatus status : OrderStatus.values()) {
             if (status == OrderStatus.PREPARING) continue;
-            Order existing = createOrder(status);
+            Order existing = order("100", status);
             when(orders.findById("100")).thenReturn(existing);
             fails(DomainRuleViolation.Reason.CONFLICT);
             assertEquals(status, existing.getStatus());
@@ -113,10 +111,5 @@ class ReadyOrderServiceTest {
     private void nothingSaved() {
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
         verifyNoInteractions(events);
-    }
-
-    private Order createOrder(OrderStatus status) {
-        var item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
-        return new Order("100", "7", "1", null, status, null, null, null, null, null, List.of(OrderLine.fromMenuItem(item, 1)));
     }
 }

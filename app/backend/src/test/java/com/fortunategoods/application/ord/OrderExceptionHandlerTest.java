@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class OrderExceptionHandlerTest {
 
@@ -56,26 +58,16 @@ class OrderExceptionHandlerTest {
         .andExpect(jsonPath("$.message").value("Order was not found."));
     }
 
-    @Test
-    void invalid400() throws Exception {
-        mvc.perform(get("/test/orders/abc")).andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.code").value("INVALID"))
-        .andExpect(jsonPath("$.message").value("Request is invalid"));
-    }
-
-    @Test
-    void invalidJson400() throws Exception {
-        mvc.perform(post("/test/body").contentType(MediaType.APPLICATION_JSON).content("{"))
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.status").value(400))
-        .andExpect(jsonPath("$.code").value("INVALID"))
-        .andExpect(jsonPath("$.message").value("Request is invalid"));
-    }
-
-    @Test
-    void missingParams400() throws Exception {
-        mvc.perform(get("/test/search"))
+    // A bad path variable, unreadable JSON and a missing parameter all give the same 400.
+    @ParameterizedTest
+    @ValueSource(strings = {"path", "json", "param"})
+    void badRequests400(String kind) throws Exception {
+        var request = switch (kind) {
+            case "path" -> get("/test/orders/abc");
+            case "json" -> post("/test/body").contentType(MediaType.APPLICATION_JSON).content("{");
+            default -> get("/test/search");
+        };
+        mvc.perform(request)
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.code").value("INVALID"))

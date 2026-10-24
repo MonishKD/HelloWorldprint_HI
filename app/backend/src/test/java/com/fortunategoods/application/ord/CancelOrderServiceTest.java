@@ -20,15 +20,13 @@ import com.fortunategoods.application.ord.orders.preparation.RegisterPreparation
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.state.IllegalTransitionException;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 public class CancelOrderServiceTest {
     private OrderRepository orders;
@@ -44,7 +42,7 @@ public class CancelOrderServiceTest {
 
         service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class), preparationQueue);
 
-        order = createOrder(OrderStatus.PLACED);
+        order = order("100", OrderStatus.PLACED);
         when(orders.findById("100")).thenReturn(order);
 
         OrderEvent event = new OrderEvent("700", "100", null, null, OrderStatus.PLACED, LocalDateTime.now());
@@ -84,7 +82,7 @@ public class CancelOrderServiceTest {
             }
 
             // Create order with status OTHER than PLACED and try to cancel order
-            Order existingOrder = createOrder(status);
+            Order existingOrder = order("100", status);
             when(orders.findById("100")).thenReturn(existingOrder);
 
             DomainRuleViolation error = assertThrows(DomainRuleViolation.class, () -> service.cancelOrder("7", "100"));
@@ -144,11 +142,6 @@ public class CancelOrderServiceTest {
 
     private void verifyNothingSaved() {
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
-    }
-
-    private Order createOrder(OrderStatus status) {
-        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
-        return new Order("100", "7", "1", null, status, null, null, null, null, null, List.of(OrderLine.fromMenuItem(item, 1)));
     }
 
     @Test

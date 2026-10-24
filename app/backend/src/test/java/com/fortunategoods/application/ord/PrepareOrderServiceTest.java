@@ -21,16 +21,14 @@ import com.fortunategoods.application.ord.orders.preparation.RegisterPreparation
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.PreparationQueue;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 class PrepareOrderServiceTest {
 
@@ -48,7 +46,7 @@ class PrepareOrderServiceTest {
 
     @BeforeEach
     void setup() {
-        order = acceptedOrder("100");
+        order = order("100", OrderStatus.ACCEPTED);
         queue = new PreparationQueue("1");
         queue.enqueue(order, time, 700);
 
@@ -80,7 +78,7 @@ class PrepareOrderServiceTest {
 
     @Test
     void orderBehindHeadIsRefusedWithoutChanges() {
-        queue.enqueue(acceptedOrder("99"), time.minusMinutes(1), 699);
+        queue.enqueue(order("99", OrderStatus.ACCEPTED), time.minusMinutes(1), 699);
         var before = queue.snapshot();
 
         assertFifoRefusal();
@@ -124,11 +122,5 @@ class PrepareOrderServiceTest {
         assertEquals(OrderStatus.ACCEPTED, order.getStatus());
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
         verifyNoInteractions(events);
-    }
-
-    private Order acceptedOrder(String id) {
-        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
-        return new Order(id, "7", "1", null, OrderStatus.ACCEPTED,
-            null, null, null, null, null, List.of(OrderLine.fromMenuItem(item, 1)));
     }
 }

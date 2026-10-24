@@ -15,13 +15,11 @@ import com.fortunategoods.application.ord.orders.RestaurantOrderService;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 public class RestaurantOrderServiceTest {
 
@@ -42,7 +40,7 @@ public class RestaurantOrderServiceTest {
 
     @Test
     void staffCanViewOwnPendingOrders() {
-        when(orders.findByRestaurantAndStatus("1", OrderStatus.PLACED)).thenReturn(List.of(createOrder("100"), createOrder("101")));
+        when(orders.findByRestaurantAndStatus("1", OrderStatus.PLACED)).thenReturn(List.of(order("100", OrderStatus.PLACED), order("101", OrderStatus.PLACED)));
 
         List<Order> result = service.getPendingOrders("8", UserRole.RESTAURANT, "1");
 
@@ -113,11 +111,5 @@ public class RestaurantOrderServiceTest {
             assertThrows(DomainRuleViolation.class, () -> service.getPendingOrders("8", UserRole.RESTAURANT, id));
         }
         verifyNoInteractions(users, orders);
-    }
-
-    private Order createOrder(String orderId) {
-        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
-
-        return new Order(orderId, "7", "1", null, OrderStatus.PLACED, "No onions", null, null, null, null, List.of(OrderLine.fromMenuItem(item, 2)));
     }
 }

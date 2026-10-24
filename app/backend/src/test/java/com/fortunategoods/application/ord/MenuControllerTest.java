@@ -14,82 +14,99 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.application.ord.menu.MenuController;
 import com.fortunategoods.application.ord.menu.MenuService;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
+import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.persistence.MenuItemRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
-import com.fortunategoods.technical.security.SecurityConfig;
-import com.fortunategoods.technical.security.SecurityErrorResponses;
-import com.fortunategoods.technical.security.role.RoleCheck;
-import com.fortunategoods.technical.security.session.LoggedInUser;
-import com.fortunategoods.technical.security.session.SpringSecuritySessionValidator;
+import com.fortunategoods.testsupport.SecuredControllerTest;
+import static com.fortunategoods.testsupport.TestData.loggedIn;
+import static com.fortunategoods.testsupport.TestData.wrap;
 
-// The menu item routes, through the real security, CommandInvoker and MenuService. Only the repositories are mocked:
-// restaurant "1" with item "10", staff user 8 works there.
+// Browsing and changing a menu through the real security, CommandInvoker and MenuService. Only the repositories are mocked:
+// restaurant "1" (Cafe) has item "10" Wrap and a sold-out item "11" Soup, staff user 8 works there.
 // Every request that changes something sends Spring's CSRF token with csrf(), like the browser does.
-@WebMvcTest(
-    controllers = MenuController.class,
-    properties = {
-        "app.cors.allowed-origin=http://localhost:5173",
-        "spring.application.name=fortunategoods-test"
-    }
-)
-@Import({
-    SecurityConfig.class, SecurityErrorResponses.class,
-    SpringSecuritySessionValidator.class, RoleCheck.class,
-    CommandInvoker.class, OrderExceptionHandler.class,
-    MenuService.class
-})
-class MenuItemControllerTest {
+@SecuredControllerTest(MenuController.class)
+@Import(MenuService.class)
+class MenuControllerTest {
 
     private static final String SALAD = """
         { "name": "Salad", "description": "Fresh greens", "price": 5.0, "originalPrice": 10.0, "status": "available" }
     """;
 
-    @Autowired
-    private MockMvc mvc;
-
-    @MockitoBean
-    private MenuItemRepository items;
-
-    @MockitoBean
-    private RestaurantRepository restaurants;
-
-    @MockitoBean
-    private UserRepository users;
-
-    @MockitoBean
-    private CommandLogRepository logs;
+    @Autowired private MockMvc mvc;
+    @MockitoBean private MenuItemRepository items;
+    @MockitoBean private RestaurantRepository restaurants;
+    @MockitoBean private UserRepository users;
+    @MockitoBean private CommandLogRepository logs;
 
     @BeforeEach
     void setup() {
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
-        when(items.findByRestaurantId("1")).thenReturn(List.of(new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50, 9.00)));
+        when(restaurants.findById("1")).thenReturn(new Restaurant("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6,
+                List.of(new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50),
+                        new MenuItem("11", "1", "Soup", MenuItemStatus.SOLD_OUT, 3.00))));
+        when(items.findByRestaurantId("1")).thenReturn(List.of(wrap()));
         when(items.add(eq("1"), any(), any(), any())).thenReturn("20");
+    }
+
+    @Test
+    void customerGetsTheMenu() throws Exception {
+        mvc.perform(get("/api/restaurants/1/menu").with(loggedIn(7, UserRole.CUSTOMER)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.restaurantName").value("Cafe"))
+            .andExpect(jsonPath("$.data.restaurantStatus").value("OPEN"))
+            .andExpect(jsonPath("$.data.items.length()").value(2))
+            .andExpect(jsonPath("$.data.items[0].name").value("Wrap"))
+            .andExpect(jsonPath("$.data.items[0].price").value(4.50))
+            .andExpect(jsonPath("$.data.items[0].status").value("AVAILABLE"))
+            .andExpect(jsonPath("$.data.items[1].status").value("SOLD_OUT"))
+            .andExpect(jsonPath("$.message").value("Menu of Cafe loaded"));
+    }
+
+    @Test
+    void staffSeeOnlyTheirOwnMenu() throws Exception {
+        mvc.perform(get("/api/restaurants/1/menu").with(staffOf1()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.restaurantId").value("1"));
+        mvc.perform(get("/api/restaurants/2/menu").with(staffOf1()))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+    }
+
+    @Test
+    void browsingRefusesGuestsCouriersUnknownAndBadIds() throws Exception {
+        mvc.perform(get("/api/restaurants/1/menu"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+        mvc.perform(get("/api/restaurants/1/menu").with(loggedIn(9, UserRole.COURIER)))
+            .andExpect(status().isForbidden());
+        mvc.perform(get("/api/restaurants/99/menu").with(loggedIn(7, UserRole.CUSTOMER)))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+        mvc.perform(get("/api/restaurants/abc/menu").with(loggedIn(7, UserRole.CUSTOMER)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.code").value("INVALID"));
     }
 
     @Test
@@ -106,7 +123,6 @@ class MenuItemControllerTest {
             .andExpect(jsonPath("$.data.originalPrice").value(10.0))
             .andExpect(jsonPath("$.data.status").value("AVAILABLE"))
             .andExpect(jsonPath("$.message").value("Menu item \"Salad\" added"));
-
         verify(items).add(eq("1"), any(), eq("Fresh greens"), eq(10.0));
     }
 
@@ -118,7 +134,6 @@ class MenuItemControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.name").value("Big Wrap"))
             .andExpect(jsonPath("$.data.status").value("SOLD_OUT"));
-
         ArgumentCaptor<MenuItem> saved = ArgumentCaptor.forClass(MenuItem.class);
         verify(items).update(saved.capture(), any(), any());
         assertEquals("Big Wrap", saved.getValue().getName());
@@ -130,29 +145,20 @@ class MenuItemControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.id").value("10"))
             .andExpect(jsonPath("$.message").value("Menu item \"Wrap\" removed"));
-
         verify(items).hide("10");
     }
 
     @Test
-    void guestAndCustomerAreRefused() throws Exception {
+    void changesRefuseGuestsCustomersAndOtherRestaurants() throws Exception {
         mvc.perform(post("/api/restaurants/1/menu").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(SALAD))
             .andExpect(status().isUnauthorized())
             .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
-
         mvc.perform(delete("/api/restaurants/1/menu/10").with(loggedIn(7, UserRole.CUSTOMER)).with(csrf()))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.code").value("FORBIDDEN"));
-
-        verifyNothingSaved();
-    }
-
-    @Test
-    void anotherRestaurantsMenuIsForbidden() throws Exception {
         mvc.perform(delete("/api/restaurants/2/menu/30").with(staffOf1()).with(csrf()))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Restaurant staff can only change their own restaurant's menu"));
-
         verifyNothingSaved();
     }
 
@@ -163,14 +169,12 @@ class MenuItemControllerTest {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.code").value("INVALID"))
             .andExpect(jsonPath("$.message").value("The price must be above zero"));
-
         verifyNothingSaved();
         ArgumentCaptor<CommandLog> logged = ArgumentCaptor.forClass(CommandLog.class);
         verify(logs, atLeastOnce()).save(logged.capture());
-        CommandLog last = logged.getValue();
-        assertEquals("AddMenuItemCommand", last.getCommandName());
-        assertEquals(CommandLog.Result.REFUSED, last.getResult());
-        assertEquals(400, last.getStatus());
+        assertEquals("AddMenuItemCommand", logged.getValue().getCommandName());
+        assertEquals(CommandLog.Result.REFUSED, logged.getValue().getResult());
+        assertEquals(400, logged.getValue().getStatus());
     }
 
     @Test
@@ -179,10 +183,8 @@ class MenuItemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON).content(SALAD))
             .andExpect(status().isNotFound())
             .andExpect(jsonPath("$.code").value("NOT_FOUND"));
-
         mvc.perform(delete("/api/restaurants/1/menu/99").with(staffOf1()).with(csrf()))
             .andExpect(status().isNotFound());
-
         verifyNothingSaved();
     }
 
@@ -192,13 +194,7 @@ class MenuItemControllerTest {
         verify(items, never()).hide(anyString());
     }
 
-    private RequestPostProcessor staffOf1() {
+    private static org.springframework.test.web.servlet.request.RequestPostProcessor staffOf1() {
         return loggedIn(8, UserRole.RESTAURANT);
-    }
-
-    private RequestPostProcessor loggedIn(long userId, UserRole role) {
-        var login = UsernamePasswordAuthenticationToken.authenticated(new LoggedInUser(userId, role), null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + role.name())));
-        return authentication(login);
     }
 }

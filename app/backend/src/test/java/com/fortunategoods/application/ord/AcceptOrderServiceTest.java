@@ -21,15 +21,13 @@ import com.fortunategoods.application.ord.orders.preparation.RegisterPreparation
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
-import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
-import com.fortunategoods.domain.restaurant.MenuItemStatus;
-import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
+import static com.fortunategoods.testsupport.TestData.order;
 
 public class AcceptOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
@@ -42,7 +40,7 @@ public class AcceptOrderServiceTest {
 
     @BeforeEach
     void setup() {
-        order = createOrder(OrderStatus.PLACED);
+        order = order("100", OrderStatus.PLACED);
         when(orders.findById("100")).thenReturn(order);
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
         when(events.findByOrderId("100")).thenReturn(List.of(new OrderEvent("700", "100", null, null, OrderStatus.PLACED, LocalDateTime.now())));
@@ -94,7 +92,7 @@ public class AcceptOrderServiceTest {
             if (status == OrderStatus.PLACED) {
                 continue;
             }
-            Order existing = createOrder(status);
+            Order existing = order("100", status);
             when(orders.findById("100")).thenReturn(existing);
 
             assertFailure(DomainRuleViolation.Reason.CONFLICT);
@@ -117,10 +115,5 @@ public class AcceptOrderServiceTest {
 
     private void verifyNothingSaved() {
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
-    }
-
-    private Order createOrder(OrderStatus status) {
-        MenuItem item = new MenuItem("10", "1", "Wrap", MenuItemStatus.AVAILABLE, 4.50);
-        return new Order("100", "7", "1", null, status, null, null, null, null, null, List.of(OrderLine.fromMenuItem(item, 1)));
     }
 }
