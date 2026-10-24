@@ -96,12 +96,15 @@ public class OrderController {
     }
 
     @PostMapping("/{orderId}/reject")
-    public ResponseEntity<CommandSuccess<RejectOrderResponse>> rejectOrder(@PathVariable("orderId") String orderId, @RequestBody RejectOrderReqJSON request){
+    public ResponseEntity<CommandSuccess<RejectOrderResponse>> rejectOrder(@PathVariable("orderId") String orderId, @RequestBody(required = false) RejectOrderReqJSON request){
         // Get current session
         Session session = sessionValidator.currentSession();
 
+        // No body means no reason: pass null so the Domain answers "Rejection reason is required"
+        String reason = request == null ? null : request.getReason();
+
         // Create a new command
-        RejectOrderCommand command = new RejectOrderCommand(orderService, session, orderId, request.getReason());
+        RejectOrderCommand command = new RejectOrderCommand(orderService, session, orderId, reason);
 
         // Process the command and store success result
         CommandSuccess<RejectOrderResponse> result = invoker.process(command, session);

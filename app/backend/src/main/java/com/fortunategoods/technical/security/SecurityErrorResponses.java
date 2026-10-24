@@ -4,7 +4,10 @@ import java.io.IOException;
 
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
@@ -54,10 +57,23 @@ public class SecurityErrorResponses implements AuthenticationEntryPoint, AccessD
     // 403: Spring calls this when the user is logged in but the request is refused.
     // The message is the reason given by whoever refused it,
     // e.g. "Restaurant staff can only view their own restaurant's menu" from the Domain, through CommandInvoker.
+    // Nobody logged in is still a 401, even when the CSRF check refused the request first
+    // (a visitor with no session has no CSRF token either), so the frontend sends them back to login.
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
             AccessDeniedException notAllowed) throws IOException {
+        if (nobodyLoggedIn()) {
+            writeError(response, HttpServletResponse.SC_UNAUTHORIZED, NOT_LOGGED_IN_CODE, NOT_LOGGED_IN_MESSAGE);
+            return;
+        }
         writeError(response, HttpServletResponse.SC_FORBIDDEN, NOT_ALLOWED_CODE, notAllowed.getMessage());
+    }
+
+    // Spring Security keeps who is logged in for this request in the SecurityContextHolder.
+    // A visitor without a session shows up as nothing at all, or as Spring's "anonymous" user.
+    private boolean nobodyLoggedIn() {
+        Authentication current = SecurityContextHolder.getContext().getAuthentication();
+        return current == null || current instanceof AnonymousAuthenticationToken;
     }
 
     // Sets the status (401 or 403), says the body is JSON, and writes { "status", "code", "message" } as the body.

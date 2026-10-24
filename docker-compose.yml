@@ -87,5 +87,21 @@ services:
             # start backend before frontend.
             - backend
 
+    # Live view of every API call (method, path, status and the JSON in and out), see scripts/apiwatch.zsh.
+    # The "tools" profile means "docker compose up" does NOT start it, you run it yourself when you want it:
+    #   docker compose run --rm apiwatch
+    apiwatch:
+        # a small image full of network tools (tshark reads the traffic, jq makes the JSON pretty)
+        image: nicolaka/netshoot
+        profiles: [tools]
+        # share the backend's network, so it sees every request that reaches the backend
+        network_mode: service:backend
+        environment:
+            # the image has no timezone files, so Montreal time is written out by hand (else it prints UTC)
+            TZ: EST5EDT,M3.2.0,M11.1.0
+        volumes:
+            - ./scripts/apiwatch.zsh:/apiwatch.zsh:ro
+        command: zsh /apiwatch.zsh
+
 volumes:
     database_data:
