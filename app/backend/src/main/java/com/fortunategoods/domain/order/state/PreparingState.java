@@ -15,4 +15,9 @@ public class PreparingState extends BaseOrderState {
         order.transitionTo(new ReadyState());
     }
 
+    @Override
+    public void cancel(Order order){
+        order.transitionTo(new CanceledState());
+    }
+
 }
