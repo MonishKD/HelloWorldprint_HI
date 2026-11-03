@@ -79,6 +79,22 @@ public class OrderController {
         return ResponseEntity.ok(result);
     }
 
+    // API Endpoint for cancelling an order as operator
+    @PostMapping("/{orderId}/operator-cancel")
+    public ResponseEntity<CommandSuccess<CancelOrderResponse>> operatorCancelOrder(@PathVariable("orderId") String orderId){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create new command
+        CancelOrderCommand command = new CancelOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);
+
+        // Confirm cancellation request to frontend
+        return ResponseEntity.ok(result);
+    }
+
     // API Endpoint for acceptinng an order
     @PostMapping("/{orderId}/accept")
     public ResponseEntity<CommandSuccess<AcceptOrderResponse>> acceptOrder(@PathVariable("orderId") String orderId){
