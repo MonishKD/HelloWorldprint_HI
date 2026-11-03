@@ -133,7 +133,7 @@ public class OrderStateTest{
     }
 
     @Test
-    void readyIsThePhaseTwoBoundary(){
+    void readyRefusesRestaurantActionsAndCustomerCancellation(){
         testOrder.accept();
         testOrder.startPreparing();
         testOrder.markReady();
@@ -142,7 +142,8 @@ public class OrderStateTest{
         assertThrows(IllegalTransitionException.class, testOrder::startPreparing);
         assertThrows(IllegalTransitionException.class, testOrder::markReady);
         assertThrows(IllegalTransitionException.class, testOrder::cancel);
-        assertThrows(IllegalTransitionException.class, () -> testOrder.reject("Sold out"));
+        assertThrows(DomainRuleViolation.class,() -> testOrder.cancelCustomer("123"));
+        assertThrows(IllegalTransitionException.class,() -> testOrder.reject("Sold out"));
 
         assertEquals(OrderStatus.READY, testOrder.getStatus());
         assertNull(testOrder.getCourierId());
@@ -160,10 +161,4 @@ public class OrderStateTest{
         testOrder.markReady();
         assertThrows(IllegalTransitionException.class,() -> testOrder.markReady());
     }
-
-
-
-
-    
-    
 }
