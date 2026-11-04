@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { CourierDashboard as Dashboard, CourierJob } from '../../domain';
-import { ConfirmChange, Empty, LoadError, Loading, restaurantHue, StatusBadge, Switch, timeOf, useLoad, usePolling } from '../common';
+import { ConfirmChange, Empty, LoadError, Loading, minutesSince, restaurantHue, StatusBadge, Switch, timeOf, useLoad, usePolling } from '../common';
 import { CurrentOrderCard, OfferCard } from '../dlv/CourierJobCards';
-import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getCourierDashboard, listDeliveries, setOnDuty } from '../dlv/dlvApi';
+import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getCourierDashboard, listDeliveries, listReadyOrders, setOnDuty } from '../dlv/dlvApi';
 import MapView, { type MapDelivery } from '../map/MapView';
 import { point } from '../map/geo';
 import { errorMessage, logError, send } from './dashboardApi';
@@ -48,7 +48,7 @@ function jobOnMap(job: CourierJob, courierName?: string): MapDelivery[] {
 }
 
 function CourierDashboard() {
-  const { data, error, reload } = useLoad(() => Promise.all([getCourierDashboard(), listDeliveries()]), []);
+  const { data, error, reload } = useLoad(() => Promise.all([getCourierDashboard(), listDeliveries(), listReadyOrders()]), []);
   usePolling(reload); // a new offer shows up without reloading the page
   const [actionError, setActionError] = useState('');
 
@@ -65,7 +65,7 @@ function CourierDashboard() {
   // Once loaded, a failed refresh keeps the page up: useLoad has already logged it to the console.
   if (!data) return error ? <LoadError what="your deliveries" message={error} onRetry={reload} /> : <Loading what="your deliveries" />;
 
-  const [dashboard, deliveries] = data;
+  const [dashboard, deliveries, readyOrders] = data;
   const { state, offer, order } = dashboard;
   const onDuty = state !== 'offline';
   const mapDeliveries = order ? jobOnMap(order, 'You') : offer ? jobOnMap(offer) : [];
@@ -142,6 +142,35 @@ function CourierDashboard() {
           <MapView deliveries={mapDeliveries} height={300} />
         </section>
       )}
+
+      <section className="stack">
+        <h2 className="section-title">
+          Ready for pickup <span className="count">{readyOrders.length}</span>
+        </h2>
+        <p className="muted small">Every restaurant's ready orders. The nearest idle courier is offered each one automatically.</p>
+        {readyOrders.length === 0 ? (
+          <Empty icon="bike" title="Nothing is waiting for pickup" />
+        ) : (
+          <ul className="ready-list card">
+            {readyOrders.map((r) => (
+              <li key={r.orderId}>
+                <span>
+                  <strong>
+                    #{r.orderId} {r.restaurantName}
+                  </strong>
+                  <small className="muted">{r.pickupAddress}</small>
+                </span>
+                <span className="ready-meta">
+                  {offer?.orderId === r.orderId && <StatusBadge status="offered to you" />}
+                  <small className="muted">
+                    {r.itemCount} item{r.itemCount > 1 ? 's' : ''} · {minutesSince(r.readyAt)}
+                  </small>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <details className="history">
         <summary>

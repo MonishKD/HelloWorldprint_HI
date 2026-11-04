@@ -66,6 +66,15 @@ export interface CourierDashboard {
   order: CourierJob | null;
 }
 
+/** An order any restaurant has ready, for the courier's overview. Who takes it is decided by the dispatch rule (R-DLV-02). */
+export interface ReadyOrder {
+  orderId: string;
+  restaurantName: string;
+  pickupAddress: string;
+  itemCount: number;
+  readyAt: string;
+}
+
 /** One row of a courier's history (R-PRC-04): deliveries they carried, with no money fields. */
 export interface CourierDelivery {
   orderId: string;

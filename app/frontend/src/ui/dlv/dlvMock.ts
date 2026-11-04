@@ -62,6 +62,9 @@ function load(): Db {
   return saved ? JSON.parse(saved) : { status: 'OFFLINE', offer: null, currentOrder: null, delivered: 0, offerAt: 0, history: [] };
 }
 
+/** The nth order of the simulation: orders come up in a fixed cycle of JOBS. */
+const jobAt = (n: number): Job => ({ ...JOBS[n % JOBS.length], orderId: String(1042 + n), status: 'READY' });
+
 function waitForOffer(db: Db) {
   db.status = 'IDLE';
   db.offerAt = Date.now() + OFFER_DELAY_MS;
@@ -70,10 +73,19 @@ function waitForOffer(db: Db) {
 const ROUTES: Record<string, (db: Db) => unknown> = {
   'GET /couriers/me': (db) => {
     if (db.status === 'IDLE' && !db.offer && Date.now() >= db.offerAt) {
-      db.offer = { ...JOBS[db.delivered % JOBS.length], orderId: String(1042 + db.delivered), status: 'READY' };
+      db.offer = jobAt(db.delivered);
     }
     return { status: db.status, offer: db.offer, currentOrder: db.currentOrder };
   },
+  // The next orders waiting, oldest first. One this courier already holds isn't waiting any more.
+  'GET /couriers/ready-orders': (db) =>
+    JOBS.map((_, i) => jobAt(db.delivered + i))
+      .filter((job) => job.orderId !== db.currentOrder?.orderId)
+      .map((job, i) => ({
+        ...job,
+        itemCount: (job.lines as { quantity: number }[]).reduce((n, l) => n + l.quantity, 0),
+        readyAt: new Date(Date.now() - (JOBS.length - i) * 3 * 60_000).toISOString(),
+      })),
   'POST /couriers/me/on-duty': (db) => {
     if (db.currentOrder) db.status = 'ASSIGNED';
     else waitForOffer(db);

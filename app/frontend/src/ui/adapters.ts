@@ -7,7 +7,7 @@
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
 // Adjust here, and only here, when a response changes.
-import type { CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus, Role } from '../domain';
+import type { CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, ReadyOrder, Restaurant, RestaurantStatus, Role } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -137,6 +137,16 @@ export function toCourierDashboard(j: Raw): CourierDashboard {
     state: lower<CourierState>(j.status),
     offer: j.offer ? toCourierJob(j.offer) : null,
     order: j.currentOrder ? toCourierJob(j.currentOrder) : null,
+  };
+}
+
+export function toReadyOrder(j: Raw): ReadyOrder {
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName),
+    pickupAddress: text(j.pickupAddress),
+    itemCount: Number(j.itemCount),
+    readyAt: text(j.readyAt),
   };
 }
 

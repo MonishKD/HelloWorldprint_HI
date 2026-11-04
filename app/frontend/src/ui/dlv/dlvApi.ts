@@ -4,8 +4,8 @@
 // The courier routes don't exist yet (#245, #248, #252), so requests go to a fake backend for now.
 // To connect the real one, change the import below to `import { request } from '../http';` and delete dlvMock.ts.
 // If the routes or JSON end up different: routes are fixed here, field names in adapters.ts.
-import type { CourierDashboard, CourierDelivery } from '../../domain';
-import { toCourierDashboard, toCourierDelivery } from '../adapters';
+import type { CourierDashboard, CourierDelivery, ReadyOrder } from '../../domain';
+import { toCourierDashboard, toCourierDelivery, toReadyOrder } from '../adapters';
 import { mockRequest as request } from './dlvMock';
 
 /** GET /couriers/me: the courier's state, current offer and current order (#245). */
@@ -36,6 +36,14 @@ export async function confirmPickup(): Promise<void> {
 /** POST /couriers/me/order/deliver (#252): refused before pickup (R-ORD-04). */
 export async function confirmDelivery(): Promise<void> {
   await request('/couriers/me/order/deliver', { method: 'POST' });
+}
+
+/**
+ * GET /couriers/ready-orders: every restaurant's ready orders, oldest first, read-only.
+ * No issue covers this route yet: the backend needs to add it, with no customer or payment fields.
+ */
+export async function listReadyOrders(): Promise<ReadyOrder[]> {
+  return (await request<unknown[]>('/couriers/ready-orders')).map(toReadyOrder);
 }
 
 /** GET /history (#264): scoped by the session, so a courier gets the deliveries they carried. Moves to prcApi with #265. */
