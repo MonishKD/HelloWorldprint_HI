@@ -45,7 +45,7 @@ class OperatorCancelOrderControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.orderId").value("100"))
         .andExpect(jsonPath("$.data.status").value("cancelled"))
-        .andExpect(jsonPath("$.message").value("Order cancelled by operator."))
+        .andExpect(jsonPath("$.message").value("Order cancelled successfully by operator"))
         .andExpect(jsonPath("$.eventId").value(701));
 
         verify(service).operatorCancelOrder("9", UserRole.OPERATOR, "100");

@@ -14,6 +14,7 @@ import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
+import com.fortunategoods.application.ord.orders.cancellation.OperatorCancelOrderCommand;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderReqJSON;
@@ -86,7 +87,7 @@ public class OrderController {
         Session session = sessionValidator.currentSession();
 
         // Create new command
-        CancelOrderCommand command = new CancelOrderCommand(orderService, session, orderId);
+        OperatorCancelOrderCommand command = new OperatorCancelOrderCommand(orderService, session, orderId);
 
         // Process the command and store success result
         CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);

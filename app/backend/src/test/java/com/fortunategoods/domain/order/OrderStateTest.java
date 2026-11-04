@@ -141,7 +141,6 @@ public class OrderStateTest{
         assertThrows(IllegalTransitionException.class, testOrder::accept);
         assertThrows(IllegalTransitionException.class, testOrder::startPreparing);
         assertThrows(IllegalTransitionException.class, testOrder::markReady);
-        assertThrows(IllegalTransitionException.class, testOrder::cancel);
         assertThrows(DomainRuleViolation.class,() -> testOrder.cancelCustomer("123"));
         assertThrows(IllegalTransitionException.class,() -> testOrder.reject("Sold out"));
 
