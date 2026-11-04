@@ -116,6 +116,15 @@ public class Order {
         cancel(); // will throw Exception if wrong state, or state life cycle disrespected
     }
 
+    // Only operator can cancel in states after PLACED
+    public void cancelOperator(){
+        // If status is not ACCEPTED, PREPARING, READY, operator cannot cancel
+        if (status != OrderStatus.ACCEPTED && status != OrderStatus.PREPARING && status != OrderStatus.READY){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Operators can only cancel, accepted, preparing or ready orders.");
+        }
+        cancel();
+    }
+
     // Setters for non-final fields
     public void setId(String id){
         this.id = Objects.requireNonNull(id, "ID cannot be null");

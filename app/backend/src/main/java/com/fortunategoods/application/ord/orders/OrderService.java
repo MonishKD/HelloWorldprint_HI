@@ -231,6 +231,24 @@ public class OrderService {
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
 
+    @Transactional 
+    public OrderServiceResult operatorCancelOrder(String operatorId, UserRole role, String orderId){
+        // Verify if user executing this method has valid role
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.operatorCancelOrderRoles(), "Only operators are allowed to cancel orders after accepting");
+        // Verify ID validity
+        OrderVerify.requireId(operatorId, "Operator ID");
+
+        Order order = findOrder(orderId); // Find order from repo
+        orderRepo.lockRestaurantQueue(order.getRestaurantId()); // Locks the queue using order's restaurant id
+        order = findOrder(orderId);
+
+        // Current order status
+        OrderStatus prev = order.getStatus();
+        order.cancelOperator(); // accepted, preparing or ready otherwise it will throw domainRuleViolation
+        return saveTransition(orderId, order, prev);
+
+    }
+
     private Order findStaffOrder(String staffId, UserRole role, String orderId, Set<UserRole> allowedRoles) {
         OrdModulePermissions.requireRole(role, allowedRoles, "Only restaurant staff can perform this action");
         // Verify validity of staff id

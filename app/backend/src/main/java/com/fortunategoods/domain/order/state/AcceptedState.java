@@ -13,4 +13,9 @@ public class AcceptedState extends BaseOrderState{
     public void startPreparing(Order order){
         order.transitionTo(new PreparingState());
     }
+
+    @Override
+    public void cancel(Order order){
+        order.transitionTo(new CanceledState());
+    }
 }
