@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
 import { SessionProvider } from './session';
+import CourierDashboardPage from './ui/dashboard/CourierDashboardPage';
 import CustomerDashboardPage from './ui/dashboard/CustomerDashboardPage';
 import DashboardRouter, { NotInThisPhase, RequireRole } from './ui/dashboard/DashboardRouter';
 import RestaurantDashboardPage from './ui/dashboard/RestaurantDashboardPage';
@@ -32,7 +33,7 @@ export default function App() {
           path="/courier"
           element={
             <RequireRole role="courier">
-              <NotInThisPhase />
+              <CourierDashboardPage />
             </RequireRole>
           }
         />
