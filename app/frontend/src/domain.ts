@@ -40,6 +40,40 @@ export interface CourierLocation {
   courierState: CourierState;
 }
 
+/** What a courier sees of an order: where and what, never prices or payment details. */
+export interface CourierJob {
+  orderId: string;
+  status: OrderStatus;
+  restaurantName: string;
+  pickupAddress: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  /** The customer, or the shelter when the order is a donation. */
+  destinationName: string;
+  destinationAddress: string;
+  destinationLat?: number;
+  destinationLng?: number;
+  donation: boolean;
+  lines: { name: string; quantity: number }[];
+  specialInstructions: string;
+  pickedUpAt?: string;
+}
+
+/** Everything the courier dashboard shows: a courier holds at most one offer or one order (R-DLV-03). */
+export interface CourierDashboard {
+  state: CourierState;
+  offer: CourierJob | null;
+  order: CourierJob | null;
+}
+
+/** One row of a courier's history (R-PRC-04): deliveries they carried, with no money fields. */
+export interface CourierDelivery {
+  orderId: string;
+  restaurantName: string;
+  destinationName: string;
+  deliveredAt: string;
+}
+
 export interface Restaurant {
   id: string;
   name: string;

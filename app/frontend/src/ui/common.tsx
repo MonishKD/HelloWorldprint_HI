@@ -308,6 +308,14 @@ export function useLoad<T>(load: () => Promise<T>, deps: DependencyList) {
   return { data, error, reload };
 }
 
+/** Calls `tick` every few seconds (#273), so a dashboard picks up what others changed without a reload. */
+export function usePolling(tick: () => void, ms = 3000) {
+  useEffect(() => {
+    const id = setInterval(tick, ms);
+    return () => clearInterval(id);
+  }, [tick, ms]);
+}
+
 export function LoadError({ what, message, onRetry }: { what: string; message: string; onRetry: () => void }) {
   return (
     <div className="empty" role="alert">
