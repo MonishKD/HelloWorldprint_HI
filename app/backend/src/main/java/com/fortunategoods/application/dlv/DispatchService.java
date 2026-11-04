@@ -18,6 +18,7 @@ import com.fortunategoods.technical.persistence.CourierRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 
+@Service
 public class DispatchService {
     private static final Logger log = LoggerFactory.getLogger(DispatchService.class);
 
