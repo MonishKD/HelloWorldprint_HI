@@ -2,6 +2,9 @@ package com.fortunategoods.domain.courier;
 
 import java.util.List;
 
+/*
+    Class for courier-order assignment rules
+*/
 public class NearestCourierRule {
     private NearestCourierRule() {}
 
