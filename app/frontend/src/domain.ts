@@ -99,6 +99,29 @@ export interface Restaurant {
   pickupWindow?: string;
 }
 
+/** A restaurant in the city read (#268), with its order counts by stage. */
+export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number };
+
+/** The state of the city (#268): no customer or payment data, so every role can read it. Only on-duty couriers are in it. */
+export interface CityView {
+  restaurants: CityRestaurant[];
+  couriers: CourierLocation[];
+}
+
+/** An order in the dispatch queue: ready, with no courier to take it yet (R-DLV-04). */
+export interface WaitingOrder {
+  orderId: string;
+  restaurantName: string;
+  waitingSince: string;
+}
+
+/** Accepted and not picked up, and the courier went offline (#219). Only an operator can reassign it. */
+export interface StalledOrder {
+  orderId: string;
+  restaurantName: string;
+  courierName: string;
+}
+
 export interface MenuItem {
   id: string;
   restaurantId: string;

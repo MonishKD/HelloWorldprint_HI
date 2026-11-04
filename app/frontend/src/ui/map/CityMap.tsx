@@ -1,4 +1,4 @@
-import type { CourierLocation } from '../../domain';
+import type { CourierLocation, Restaurant } from '../../domain';
 import type { RestaurantSummary } from '../ord/ordApi';
 import { restaurantHue } from '../common';
 import { point } from './geo';
@@ -25,7 +25,8 @@ export default function CityMap({
   onSelectRestaurant,
   height = 340,
 }: {
-  restaurants: RestaurantSummary[];
+  /** The menu counts are optional: the city read (#268) doesn't carry them. */
+  restaurants: (Restaurant & Partial<RestaurantSummary>)[];
   couriers?: CourierLocation[];
   homes?: HomePin[];
   onSelectRestaurant?: (restaurantId: string) => void;
@@ -42,7 +43,9 @@ export default function CityMap({
       status: r.status,
       detail:
         r.status === 'open'
-          ? `${r.availableCount} of ${r.itemCount} items available${r.bestDiscount ? ` · up to −${r.bestDiscount}%` : ''}`
+          ? r.itemCount === undefined
+            ? 'Open'
+            : `${r.availableCount} of ${r.itemCount} items available${r.bestDiscount ? ` · up to −${r.bestDiscount}%` : ''}`
           : r.status === 'paused'
             ? 'Paused: not taking new orders'
             : 'Closed',

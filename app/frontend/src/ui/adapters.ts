@@ -7,7 +7,7 @@
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
 // Adjust here, and only here, when a response changes.
-import type { CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, ReadyOrder, Restaurant, RestaurantStatus, Role } from '../domain';
+import type { CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -157,4 +157,30 @@ export function toCourierDelivery(j: Raw): CourierDelivery {
     destinationName: text(j.destinationName),
     deliveredAt: text(j.deliveredAt),
   };
+}
+
+export function toCityView(j: Raw): CityView {
+  return {
+    restaurants: (j.restaurants ?? []).map((r: Raw) => ({
+      ...toRestaurant(r),
+      queued: Number(r.queued),
+      inPreparation: Number(r.inPreparation),
+      ready: Number(r.ready),
+    })),
+    couriers: (j.couriers ?? []).map((c: Raw) => ({
+      id: text(c.id),
+      name: text(c.name),
+      lat: Number(c.latitude),
+      lng: Number(c.longitude),
+      courierState: lower<CourierState>(c.status),
+    })),
+  };
+}
+
+export function toWaitingOrder(j: Raw): WaitingOrder {
+  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), waitingSince: text(j.waitingSince) };
+}
+
+export function toStalledOrder(j: Raw): StalledOrder {
+  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), courierName: text(j.courierName) };
 }

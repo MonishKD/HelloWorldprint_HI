@@ -2,7 +2,8 @@ import { Route, Routes } from 'react-router-dom';
 import { SessionProvider } from './session';
 import CourierDashboardPage from './ui/dashboard/CourierDashboardPage';
 import CustomerDashboardPage from './ui/dashboard/CustomerDashboardPage';
-import DashboardRouter, { NotInThisPhase, RequireRole } from './ui/dashboard/DashboardRouter';
+import DashboardRouter, { RequireRole } from './ui/dashboard/DashboardRouter';
+import OperatorDashboardPage from './ui/dashboard/OperatorDashboardPage';
 import RestaurantDashboardPage from './ui/dashboard/RestaurantDashboardPage';
 import LoginPage from './ui/reg/LoginPage';
 import RegisterPage from './ui/reg/RegisterPage';
@@ -41,7 +42,7 @@ export default function App() {
           path="/operator"
           element={
             <RequireRole role="operator">
-              <NotInThisPhase />
+              <OperatorDashboardPage />
             </RequireRole>
           }
         />
