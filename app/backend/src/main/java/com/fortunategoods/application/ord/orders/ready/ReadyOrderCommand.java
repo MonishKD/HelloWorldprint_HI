@@ -31,8 +31,10 @@ public class ReadyOrderCommand implements Command<ReadyOrderResponse> {
     public CommandSuccess<ReadyOrderResponse> execute() {
         OrderServiceResult result = service.markAsReadyOrder(String.valueOf(session.getUserID()), session.getRole(), orderId);
 
-        ReadyOrderResponse response = new ReadyOrderResponse(result.getOrderId(), result.getStatus());
+        ReadyOrderResponse response = new ReadyOrderResponse(result.getOrderId(), result.getStatus(), result.getOfferedCourierId());
 
-        return new CommandSuccess<>(response, "Order marked ready.", result.getEventId());
+        String message = result.getOfferedCourierId() == null ? "Order marked ready. Waiting for an idle courier." : "Order marked ready. Offered to courier " + result.getOfferedCourierId();
+
+        return new CommandSuccess<>(response, message, result.getEventId());
     }
 }
