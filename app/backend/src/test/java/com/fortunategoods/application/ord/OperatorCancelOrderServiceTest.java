@@ -8,6 +8,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import org.mockito.ArgumentCaptor;
+import com.fortunategoods.domain.order.OrderFinished;
+import org.springframework.context.ApplicationEventPublisher;
 
 import com.fortunategoods.application.ord.orders.OrderService;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
@@ -21,13 +24,15 @@ import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
+
 import static com.fortunategoods.testsupport.TestData.order;
 
 class OperatorCancelOrderServiceTest {
 
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class));
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class), eventPublisher);
 
     @Test
     void operatorCanCancelAllThreeAllowedStates() {
@@ -43,6 +48,13 @@ class OperatorCancelOrderServiceTest {
             assertEquals(701L, result.getEventId());
 
             verify(orders).updateStatusIfUnchanged("100", "700", status, OrderStatus.CANCELLED);
+        }
+
+        ArgumentCaptor<OrderFinished> captured = ArgumentCaptor.forClass(OrderFinished.class);
+        verify(eventPublisher, times(3)).publishEvent(captured.capture());
+        for (OrderFinished finished : captured.getAllValues()) {
+            assertEquals("100", finished.getOrderId());
+            assertEquals(OrderStatus.CANCELLED, finished.getFinalStatus());
         }
     }
 
@@ -123,6 +135,7 @@ class OperatorCancelOrderServiceTest {
         givenOrder(OrderStatus.ACCEPTED);
         var error = assertThrows(DomainRuleViolation.class,() -> service.operatorCancelOrder("9", UserRole.OPERATOR, "100"));
         assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
+        verifyNoInteractions(eventPublisher);
     }
 
     @Test

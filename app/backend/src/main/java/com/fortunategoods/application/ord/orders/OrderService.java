@@ -2,6 +2,7 @@ package com.fortunategoods.application.ord.orders;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
@@ -11,6 +12,7 @@ import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
+import com.fortunategoods.domain.order.OrderFinished;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.PreparationQueue;
@@ -36,13 +38,15 @@ public class OrderService {
     private final OrderEventRepository orderEventRepo;
     private final UserRepository userRepo;
     private final RegisterPreparationQueue preparationQueueRegistry;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry, ApplicationEventPublisher eventPublisher) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
         this.userRepo = userRepo;
         this.preparationQueueRegistry = preparationQueueRegistry;
+        this.eventPublisher = eventPublisher;
 
     }
     
@@ -245,7 +249,11 @@ public class OrderService {
         // Current order status
         OrderStatus prev = order.getStatus();
         order.cancelOperator(); // accepted, preparing or ready otherwise it will throw domainRuleViolation
-        return saveTransition(orderId, order, prev);
+        OrderServiceResult result = saveTransition(orderId, order, prev);
+
+        // Use eventPublisher to let LedgerService know about the Order being cancelled, so it doesn't charge money
+        eventPublisher.publishEvent(new OrderFinished(orderId, result.getStatus()));
+        return result;
 
     }
 

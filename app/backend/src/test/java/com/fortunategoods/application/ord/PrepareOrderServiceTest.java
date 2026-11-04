@@ -16,6 +16,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.fortunategoods.application.ord.orders.OrderService;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
@@ -37,7 +39,7 @@ class PrepareOrderServiceTest {
     private final UserRepository users = mock(UserRepository.class);
     private final RegisterPreparationQueue queues = mock(RegisterPreparationQueue.class);
     private final OrderService service = new OrderService(
-        mock(RestaurantRepository.class), orders, events, users, queues
+        mock(RestaurantRepository.class), orders, events, users, queues, mock(ApplicationEventPublisher.class)
     );
 
     private final LocalDateTime time = LocalDateTime.of(2026, 10, 20, 12, 0);
