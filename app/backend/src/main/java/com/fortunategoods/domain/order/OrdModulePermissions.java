@@ -42,6 +42,10 @@ public class OrdModulePermissions {
         return Set.of(UserRole.CUSTOMER);
     }
 
+    public static Set<UserRole> operatorCancelOrderRoles() {
+        return Set.of(UserRole.OPERATOR);
+    }
+
     public static Set<UserRole> acceptOrderRoles(){
         return Set.of(UserRole.RESTAURANT);
     }

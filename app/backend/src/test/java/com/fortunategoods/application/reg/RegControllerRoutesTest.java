@@ -83,7 +83,7 @@ public class RegControllerRoutesTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"op\",\"email\":\"op@example.com\",\"password\":\"secret1\",\"role\":\"operator\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("INVALID"))
+        .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
         .andExpect(jsonPath("$.message").value("Operator accounts cannot be registered"));
 
         verifyNoInteractions(authenticationService);
@@ -97,7 +97,7 @@ public class RegControllerRoutesTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"secret1\",\"role\":\"customer\"}"))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("CONFLICT"));
+        .andExpect(jsonPath("$.code").value("ACCOUNT_TAKEN"));
     }
 
     // ---------- POST /api/auth/login and /logout (#62, #65) ----------
