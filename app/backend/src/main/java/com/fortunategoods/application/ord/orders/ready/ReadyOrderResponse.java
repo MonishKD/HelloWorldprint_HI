@@ -9,10 +9,17 @@ import com.fortunategoods.domain.order.OrderStatus;
 public class ReadyOrderResponse {
     private final String orderId;
     private final String status;
+    private final String offeredCourierId;
 
+    // Constructor to prevent existing code from failing
     public ReadyOrderResponse(String orderId, OrderStatus status) {
+        this(orderId, status, null);
+    }
+
+    public ReadyOrderResponse(String orderId, OrderStatus status, String offeredCourierId) {
         this.orderId = orderId;
         this.status = status.name().toLowerCase(Locale.ROOT);
+        this.offeredCourierId = offeredCourierId;
     }
 
     public String getOrderId() {
@@ -21,5 +28,13 @@ public class ReadyOrderResponse {
 
     public String getStatus() {
         return status;
+    }
+
+    public String getOfferedCourierId() {
+        return offeredCourierId;
+    }
+
+    public String getDispatchStatus() {
+        return offeredCourierId == null ? "waiting" : "offered";
     }
 }

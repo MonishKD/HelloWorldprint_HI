@@ -67,3 +67,29 @@ CREATE TABLE IF NOT EXISTS assignments (
     is_picked_up  BOOLEAN DEFAULT FALSE,
     is_delivered  BOOLEAN DEFAULT FALSE
 );
+
+-- Phase III modifications
+ALTER TABLE assignments
+-- internal status for backend handling
+ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'OFFERED'
+CHECK (status IN (
+    'OFFERED', 'ACCEPTED', 'DECLINED',
+    'WITHDRAWN', 'REASSIGNED', 'CANCELLED'
+));
+-- timestamps for history tracking
+ALTER TABLE assignments
+ADD COLUMN IF NOT EXISTS created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;
+-- Clean data so that any null is_picked_up and is_delivered = FALSE and NOT null
+UPDATE assignments SET is_picked_up = FALSE WHERE is_picked_up IS NULL;
+UPDATE assignments SET is_delivered = FALSE WHERE is_delivered IS NULL;
+-- Add NOT NULL constraint
+ALTER TABLE assignments ALTER COLUMN is_picked_up SET NOT NULL;
+ALTER TABLE assignments ALTER COLUMN is_delivered SET NOT NULL;
+-- Create index for faster querying of unique assignment's orders that have been offered/accepted
+CREATE UNIQUE INDEX IF NOT EXISTS assignments_active_order_unique
+ON assignments (order_id)
+WHERE status IN ('OFFERED', 'ACCEPTED') AND is_delivered = FALSE;
+-- Create index for faster querying of unique assignment's couriers that have been offered/accepted an order
+CREATE UNIQUE INDEX IF NOT EXISTS assignments_active_courier_unique
+ON assignments (courier_id)
+WHERE status IN ('OFFERED', 'ACCEPTED') AND is_delivered = FALSE;

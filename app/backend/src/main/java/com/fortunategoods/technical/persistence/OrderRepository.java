@@ -177,4 +177,34 @@ public class OrderRepository {
     public void lockRestaurantQueue(String restaurantId) {
         jdbc.queryForObject("SELECT id FROM restaurants WHERE id = ? FOR UPDATE", Integer.class, Integer.parseInt(restaurantId));
     }
+
+    // Thread-locks the order during dispatch, so no modifications are made while the assignment is created
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockOrder(String orderId) {
+        jdbc.queryForList(
+            "SELECT id FROM orders WHERE id = ? FOR UPDATE",
+            Integer.class,
+            Integer.parseInt(orderId)
+        );
+    }
+
+    // Find orders that are ready to be dispatched(offered to a courier)
+    public List<Order> findWaitingForDispatch() {
+        String sql = """
+            SELECT o.*
+            FROM orders o
+            JOIN order_events e
+            ON e.order_id = o.id AND e.new_status = 'READY'
+            WHERE o.status = 'READY'
+            AND NOT EXISTS (
+                SELECT 1 FROM assignments a
+                WHERE a.order_id = o.id
+                AND a.status IN ('OFFERED', 'ACCEPTED')
+                AND a.is_delivered = FALSE
+            )
+            ORDER BY e.created_at, e.id
+            """;
+
+        return jdbc.query(sql, (row, number) -> toOrder(row));
+    }
 }

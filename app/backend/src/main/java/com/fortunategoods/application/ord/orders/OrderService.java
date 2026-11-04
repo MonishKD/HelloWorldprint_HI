@@ -6,6 +6,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
+import com.fortunategoods.application.dlv.DispatchService;
+import com.fortunategoods.domain.courier.Assignment;
 import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
 import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
 import com.fortunategoods.domain.order.DomainRuleViolation;
@@ -39,15 +41,16 @@ public class OrderService {
     private final UserRepository userRepo;
     private final RegisterPreparationQueue preparationQueueRegistry;
     private final ApplicationEventPublisher eventPublisher;
+    private final DispatchService dispatchService;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry, ApplicationEventPublisher eventPublisher) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry, ApplicationEventPublisher eventPublisher, DispatchService dispatchService) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
         this.userRepo = userRepo;
         this.preparationQueueRegistry = preparationQueueRegistry;
         this.eventPublisher = eventPublisher;
-
+        this.dispatchService = dispatchService;
     }
     
     @Transactional 
@@ -212,8 +215,11 @@ public class OrderService {
 
         order.markReadyFromPreparation();
 
-        return saveTransition(orderId, order, previous);
+        OrderServiceResult result = saveTransition(orderId, order, previous);
+        Assignment offer = dispatchService.offerReadyOrder(orderId); // Assign a READY order to an idle courier
+        return new OrderServiceResult(result.getOrderId(), result.getStatus(), result.getEventId(), result.getRejectReason(), offer == null ? null : offer.getCourierId());
     }
+    
     @Transactional
     public OrderServiceResult cancelOrder(String customerId, String orderId){
         // check validity of IDs provided

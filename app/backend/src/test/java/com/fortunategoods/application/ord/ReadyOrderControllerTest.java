@@ -37,14 +37,16 @@ class ReadyOrderControllerTest {
 
     @Test
     void staffCanMarkReady() throws Exception {
-        when(service.markAsReadyOrder("8", UserRole.RESTAURANT, "100")).thenReturn(new OrderServiceResult("100", OrderStatus.READY, 701));
+        when(service.markAsReadyOrder("8", UserRole.RESTAURANT, "100")).thenReturn(new OrderServiceResult("100", OrderStatus.READY, 701, null, "15"));
 
         mvc.perform(post(URL).with(csrf()).with(loggedIn(8, UserRole.RESTAURANT)))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.orderId").value("100"))
             .andExpect(jsonPath("$.data.status").value("ready"))
+            .andExpect(jsonPath("$.data.offeredCourierId").value("15"))
+            .andExpect(jsonPath("$.data.dispatchStatus").value("offered"))
             .andExpect(jsonPath("$.eventId").value(701))
-            .andExpect(jsonPath("$.message").value("Order marked ready."));
+            .andExpect(jsonPath("$.message").value("Order marked ready. Offered to courier 15"));
         verify(service).markAsReadyOrder("8", UserRole.RESTAURANT, "100");
         verify(logs).save(any(CommandLog.class));
     }
@@ -55,6 +57,18 @@ class ReadyOrderControllerTest {
         mvc.perform(post(URL).with(csrf()).with(loggedIn(8, UserRole.CUSTOMER))).andExpect(status().isForbidden());
         mvc.perform(post(URL).with(loggedIn(8, UserRole.RESTAURANT))).andExpect(status().isForbidden());
         verifyNoInteractions(service);
+    }
+
+    @Test
+    void readyOrderCanWaitForCourier() throws Exception {
+        when(service.markAsReadyOrder("8", UserRole.RESTAURANT, "100"))
+            .thenReturn(new OrderServiceResult("100", OrderStatus.READY, 701));
+
+        mvc.perform(post(URL).with(csrf()).with(loggedIn(8, UserRole.RESTAURANT)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data.status").value("ready"))
+            .andExpect(jsonPath("$.data.dispatchStatus").value("waiting"))
+            .andExpect(jsonPath("$.message").value("Order marked ready. Waiting for an idle courier."));
     }
 
     @ParameterizedTest

@@ -13,6 +13,7 @@ import com.fortunategoods.domain.order.OrderFinished;
 import org.springframework.context.ApplicationEventPublisher;
 
 import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.dlv.DispatchService;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
@@ -32,7 +33,7 @@ class OperatorCancelOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class), eventPublisher);
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class), eventPublisher, mock(DispatchService.class));
 
     @Test
     void operatorCanCancelAllThreeAllowedStates() {
