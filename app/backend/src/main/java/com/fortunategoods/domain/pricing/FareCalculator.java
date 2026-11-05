@@ -18,10 +18,18 @@ public class FareCalculator {
         this.surcharge = new SmallOrderSurchargeRule(thresholdCents, surchargeCents);
     }
 
+    // The way the app builds it: with the configured values from seed-config.json (#234)
+    public FareCalculator(PricingRules rules) {
+        this(rules.getDeliveryFeeCents(), rules.getServiceFeePercent(), rules.getSmallOrderThresholdCents(), rules.getSmallOrderSurchargeCents());
+    }
+
+    // Works on order lines and on cart lines (built the same way by OrderVerify.prepareLines), so the payment
+    // amount is known before the order exists (#222)
     public Fare calculate(List<OrderLine> lines){
         long amount = 0;
         for (OrderLine line : lines){
-            amount+= (line.getPrice()*100)+line.getQuantity();
+            // price is in dollars (29.99): rounded to cents first so it is exactly 2999, then times the quantity
+            amount += Math.round(line.getPrice() * 100) * line.getQuantity();
         }
         long deliveryFee = delivery.compute(amount);
         long serviceFee = service.compute(amount);
