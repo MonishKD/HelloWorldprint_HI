@@ -171,6 +171,12 @@ public class OrderRepository {
         return orderEventRepository.add(orderId, prevEventId, OrderStatus.PLACED, OrderStatus.REJECTED);
     }
 
+    // The Stripe payment of this order, or null when it was placed without card payment.
+    public String findPaymentId(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT payment_intent_id FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
     // Thread-locks preparation queue so multiple requests cannot modify the queue while a
     // transaction to that queue is still ongoing
     @Transactional(propagation = Propagation.MANDATORY)
