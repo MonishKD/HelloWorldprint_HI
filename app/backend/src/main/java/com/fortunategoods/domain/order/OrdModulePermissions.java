@@ -89,4 +89,9 @@ public class OrdModulePermissions {
     public static Set<UserRole> viewOwnOrdersRoles() {
         return Set.of(UserRole.CUSTOMER);
     }
+
+    // #264: every role has a history, each one only sees its own rows (R-PRC-04).
+    public static Set<UserRole> viewHistoryRoles(){
+        return Set.of(UserRole.CUSTOMER, UserRole.RESTAURANT, UserRole.COURIER, UserRole.OPERATOR);
+    }
 }

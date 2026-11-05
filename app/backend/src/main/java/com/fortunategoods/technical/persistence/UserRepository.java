@@ -101,6 +101,18 @@ public class UserRepository {
         return found.get(0);
     }
 
+    // The name a customer is shown by (customers.name), or their username when they have no name saved.
+    // null if the user doesn't exist. Used for the destination in a courier's history (#264).
+    public String findCustomerName(String userId) {
+        String sql = "SELECT COALESCE(customers.name, users.username) FROM users "
+                + "LEFT JOIN customers ON customers.user_id = users.id WHERE users.id = ?";
+        List<String> found = jdbc.queryForList(sql, String.class, Integer.parseInt(userId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     // Turns one row of the users table into a User.
     private User toUser(ResultSet row) throws SQLException {
         return new User(
