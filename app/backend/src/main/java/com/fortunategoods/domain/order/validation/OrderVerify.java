@@ -154,7 +154,8 @@ public class OrderVerify {
     }
 
     // Create order with the validated order lines
-    public static Order createPlacedOrder(String customerId, String restaurantId, String instructions, String deliveryAddress, List<OrderLine> lines) {
+    // deliveryLatitude and deliveryLongitude are null when the destination has no coordinates (#233)
+    public static Order createPlacedOrder(String customerId, String restaurantId, String instructions, String deliveryAddress, Double deliveryLatitude, Double deliveryLongitude, List<OrderLine> lines) {
         // The frontend blocks a blank address, but the backend must refuse it too in case the request is sent directly
         if (deliveryAddress == null || deliveryAddress.isBlank()) {
             throw DomainRuleInvalid("Delivery address is required");
@@ -163,7 +164,7 @@ public class OrderVerify {
             throw DomainRuleInvalid("Delivery address must not exceed 255 characters");
         }
         // Create a new Order and change the transition to
-        Order order = new Order(null, customerId, restaurantId, null, OrderStatus.PLACED, instructions, deliveryAddress, null, null, null, lines);
+        Order order = new Order(null, customerId, restaurantId, null, OrderStatus.PLACED, instructions, deliveryAddress, deliveryLatitude, deliveryLongitude, null, lines);
 
         order.transitionTo(new PlacedState());
 

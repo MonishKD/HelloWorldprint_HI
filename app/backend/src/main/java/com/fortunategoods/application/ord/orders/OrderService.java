@@ -22,6 +22,7 @@ import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.CustomerLocation;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
@@ -71,8 +72,20 @@ public class OrderService {
         OrderRequest validationRequest = new OrderRequest(restaurant, customerId, null, lines);
         OrderVerify.validate(validationRequest, chain);
 
+        // The order goes to the customer's saved address and coordinates, so the courier's map has a destination (#233).
+        // Both POST /api/orders and the paid placement (PaymentService) come through here, so both get it.
+        // A customer with no saved location (signed up in the app) keeps the address typed at checkout, with no coordinates.
+        Double deliveryLatitude = null;
+        Double deliveryLongitude = null;
+        CustomerLocation savedLocation = userRepo.findCustomerLocation(customerId);
+        if (savedLocation != null) {
+            deliveryAddress = savedLocation.getAddress();
+            deliveryLatitude = savedLocation.getLatitude();
+            deliveryLongitude = savedLocation.getLongitude();
+        }
+
         // After performing chain of responsibility, create an order with state PLACED
-        Order order = OrderVerify.createPlacedOrder(customerId, restaurantId, instructions, deliveryAddress, lines);
+        Order order = OrderVerify.createPlacedOrder(customerId, restaurantId, instructions, deliveryAddress, deliveryLatitude, deliveryLongitude, lines);
 
         String orderId = orderRepo.place(order); // registers an OrderEvent in the orderEventRepo
 
