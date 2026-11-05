@@ -94,6 +94,12 @@ public class OrderRepository {
         return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId));
     }
 
+    // Every order, oldest first, whatever its status (operator all-orders read, #274).
+    public List<Order> findAll() {
+        String sql = "SELECT * FROM orders ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row));
+    }
+
     // Returns a customer's orders, newest first.
     public List<Order> findByCustomerId(String customerId) {
         String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id DESC";

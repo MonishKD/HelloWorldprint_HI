@@ -22,6 +22,7 @@ import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.AssignmentRepository;
 import com.fortunategoods.technical.persistence.CommandLogRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
@@ -41,6 +42,7 @@ class DashboardControllerTest {
     @MockitoBean private RestaurantRepository restaurants;
     @MockitoBean private RestaurantOrderService restaurantOrders;
     @MockitoBean private CommandLogRepository logs;
+    @MockitoBean private AssignmentRepository assignments;
 
     // Used by GET /api/dashboard/orders, which DashboardOrdersRouteTest covers.
     @MockitoBean
