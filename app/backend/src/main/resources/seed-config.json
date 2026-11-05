@@ -1,4 +1,10 @@
 {
+  "pricing": {
+    "deliveryFee": 2.99,
+    "serviceFeePercent": 10,
+    "smallOrderThreshold": 15.00,
+    "smallOrderSurcharge": 2.00
+  },
   "accounts": [
     { "username": "alice",       "email": "alice@example.com",       "password": "demo123", "role": "CUSTOMER" },
     { "username": "bob",         "email": "bob@example.com",         "password": "demo123", "role": "CUSTOMER" },
