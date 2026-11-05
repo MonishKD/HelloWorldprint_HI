@@ -1,6 +1,7 @@
 package com.fortunategoods.technical.configuration;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -120,6 +121,32 @@ public class SeedLoader implements ApplicationRunner {
             throw new IllegalStateException("SEED_MODE must be keep or reset, not \"" + seedMode + "\"");
         }
 
+        int menuItemCount = saveSeed(seed);
+
+        log.info("Seed loader: {} accounts, {} restaurants, {} menu items, {} customer locations, {} couriers and "
+                + "{} shelters loaded (SEED_MODE={}). Environment ready.", seed.accounts().size(),
+                seed.restaurants().size(), menuItemCount, seed.customers().size(), seed.couriers().size(),
+                seed.shelters().size(), seedMode);
+    }
+
+    // The operator's Reset (#276): wipes every table and seeds again from the file, while the app keeps running.
+    // ResetCommand calls this. It is the same as starting the app with SEED_MODE=reset.
+    // Stripe is not called: the test payments stay in Stripe, only our copy of their ids (in orders) is wiped.
+    // @Transactional: Spring runs it as one transaction, so if anything fails the old data is put back.
+    @Transactional
+    public void resetToSeed() {
+        SeedFile seed;
+        try {
+            seed = readSeedFile();
+        } catch (IOException unreadable) {
+            throw new UncheckedIOException("Seed file could not be read", unreadable);
+        }
+        jdbc.execute(WIPE_ALL_TABLES);
+        saveSeed(seed);
+    }
+
+    // Saves everything in the file into empty tables, and returns how many menu items it saved.
+    private int saveSeed(SeedFile seed) {
         // The new account ids by username
         Map<String, String> accountIds = new HashMap<>();
         for (SeedAccount account : seed.accounts()) {
@@ -161,11 +188,7 @@ public class SeedLoader implements ApplicationRunner {
             jdbc.update("INSERT INTO shelters (name, address, latitude, longitude) VALUES (?, ?, ?, ?)",
                     shelter.name(), shelter.address(), shelter.latitude(), shelter.longitude());
         }
-
-        log.info("Seed loader: {} accounts, {} restaurants, {} menu items, {} customer locations, {} couriers and "
-                + "{} shelters loaded (SEED_MODE={}). Environment ready.", seed.accounts().size(),
-                seed.restaurants().size(), menuItemCount, seed.customers().size(), seed.couriers().size(),
-                seed.shelters().size(), seedMode);
+        return menuItemCount;
     }
 
     // Reads and checks the file. Not private, so SeedLoaderTest can check the committed file without a database.
