@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import com.fortunategoods.domain.courier.DispatchQueue;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
@@ -206,10 +207,10 @@ public class OrderRepository {
         );
     }
 
-    // Find orders that are ready to be dispatched(offered to a courier)
-    public List<Order> findWaitingForDispatch() {
+    // Ready orders with no live offer, oldest ready first, each with its READY event's time and id (R-DLV-04)
+    public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() {
         String sql = """
-            SELECT o.*
+            SELECT o.*, e.created_at AS ready_since, e.id AS ready_event_id
             FROM orders o
             JOIN order_events e
             ON e.order_id = o.id AND e.new_status = 'READY'
@@ -223,6 +224,9 @@ public class OrderRepository {
             ORDER BY e.created_at, e.id
             """;
 
-        return jdbc.query(sql, (row, number) -> toOrder(row));
+        return jdbc.query(sql, (row, number) -> new DispatchQueue.WaitingOrder(
+            toOrder(row),
+            row.getTimestamp("ready_since").toLocalDateTime(),
+            row.getLong("ready_event_id")));
     }
 }
