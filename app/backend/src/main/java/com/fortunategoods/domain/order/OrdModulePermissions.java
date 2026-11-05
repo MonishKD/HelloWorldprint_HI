@@ -79,8 +79,9 @@ public class OrdModulePermissions {
         return Set.of(UserRole.RESTAURANT);
     }
 
+    // #274: the operator can pause or reopen any restaurant (R-DASH-01).
     public static Set<UserRole> setRestaurantStatusRoles(){
-        return Set.of(UserRole.RESTAURANT);
+        return Set.of(UserRole.RESTAURANT, UserRole.OPERATOR);
     }
 
     public static Set<UserRole> viewPlacedOrdersRoles(){
@@ -103,5 +104,10 @@ public class OrdModulePermissions {
     // #262: a customer reads the summary of their own delivered orders, the operator of any order (R-PRC-02).
     public static Set<UserRole> viewOrderSummaryRoles(){
         return Set.of(UserRole.CUSTOMER, UserRole.OPERATOR);
+    }
+
+    // #274: every order in the system, for the operator dashboard (R-DASH-01).
+    public static Set<UserRole> viewAllOrdersRoles() {
+        return Set.of(UserRole.OPERATOR);
     }
 }

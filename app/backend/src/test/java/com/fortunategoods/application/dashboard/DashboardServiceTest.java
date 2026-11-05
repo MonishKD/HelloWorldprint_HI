@@ -21,6 +21,7 @@ import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.AssignmentRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -48,7 +49,7 @@ class DashboardServiceTest {
                 new GetPreparationQueueResponse(1, "102", OrderStatus.ACCEPTED),
                 new GetPreparationQueueResponse(2, "103", OrderStatus.ACCEPTED)));
 
-        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders);
+        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class));
     }
 
     @Test
