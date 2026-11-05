@@ -94,4 +94,9 @@ public class OrdModulePermissions {
     public static Set<UserRole> viewHistoryRoles(){
         return Set.of(UserRole.CUSTOMER, UserRole.RESTAURANT, UserRole.COURIER, UserRole.OPERATOR);
     }
+
+    // #262: a customer reads the summary of their own delivered orders, the operator of any order (R-PRC-02).
+    public static Set<UserRole> viewOrderSummaryRoles(){
+        return Set.of(UserRole.CUSTOMER, UserRole.OPERATOR);
+    }
 }

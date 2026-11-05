@@ -189,6 +189,18 @@ public class OrderRepository {
         return found.isEmpty() ? null : found.get(0);
     }
 
+    // The brand of the card that paid this order (for example "visa"), or null when it was placed without card payment.
+    public String findCardBrand(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT card_brand FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // The last 4 digits of the card that paid this order, or null when it was placed without card payment.
+    public String findCardLast4(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT card_last4 FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
     // Thread-locks preparation queue so multiple requests cannot modify the queue while a
     // transaction to that queue is still ongoing
     @Transactional(propagation = Propagation.MANDATORY)

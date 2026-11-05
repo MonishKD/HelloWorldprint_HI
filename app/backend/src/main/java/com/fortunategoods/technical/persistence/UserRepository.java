@@ -113,6 +113,20 @@ public class UserRepository {
         return found.get(0);
     }
 
+    // The name of the courier who delivered this order (couriers.name, or their username when they have no name saved).
+    // Who delivered an order is in assignments. null when no courier delivered it. Used by the order summary (#262).
+    public String findDeliveringCourierName(String orderId) {
+        String sql = "SELECT COALESCE(couriers.name, users.username) FROM assignments "
+                + "JOIN users ON users.id = assignments.courier_id "
+                + "LEFT JOIN couriers ON couriers.user_id = users.id "
+                + "WHERE assignments.order_id = ? AND assignments.is_delivered = TRUE";
+        List<String> found = jdbc.queryForList(sql, String.class, Integer.parseInt(orderId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     // Turns one row of the users table into a User.
     private User toUser(ResultSet row) throws SQLException {
         return new User(

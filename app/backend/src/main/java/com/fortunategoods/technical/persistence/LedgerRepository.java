@@ -63,6 +63,17 @@ public class LedgerRepository {
         return jdbc.query(sql, (row, rowNumber) -> toLedgerEntry(row), Integer.parseInt(courierId));
     }
 
+    // The CHARGE entry of this order, written when it was delivered. null when it was never delivered.
+    // Used by the order summary (#262): the summary's total is this entry's amount.
+    public LedgerEntry findCharge(String orderId) {
+        String sql = "SELECT * FROM ledger_entries WHERE order_id = ? AND entry_type = 'CHARGE'";
+        List<LedgerEntry> found = jdbc.query(sql, (row, rowNumber) -> toLedgerEntry(row), Integer.parseInt(orderId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     // Turns one row of the ledger_entries table into a LedgerEntry.
     private LedgerEntry toLedgerEntry(ResultSet row) throws SQLException {
         return new LedgerEntry(
