@@ -24,6 +24,19 @@ public abstract class BaseOrderState implements OrderState{
         throw new IllegalTransitionException(reason);
     }
     @Override 
+    public void pickUp(Order order){
+        reasonHelper(order);
+    }
+    @Override 
+    public void deliver(Order order){
+        reasonHelper(order);
+    }
+    @Override 
+    public void refund(Order order){
+        reasonHelper(order);
+    }
+
+    @Override 
     public void cancel(Order order){
         reasonHelper(order);
     }
