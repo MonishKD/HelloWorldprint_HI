@@ -33,3 +33,5 @@ build/
 .env
 
 details.md
+a2.md
+*.pdf
