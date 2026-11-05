@@ -171,6 +171,24 @@ public class OrderRepository {
         return orderEventRepository.add(orderId, prevEventId, OrderStatus.PLACED, OrderStatus.REJECTED);
     }
 
+    // Card payment (#259): remembers which Stripe payment paid this order, and the card's brand and last 4 digits.
+    public void savePayment(String orderId, String paymentIntentId, String cardBrand, String cardLast4) {
+        String sql = "UPDATE orders SET payment_intent_id = ?, card_brand = ?, card_last4 = ? WHERE id = ?";
+        jdbc.update(sql, paymentIntentId, cardBrand, cardLast4, Integer.parseInt(orderId));
+    }
+
+    // True when an order was already placed with this Stripe payment, so one payment can never pay two orders.
+    public boolean isPaymentUsed(String paymentIntentId) {
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM orders WHERE payment_intent_id = ?", Integer.class, paymentIntentId);
+        return count != null && count > 0;
+    }
+
+    // The Stripe payment of this order, or null when it was placed without card payment.
+    public String findPaymentId(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT payment_intent_id FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
     // Thread-locks preparation queue so multiple requests cannot modify the queue while a
     // transaction to that queue is still ongoing
     @Transactional(propagation = Propagation.MANDATORY)

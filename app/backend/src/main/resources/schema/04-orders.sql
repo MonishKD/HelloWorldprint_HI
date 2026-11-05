@@ -93,3 +93,10 @@ WHERE status IN ('OFFERED', 'ACCEPTED') AND is_delivered = FALSE;
 CREATE UNIQUE INDEX IF NOT EXISTS assignments_active_courier_unique
 ON assignments (courier_id)
 WHERE status IN ('OFFERED', 'ACCEPTED') AND is_delivered = FALSE;
+
+-- Card payment (#258). Added with ALTER so databases that already have the orders table get the columns too.
+-- Only Stripe's payment id and the card's brand and last 4 digits are kept, never the card number (#222).
+-- Empty for orders placed before payment existed.
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_intent_id VARCHAR(255);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS card_brand VARCHAR(20);
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS card_last4 VARCHAR(4);

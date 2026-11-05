@@ -178,7 +178,11 @@ public class OrderService {
 
         order.rejectIncoming(reason);
 
-        return saveTransition(orderId,order,previous);
+        OrderServiceResult result = saveTransition(orderId,order,previous);
+
+        // Let PRC know the order is finished: the ledger records it and the card hold is released (#261, #259)
+        eventPublisher.publishEvent(new OrderFinished(orderId, result.getStatus()));
+        return result;
     }
 
     @Transactional
@@ -238,6 +242,8 @@ public class OrderService {
         // Save only if the database order is still PLACED.
         String eventId = saveTransitionEvent(orderId, order, OrderStatus.PLACED, "Order is no longer placed", "Order changed before it could be cancelled");
 
+        // Let PRC know the order is finished: the ledger records it and the card hold is released (#261, #259)
+        eventPublisher.publishEvent(new OrderFinished(orderId, order.getStatus()));
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
     }
 
