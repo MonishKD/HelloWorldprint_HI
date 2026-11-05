@@ -86,9 +86,11 @@ public class DispatchService {
     */
     @Transactional(propagation = Propagation.MANDATORY)
     public DispatchResult retryDispatch() {
+        // Locks the waiting orders first (like every other order action: order, then couriers), so a cancel
+        // running at the same time can't leave an offer on a cancelled order.
+        DispatchQueue queue = new DispatchQueue(orders.lockWaitingForDispatch());
         // Locks the courier rows, so two retries running at once can't offer the same courier twice.
         List<PotentialCourier> idle = new ArrayList<>(couriers.findIdleWithoutOffer());
-        DispatchQueue queue = new DispatchQueue(orders.findWaitingForDispatch());
         List<Assignment> offers = new ArrayList<>();
 
         while (!queue.isEmpty() && !idle.isEmpty()) {

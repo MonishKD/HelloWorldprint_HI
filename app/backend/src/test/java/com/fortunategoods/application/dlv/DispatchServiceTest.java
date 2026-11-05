@@ -46,7 +46,7 @@ class DispatchServiceTest {
     }
 
     private void givenWaiting(WaitingOrder... waiting) {
-        when(orders.findWaitingForDispatch()).thenReturn(List.of(waiting));
+        when(orders.lockWaitingForDispatch()).thenReturn(List.of(waiting));
     }
 
     private void givenIdle(PotentialCourier... idle) {
