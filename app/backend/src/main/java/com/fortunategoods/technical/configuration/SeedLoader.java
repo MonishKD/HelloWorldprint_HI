@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
@@ -32,12 +33,21 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
-// Fills the database from seed-config.json at startup (#25 accounts, #26 restaurants and menus, R-REG-03).
+// Fills the database from seed-config.json at startup (#25 accounts, #26 restaurants and menus, R-REG-03,
+// #233 customer locations, couriers and shelters).
 //   1. read and check the file: a missing or invalid one stops the app with the reason
 //   2. SEED_MODE keep (default): if the database already has accounts, change nothing
 //      SEED_MODE reset: wipe every table first
-//   3. save the accounts (passwords hashed like registration), the restaurants, their menu items and owner links
+//   3. save the accounts (passwords hashed like registration), the restaurants, their menu items and owner links,
+//      the customers' saved addresses, the couriers' positions and the shelters
 //   4. confirm in the console
+//
+// The seeded couriers and the dispatch rule (NearestCourierRule: straight-line distance on lat/long, lowest id on ties):
+//   carl (id 3) waits at Guy / De Maisonneuve, next to Poulet Rouge, so a Poulet Rouge order goes to carl.
+//   dana (id 17) at Hôtel-de-Ville / Sherbrooke and eli (id 18) at Berri / Sainte-Catherine are the exact same
+//   distance from Uniburger (same latitude, longitudes mirrored around it), so a Uniburger order goes to dana, the lower id.
+//   fay (id 19) waits at Saint-Laurent / Sherbrooke, farther from both.
+// The ids come from the order of the accounts in the file, so new accounts go at the end of that list.
 //
 // ApplicationRunner: Spring calls run() once the app has started, so the tables already exist.
 // @Transactional: everything run() saves is kept together or not at all, so a failed reset puts the old data back.
@@ -45,17 +55,23 @@ import tools.jackson.databind.json.JsonMapper;
 public class SeedLoader implements ApplicationRunner {
 
     // The shape of seed-config.json. Jackson fills these from the file.
-    record SeedFile(List<SeedAccount> accounts, List<SeedRestaurant> restaurants) {}
+    record SeedFile(List<SeedAccount> accounts, List<SeedRestaurant> restaurants, List<SeedCustomer> customers,
+            List<SeedCourier> couriers, List<SeedShelter> shelters) {}
     record SeedAccount(String username, String email, String password, UserRole role) {}
     record SeedRestaurant(String name, String owner, RestaurantStatus status, String cuisine, String address,
             double latitude, double longitude, List<SeedMenuItem> menu) {}
     record SeedMenuItem(String id, String name, String description, double price, Double originalPrice,
             MenuItemStatus status) {}
+    // account is the username of a CUSTOMER or COURIER account above, the way a restaurant points to its owner.
+    record SeedCustomer(String account, String name, String address, double latitude, double longitude) {}
+    // Double (not double) for the coordinates, so a null in the file stays null and the check below refuses it.
+    record SeedCourier(String account, String name, Double latitude, Double longitude, CourierStatus status) {}
+    record SeedShelter(String name, String address, Double latitude, Double longitude) {}
 
     // Empties every table and restarts the ids at 1, so the seeded rows always get the same ids.
     private static final String WIPE_ALL_TABLES = "TRUNCATE TABLE command_log, assignments, order_history, "
             + "order_events, order_lines, orders, restaurant_personnel, operators, couriers, customers, users, "
-            + "menu_items, menus, restaurants RESTART IDENTITY CASCADE";
+            + "menu_items, menus, restaurants, shelters RESTART IDENTITY CASCADE";
 
     private static final Logger log = LoggerFactory.getLogger(SeedLoader.class);
 
@@ -130,8 +146,26 @@ public class SeedLoader implements ApplicationRunner {
             }
         }
 
-        log.info("Seed loader: {} accounts, {} restaurants and {} menu items loaded (SEED_MODE={}). Environment ready.",
-                seed.accounts().size(), seed.restaurants().size(), menuItemCount, seedMode);
+        // userRepository.add() already made an empty customers / couriers row for each of these accounts, this fills it in.
+        for (SeedCustomer customer : seed.customers()) {
+            userRepository.saveCustomerLocation(accountIds.get(customer.account()), customer.name(), customer.address(),
+                    customer.latitude(), customer.longitude());
+        }
+        for (SeedCourier courier : seed.couriers()) {
+            userRepository.saveCourierProfile(accountIds.get(courier.account()), courier.name(), courier.latitude(),
+                    courier.longitude(), courier.status());
+        }
+
+        // Shelters are only written here for now. Reading them for checkout is #241.
+        for (SeedShelter shelter : seed.shelters()) {
+            jdbc.update("INSERT INTO shelters (name, address, latitude, longitude) VALUES (?, ?, ?, ?)",
+                    shelter.name(), shelter.address(), shelter.latitude(), shelter.longitude());
+        }
+
+        log.info("Seed loader: {} accounts, {} restaurants, {} menu items, {} customer locations, {} couriers and "
+                + "{} shelters loaded (SEED_MODE={}). Environment ready.", seed.accounts().size(),
+                seed.restaurants().size(), menuItemCount, seed.customers().size(), seed.couriers().size(),
+                seed.shelters().size(), seedMode);
     }
 
     // Reads and checks the file. Not private, so SeedLoaderTest can check the committed file without a database.
@@ -154,6 +188,39 @@ public class SeedLoader implements ApplicationRunner {
         }
         if (!roles.containsAll(List.of(UserRole.values()))) {
             throw new IllegalStateException("Seed file is invalid: it needs at least one account per role");
+        }
+
+        // #233: each customer and courier entry must point to an account of that role,
+        // every courier needs coordinates and a status, and every shelter needs coordinates.
+        Map<String, UserRole> roleByUsername = new HashMap<>();
+        for (SeedAccount account : seed.accounts()) {
+            roleByUsername.put(account.username(), account.role());
+        }
+        for (SeedCustomer customer : seed.customers()) {
+            if (roleByUsername.get(customer.account()) != UserRole.CUSTOMER) {
+                throw new IllegalStateException("Seed file is invalid: customer \"" + customer.account()
+                        + "\" is not a CUSTOMER account");
+            }
+        }
+        for (SeedCourier courier : seed.couriers()) {
+            if (roleByUsername.get(courier.account()) != UserRole.COURIER) {
+                throw new IllegalStateException("Seed file is invalid: courier \"" + courier.account()
+                        + "\" is not a COURIER account");
+            }
+            if (courier.latitude() == null || courier.longitude() == null) {
+                throw new IllegalStateException("Seed file is invalid: courier \"" + courier.account()
+                        + "\" has no coordinates");
+            }
+            if (courier.status() == null) {
+                throw new IllegalStateException("Seed file is invalid: courier \"" + courier.account()
+                        + "\" has no status");
+            }
+        }
+        for (SeedShelter shelter : seed.shelters()) {
+            if (shelter.latitude() == null || shelter.longitude() == null) {
+                throw new IllegalStateException("Seed file is invalid: shelter \"" + shelter.name()
+                        + "\" has no coordinates");
+            }
         }
         return seed;
     }

@@ -8,6 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fortunategoods.domain.courier.CourierStatus;
+import com.fortunategoods.domain.user.CustomerLocation;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 
@@ -95,6 +97,32 @@ public class UserRepository {
     public String findRestaurantIdByUserId(String userId) {
         String sql = "SELECT restaurant_id FROM restaurant_personnel WHERE user_id = ?";
         List<String> found = jdbc.queryForList(sql, String.class, Integer.parseInt(userId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
+    // Fills in the customers row that add() made for this CUSTOMER account: name, saved address and its coordinates (#233).
+    public void saveCustomerLocation(String userId, String name, String address, double latitude, double longitude) {
+        String sql = "UPDATE customers SET name = ?, address = ?, latitude = ?, longitude = ? WHERE user_id = ?";
+        jdbc.update(sql, name, address, latitude, longitude, Integer.parseInt(userId));
+    }
+
+    // Fills in the couriers row that add() made for this COURIER account: name, position and status (#233).
+    public void saveCourierProfile(String userId, String name, double latitude, double longitude, CourierStatus status) {
+        String sql = "UPDATE couriers SET name = ?, latitude = ?, longitude = ?, status = ? WHERE user_id = ?";
+        jdbc.update(sql, name, latitude, longitude, status.name(), Integer.parseInt(userId));
+    }
+
+    // The customer's saved address and coordinates, or null when they have none (#233).
+    // Customers who signed up in the app have no saved location yet, only the seeded ones do.
+    public CustomerLocation findCustomerLocation(String customerId) {
+        String sql = "SELECT address, latitude, longitude FROM customers WHERE user_id = ? "
+                + "AND address IS NOT NULL AND latitude IS NOT NULL AND longitude IS NOT NULL";
+        List<CustomerLocation> found = jdbc.query(sql, (row, rowNumber) -> new CustomerLocation(
+                row.getString("address"), row.getDouble("latitude"), row.getDouble("longitude")),
+                Integer.parseInt(customerId));
         if (found.isEmpty()) {
             return null;
         }
