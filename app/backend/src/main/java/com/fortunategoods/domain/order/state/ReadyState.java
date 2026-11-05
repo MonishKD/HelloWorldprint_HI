@@ -14,5 +14,10 @@ public class ReadyState extends BaseOrderState {
     public void cancel(Order order){
         order.transitionTo(new CanceledState());
     }
+
+    @Override
+    public void pickUp(Order order){
+        order.transitionTo(new PickedUpState());
+    }
     
 }
