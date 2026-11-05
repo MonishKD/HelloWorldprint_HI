@@ -18,7 +18,7 @@ import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.LedgerRepository;
 
 
-//Ledger Repo not implemented yet (#236) but following previous repos logic
+// Writes one ledger entry when an order ends. LedgerRepository (#236) stores it in ledger_entries.
 @Service
 public class LedgerService {
     private final LedgerRepository ledgerRepo;
