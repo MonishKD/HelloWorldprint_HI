@@ -68,7 +68,7 @@ class ReadyOrderControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.data.status").value("ready"))
             .andExpect(jsonPath("$.data.dispatchStatus").value("waiting"))
-            .andExpect(jsonPath("$.message").value("Order marked ready. Waiting for an idle courier."));
+            .andExpect(jsonPath("$.message").value("Order marked ready. No courier is free for it, so it is waiting in the dispatch queue."));
     }
 
     @ParameterizedTest

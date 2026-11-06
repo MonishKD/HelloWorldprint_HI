@@ -33,7 +33,7 @@ public class ReadyOrderCommand implements Command<ReadyOrderResponse> {
 
         ReadyOrderResponse response = new ReadyOrderResponse(result.getOrderId(), result.getStatus(), result.getOfferedCourierId());
 
-        String message = result.getOfferedCourierId() == null ? "Order marked ready. Waiting for an idle courier." : "Order marked ready. Offered to courier " + result.getOfferedCourierId();
+        String message = result.getOfferedCourierId() == null ? "Order marked ready. No courier is free for it, so it is waiting in the dispatch queue." : "Order marked ready. Offered to courier " + result.getOfferedCourierId();
 
         return new CommandSuccess<>(response, message, result.getEventId());
     }

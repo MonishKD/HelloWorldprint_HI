@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+import com.fortunategoods.domain.courier.DispatchQueue;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
@@ -206,10 +207,9 @@ public class OrderRepository {
         );
     }
 
-    // Find orders that are ready to be dispatched(offered to a courier)
-    public List<Order> findWaitingForDispatch() {
-        String sql = """
-            SELECT o.*
+    // Ready orders with no live offer, oldest ready first, each with its READY event's time and id (R-DLV-04)
+    private static final String WAITING_FOR_DISPATCH_SQL = """
+            SELECT o.*, e.created_at AS ready_since, e.id AS ready_event_id
             FROM orders o
             JOIN order_events e
             ON e.order_id = o.id AND e.new_status = 'READY'
@@ -223,6 +223,23 @@ public class OrderRepository {
             ORDER BY e.created_at, e.id
             """;
 
-        return jdbc.query(sql, (row, number) -> toOrder(row));
+    // Read only, for the operator's view of the queue
+    public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() {
+        return jdbc.query(WAITING_FOR_DISPATCH_SQL, (row, number) -> toWaitingOrder(row));
+    }
+
+    // Same orders, but thread-locks them until the dispatch transaction ends, so a cancel can't change one
+    // while it is being offered. If a cancel got there first, Postgres waits for it, sees the order is no
+    // longer READY and leaves it out.
+    @Transactional(propagation = Propagation.MANDATORY)
+    public List<DispatchQueue.WaitingOrder> lockWaitingForDispatch() {
+        return jdbc.query(WAITING_FOR_DISPATCH_SQL + " FOR UPDATE OF o", (row, number) -> toWaitingOrder(row));
+    }
+
+    private DispatchQueue.WaitingOrder toWaitingOrder(ResultSet row) throws SQLException {
+        return new DispatchQueue.WaitingOrder(
+            toOrder(row),
+            row.getTimestamp("ready_since").toLocalDateTime(),
+            row.getLong("ready_event_id"));
     }
 }

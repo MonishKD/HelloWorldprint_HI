@@ -117,7 +117,7 @@ class OrderCommandsTest {
 
         assertEquals(Set.of(UserRole.RESTAURANT), command.validRoles());
         assertEquals("ready", result.getData().getStatus());
-        assertEquals("Order marked ready. Waiting for an idle courier.", result.getMsg());
+        assertEquals("Order marked ready. No courier is free for it, so it is waiting in the dispatch queue.", result.getMsg());
         assertEquals("waiting", result.getData().getDispatchStatus());
         assertEquals(701L, result.getEventId());
     }
