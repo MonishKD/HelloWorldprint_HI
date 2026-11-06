@@ -125,11 +125,6 @@
     { "account": "carl", "name": "Carl Bouchard", "latitude": 45.4957, "longitude": -73.5793, "status": "IDLE" },
     { "account": "dana", "name": "Dana Roy",      "latitude": 45.5146, "longitude": -73.5684, "status": "IDLE" },
     { "account": "eli",  "name": "Eli Côté",      "latitude": 45.5146, "longitude": -73.5598, "status": "IDLE" },
-    { "account": "fay",  "name": "Fay Leblanc",   "latitude": 45.5125, "longitude": -73.5694, "status": "IDLE" }
-  ],
-  "shelters": [
-    { "name": "Mission Old Brewery", "address": "915 Rue Clark, Montréal",                    "latitude": 45.5069, "longitude": -73.5580 },
-    { "name": "Maison du Père",      "address": "550 Boulevard René-Lévesque Est, Montréal", "latitude": 45.5140, "longitude": -73.5565 },
-    { "name": "Accueil Bonneau",     "address": "427 Rue de la Commune Est, Montréal",       "latitude": 45.5102, "longitude": -73.5509 }
+    { "account": "fay",  "name": "Fay Leblanc",   "latitude": 45.5125, "longitude": -73.5694, "status": "OFFLINE" }
   ]
 }

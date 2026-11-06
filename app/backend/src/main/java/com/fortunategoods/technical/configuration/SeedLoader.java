@@ -35,19 +35,21 @@ import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 
 // Fills the database from seed-config.json at startup (#25 accounts, #26 restaurants and menus, R-REG-03,
-// #233 customer locations, couriers and shelters).
+// #233 customer locations and couriers).
 //   1. read and check the file: a missing or invalid one stops the app with the reason
 //   2. SEED_MODE keep (default): if the database already has accounts, change nothing
 //      SEED_MODE reset: wipe every table first
 //   3. save the accounts (passwords hashed like registration), the restaurants, their menu items and owner links,
-//      the customers' saved addresses, the couriers' positions and the shelters
+//      the customers' saved addresses and the couriers' positions
 //   4. confirm in the console
 //
 // The seeded couriers and the dispatch rule (NearestCourierRule: straight-line distance on lat/long, lowest id on ties):
 //   carl (id 3) waits at Guy / De Maisonneuve, next to Poulet Rouge, so a Poulet Rouge order goes to carl.
 //   dana (id 17) at Hôtel-de-Ville / Sherbrooke and eli (id 18) at Berri / Sainte-Catherine are the exact same
 //   distance from Uniburger (same latitude, longitudes mirrored around it), so a Uniburger order goes to dana, the lower id.
-//   fay (id 19) waits at Saint-Laurent / Sherbrooke, farther from both.
+//   fay (id 19) starts OFFLINE at Saint-Laurent / Sherbrooke, farther from both. Dispatch only offers orders to IDLE
+//   couriers, so fay is skipped until going on duty: the seed has both starting statuses, and No Courier Available
+//   is quick to set up (the other three go off duty).
 // The ids come from the order of the accounts in the file, so new accounts go at the end of that list.
 //
 // ApplicationRunner: Spring calls run() once the app has started, so the tables already exist.
@@ -57,7 +59,7 @@ public class SeedLoader implements ApplicationRunner {
 
     // The shape of seed-config.json. Jackson fills these from the file.
     record SeedFile(List<SeedAccount> accounts, List<SeedRestaurant> restaurants, List<SeedCustomer> customers,
-            List<SeedCourier> couriers, List<SeedShelter> shelters) {}
+            List<SeedCourier> couriers) {}
     record SeedAccount(String username, String email, String password, UserRole role) {}
     record SeedRestaurant(String name, String owner, RestaurantStatus status, String cuisine, String address,
             double latitude, double longitude, List<SeedMenuItem> menu) {}
@@ -67,12 +69,11 @@ public class SeedLoader implements ApplicationRunner {
     record SeedCustomer(String account, String name, String address, double latitude, double longitude) {}
     // Double (not double) for the coordinates, so a null in the file stays null and the check below refuses it.
     record SeedCourier(String account, String name, Double latitude, Double longitude, CourierStatus status) {}
-    record SeedShelter(String name, String address, Double latitude, Double longitude) {}
 
     // Empties every table and restarts the ids at 1, so the seeded rows always get the same ids.
     private static final String WIPE_ALL_TABLES = "TRUNCATE TABLE command_log, assignments, ledger_entries, "
             + "order_events, order_lines, orders, restaurant_personnel, operators, couriers, customers, users, "
-            + "menu_items, menus, restaurants, shelters RESTART IDENTITY CASCADE";
+            + "menu_items, menus, restaurants RESTART IDENTITY CASCADE";
 
     private static final Logger log = LoggerFactory.getLogger(SeedLoader.class);
 
@@ -123,10 +124,9 @@ public class SeedLoader implements ApplicationRunner {
 
         int menuItemCount = saveSeed(seed);
 
-        log.info("Seed loader: {} accounts, {} restaurants, {} menu items, {} customer locations, {} couriers and "
-                + "{} shelters loaded (SEED_MODE={}). Environment ready.", seed.accounts().size(),
-                seed.restaurants().size(), menuItemCount, seed.customers().size(), seed.couriers().size(),
-                seed.shelters().size(), seedMode);
+        log.info("Seed loader: {} accounts, {} restaurants, {} menu items, {} customer locations and {} couriers "
+                + "loaded (SEED_MODE={}). Environment ready.", seed.accounts().size(),
+                seed.restaurants().size(), menuItemCount, seed.customers().size(), seed.couriers().size(), seedMode);
     }
 
     // The operator's Reset (#276): wipes every table and seeds again from the file, while the app keeps running.
@@ -182,12 +182,6 @@ public class SeedLoader implements ApplicationRunner {
             userRepository.saveCourierProfile(accountIds.get(courier.account()), courier.name(), courier.latitude(),
                     courier.longitude(), courier.status());
         }
-
-        // Shelters are only written here for now. Reading them for checkout is #241.
-        for (SeedShelter shelter : seed.shelters()) {
-            jdbc.update("INSERT INTO shelters (name, address, latitude, longitude) VALUES (?, ?, ?, ?)",
-                    shelter.name(), shelter.address(), shelter.latitude(), shelter.longitude());
-        }
         return menuItemCount;
     }
 
@@ -214,7 +208,7 @@ public class SeedLoader implements ApplicationRunner {
         }
 
         // #233: each customer and courier entry must point to an account of that role,
-        // every courier needs coordinates and a status, and every shelter needs coordinates.
+        // and every courier needs coordinates and a status.
         Map<String, UserRole> roleByUsername = new HashMap<>();
         for (SeedAccount account : seed.accounts()) {
             roleByUsername.put(account.username(), account.role());
@@ -237,12 +231,6 @@ public class SeedLoader implements ApplicationRunner {
             if (courier.status() == null) {
                 throw new IllegalStateException("Seed file is invalid: courier \"" + courier.account()
                         + "\" has no status");
-            }
-        }
-        for (SeedShelter shelter : seed.shelters()) {
-            if (shelter.latitude() == null || shelter.longitude() == null) {
-                throw new IllegalStateException("Seed file is invalid: shelter \"" + shelter.name()
-                        + "\" has no coordinates");
             }
         }
         return seed;
