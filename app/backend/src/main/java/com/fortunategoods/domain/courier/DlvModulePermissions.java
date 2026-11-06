@@ -19,4 +19,12 @@ public class DlvModulePermissions {
     public static Set<UserRole> confirmDeliveryRoles() {
         return Set.of(UserRole.COURIER);
     }
+
+    public static Set<UserRole> reassignOrderRoles() {
+        return Set.of(UserRole.OPERATOR);
+    }
+
+    public static Set<UserRole> viewStalledOrdersRoles() {
+        return Set.of(UserRole.OPERATOR);
+    }
 }

@@ -260,4 +260,31 @@ public class OrderRepository {
             row.getTimestamp("ready_since").toLocalDateTime(),
             row.getLong("ready_event_id"));
     }
+
+    // Method used to find orders that are assigned to offline couriers (stalled)
+    public List<Order> findStalledOrders() {
+        String sql = """
+        SELECT o.*
+        FROM orders o
+        JOIN assignments a
+            ON a.order_id = o.id AND a.courier_id = o.courier_id
+        JOIN couriers c ON c.user_id = a.courier_id
+        WHERE o.status = 'READY'
+        AND a.status = 'ACCEPTED'
+        AND a.is_picked_up = FALSE
+        AND a.is_delivered = FALSE
+        AND c.status = 'OFFLINE'
+        ORDER BY o.id
+        """;
+        return jdbc.query(sql, (row, number) -> toOrder(row));
+    }
+
+    // Thread-lock method to remove courier from order after assignment is done
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean clearCourierIfUnchanged(String orderId, String courierId) {
+        return jdbc.update("""
+        UPDATE orders SET courier_id = NULL
+        WHERE id = ? AND courier_id = ? AND status = 'READY'
+        """, Integer.parseInt(orderId), Integer.parseInt(courierId)) == 1;
+    }
 }
