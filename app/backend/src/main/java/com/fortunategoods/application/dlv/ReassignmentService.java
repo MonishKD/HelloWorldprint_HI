@@ -26,6 +26,7 @@ import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
+@Service
 public class ReassignmentService {
     private final OrderRepository orders;
     private final OrderEventRepository events;
@@ -98,7 +99,7 @@ public class ReassignmentService {
         current.requireReassignmentAllowed(order, status);
         OrderEvent ready = readyEvent(orderId);
 
-        // Set assignment to reassigned and clear the old courier from the assignment
+        // Set assignment to reassigned and clear the old courier from the order
         if (!assignments.markReassigned(current.getId()) || !orders.clearCourierIfUnchanged(orderId, current.getCourierId())) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order or assignment changed before reassignment was saved");
         }
@@ -112,7 +113,7 @@ public class ReassignmentService {
         DispatchService.DispatchResult result = dispatch.retryDispatch(waiting);
         String offeredCourierId = null;
 
-        // If any couriers accepted the order (stop the loop), otherwise offeredCourierId will be null and it remains
+        // If a courier was offered the order (stop the loop), otherwise offeredCourierId will be null and it remains
         // in the dispatch queue
         for (Assignment offer : result.offers()) {
             if (orderId.equals(offer.getOrderId())) {

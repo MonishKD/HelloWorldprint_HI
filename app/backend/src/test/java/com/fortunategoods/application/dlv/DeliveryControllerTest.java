@@ -27,6 +27,7 @@ import static com.fortunategoods.testsupport.TestData.loggedIn;
 class DeliveryControllerTest {
     private static final String URL = "/api/couriers/me/order/";
     @Autowired private MockMvc mvc;
+    @MockitoBean private ReassignmentService reassignmentService;
     @MockitoBean private DeliveryService service;
     @MockitoBean private DispatchService dispatch;
     @MockitoBean private CommandLogRepository logs;

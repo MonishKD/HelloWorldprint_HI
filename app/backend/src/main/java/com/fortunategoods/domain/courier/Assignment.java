@@ -55,7 +55,7 @@ public class Assignment {
         }
     }
 
-    // Method that checks if order is ready accepted, idle courier, not picked up and not delivered
+    // Method that checks if order is ready, assignment accepted, courier offline, not picked up and not delivered
     public void requireReassignmentAllowed(Order order, CourierStatus courierStatus) {
         requireOrder(order);
 
