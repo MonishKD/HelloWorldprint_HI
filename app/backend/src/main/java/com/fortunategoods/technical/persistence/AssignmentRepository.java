@@ -113,4 +113,14 @@ public class AssignmentRepository {
         AND is_picked_up = FALSE AND is_delivered = FALSE
         """, Integer.parseInt(assignmentId)) == 1;
     }
+
+    // Thread-lock method to mark status of an assignment to cancel
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markCancelled(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET status = 'CANCELLED'
+        WHERE id = ? AND status IN ('OFFERED', 'ACCEPTED')
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
 }

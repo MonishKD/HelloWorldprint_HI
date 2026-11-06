@@ -33,7 +33,8 @@ class OperatorCancelOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class), eventPublisher, mock(DispatchService.class));
+    private final DispatchService dispatch = mock(DispatchService.class);
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events,mock(UserRepository.class), mock(RegisterPreparationQueue.class), eventPublisher, dispatch);
 
     @Test
     void operatorCanCancelAllThreeAllowedStates() {
@@ -47,6 +48,7 @@ class OperatorCancelOrderServiceTest {
             assertEquals(OrderStatus.CANCELLED, existing.getStatus());
             assertEquals(OrderStatus.CANCELLED, result.getStatus());
             assertEquals(701L, result.getEventId());
+            verify(dispatch).cancelOrderAssignment(existing);
 
             verify(orders).updateStatusIfUnchanged("100", "700", status, OrderStatus.CANCELLED);
         }
@@ -148,7 +150,33 @@ class OperatorCancelOrderServiceTest {
 
         assertEquals(DomainRuleViolation.Reason.CONFLICT, error.getReason());
         verify(orders).lockRestaurantQueue("1");
+        verify(orders).lockOrder("100");
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
+    }
+
+    @Test
+    void cleanupRunsAfterSavingAndBeforePublishingFinishedEvent() {
+        Order existing = givenOrder(OrderStatus.READY);
+        when(orders.updateStatusIfUnchanged("100", "700", OrderStatus.READY, OrderStatus.CANCELLED)).thenReturn("701");
+
+        service.operatorCancelOrder("9", UserRole.OPERATOR, "100");
+
+        var sequence = inOrder(orders, dispatch, eventPublisher);
+        sequence.verify(orders).updateStatusIfUnchanged("100", "700", OrderStatus.READY, OrderStatus.CANCELLED);
+        sequence.verify(dispatch).cancelOrderAssignment(existing);
+        sequence.verify(eventPublisher).publishEvent(any(OrderFinished.class));
+    }
+
+    @Test
+    void failedAssignmentCleanupDoesNotPublishFinishedEvent() {
+        Order existing = givenOrder(OrderStatus.READY);
+        when(orders.updateStatusIfUnchanged("100", "700", OrderStatus.READY, OrderStatus.CANCELLED)).thenReturn("701");
+        doThrow(new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Assignment changed"))
+            .when(dispatch).cancelOrderAssignment(existing);
+
+        assertThrows(DomainRuleViolation.class, () -> service.operatorCancelOrder("9", UserRole.OPERATOR, "100"));
+
+        verifyNoInteractions(eventPublisher);
     }
 
     // Helper method

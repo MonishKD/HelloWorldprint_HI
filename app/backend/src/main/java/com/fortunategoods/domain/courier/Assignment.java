@@ -78,6 +78,24 @@ public class Assignment {
         }
     }
 
+    // Courier status handling after cancellation
+    public CourierStatus courierStatusAfterCancellation(Order order, CourierStatus courierStatus) {
+        if (order == null || orderId == null || courierId == null || !orderId.equals(order.getId()) || order.getStatus() != OrderStatus.CANCELLED || (status != Status.OFFERED && status != Status.ACCEPTED) || pickedUp || delivered) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only an active assignment before pickup can be cancelled");
+        }
+
+        if (status == Status.ACCEPTED) {
+            requireOrder(order);
+            if (courierStatus != CourierStatus.ASSIGNED && courierStatus != CourierStatus.OFFLINE) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Accepted assignment requires an assigned or offline courier");
+            }
+        } else if (order.getCourierId() != null || (courierStatus != CourierStatus.IDLE && courierStatus != CourierStatus.OFFLINE)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Offered assignment requires an unassigned order and an idle or offline courier");
+        }
+
+        return courierStatus == CourierStatus.ASSIGNED ? CourierStatus.IDLE : courierStatus;
+    }
+
     public String getId() {
         return id;
     }

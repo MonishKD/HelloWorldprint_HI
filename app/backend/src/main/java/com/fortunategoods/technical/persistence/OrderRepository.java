@@ -287,4 +287,13 @@ public class OrderRepository {
         WHERE id = ? AND courier_id = ? AND status = 'READY'
         """, Integer.parseInt(orderId), Integer.parseInt(courierId)) == 1;
     }
+
+    // Thread-lock method to remove courier from order after assignment is cancelled
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean clearCourierAfterCancellation(String orderId, String courierId) {
+        return jdbc.update("""
+        UPDATE orders SET courier_id = NULL
+        WHERE id = ? AND courier_id = ? AND status = 'CANCELLED'
+        """, Integer.parseInt(orderId), Integer.parseInt(courierId)) == 1;
+    }
 }
