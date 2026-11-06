@@ -1,4 +1,4 @@
-import type { CourierLocation } from '../../domain';
+import type { CourierLocation, Restaurant } from '../../domain';
 import type { RestaurantSummary } from '../ord/ordApi';
 import { restaurantHue } from '../common';
 import { point } from './geo';
@@ -13,6 +13,7 @@ export interface HomePin {
 }
 
 const COURIER_STATE_LABEL = { offline: 'Offline', idle: 'Online, free', assigned: 'Heading to a restaurant', carrying: 'Delivering' } as const;
+const ON_DUTY = ['idle', 'assigned', 'carrying'] as const;
 
 /**
  * The city at a glance (R-ORD-01): restaurants coloured by status, couriers, and customer addresses.
@@ -25,14 +26,18 @@ export default function CityMap({
   onSelectRestaurant,
   height = 340,
 }: {
-  restaurants: RestaurantSummary[];
+  /** The menu counts are optional: the city read doesn't carry them. */
+  restaurants: (Restaurant & Partial<RestaurantSummary>)[];
   couriers?: CourierLocation[];
   homes?: HomePin[];
   onSelectRestaurant?: (restaurantId: string) => void;
   height?: number;
 }) {
+  const onDuty = couriers.filter((c) => c.courierState !== 'offline');
+  // A restaurant without coordinates (new sign-up, not geocoded yet) has no pin, so it can't stretch the bounds.
+  const unplaced = restaurants.filter((r) => !point(r.lat, r.lng));
+
   const pins: MapPin[] = [
-    // A restaurant without coordinates (new sign-up, not geocoded yet) simply has no pin.
     ...restaurants.filter((r) => point(r.lat, r.lng)).map((r) => ({
       id: `r-${r.id}`,
       kind: 'restaurant' as const,
@@ -42,13 +47,15 @@ export default function CityMap({
       status: r.status,
       detail:
         r.status === 'open'
-          ? `${r.availableCount} of ${r.itemCount} items available${r.bestDiscount ? ` · up to −${r.bestDiscount}%` : ''}`
+          ? r.itemCount === undefined
+            ? 'Open'
+            : `${r.availableCount} of ${r.itemCount} items available${r.bestDiscount ? ` · up to −${r.bestDiscount}%` : ''}`
           : r.status === 'paused'
             ? 'Paused: not taking new orders'
             : 'Closed',
       onSelect: onSelectRestaurant && (() => onSelectRestaurant(r.id)),
     })),
-    ...couriers.map((c) => ({
+    ...onDuty.map((c) => ({
       id: `c-${c.id}`,
       kind: 'rider' as const,
       at: [c.lat, c.lng] as [number, number],
@@ -70,17 +77,19 @@ export default function CityMap({
         <span>
           <i className="lg-off" /> Paused / closed
         </span>
-        {couriers.length > 0 && (
-          <span>
-            <i className="lg-rider" /> Couriers
-          </span>
-        )}
+        {onDuty.length > 0 &&
+          ON_DUTY.map((state) => (
+            <span key={state}>
+              <i className={`lg-rider lg-${state}`} /> {COURIER_STATE_LABEL[state]}
+            </span>
+          ))}
         {homes.length > 0 && (
           <span>
             <i className="lg-home" /> {homes.length > 1 ? 'Customers' : 'You'}
           </span>
         )}
       </div>
+      {unplaced.length > 0 && <p className="map-unplaced">Not on the map: {unplaced.map((r) => r.name).join(', ')}</p>}
     </section>
   );
 }

@@ -2,17 +2,11 @@ package com.fortunategoods.application.dashboard;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.fortunategoods.application.ord.orders.RestaurantOrderService;
 import com.fortunategoods.application.ord.orders.preparation.GetPreparationQueueResponse;
@@ -21,10 +15,8 @@ import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
-import com.fortunategoods.technical.persistence.AssignmentRepository;
-import com.fortunategoods.technical.persistence.OrderRepository;
-import com.fortunategoods.technical.persistence.RestaurantRepository;
-import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.technical.persistence.*;
+
 import static com.fortunategoods.testsupport.TestData.order;
 
 // The repositories are mocked: customer 7 has orders 101 and 100, staff 8 works for restaurant "1", staff 9 has none.
@@ -49,7 +41,7 @@ class DashboardServiceTest {
                 new GetPreparationQueueResponse(1, "102", OrderStatus.ACCEPTED),
                 new GetPreparationQueueResponse(2, "103", OrderStatus.ACCEPTED)));
 
-        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class));
+        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class), mock(CourierRepository.class));
     }
 
     @Test

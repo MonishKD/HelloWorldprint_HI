@@ -46,6 +46,10 @@ public class OrdModulePermissions {
         return Set.of(UserRole.OPERATOR);
     }
 
+    public static Set<UserRole> refundOrderRoles() {
+        return Set.of(UserRole.OPERATOR);
+    }
+
     // #276: only the operator restores the initial system state (Appendix A).
     public static Set<UserRole> resetRoles() {
         return Set.of(UserRole.OPERATOR);
@@ -90,6 +94,10 @@ public class OrdModulePermissions {
 
     public static Set<UserRole> viewPreparationQueueRoles() {
         return Set.of(UserRole.RESTAURANT);
+    }
+
+    public static Set<UserRole> viewCityRoles() {
+        return Set.of(UserRole.values());
     }
 
     public static Set<UserRole> viewOwnOrdersRoles() {

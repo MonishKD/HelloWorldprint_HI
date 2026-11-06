@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
 import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, useLoad } from '../common';
 import MenuPage from '../ord/MenuPage';
+import CityMapPanel from '../map/CityMapPanel';
 import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { cancelOrder, listRestaurants } from '../ord/ordApi';
@@ -13,7 +14,8 @@ import { Icon } from '../icons';
 import { DashboardLayout, type NavItem } from './DashboardRouter';
 
 const NAV: NavItem[] = [
-  { to: '/customer', label: 'Discover', activeFor: (path) => !path.startsWith('/customer/orders') },
+  { to: '/customer', label: 'Discover', activeFor: (path) => !path.startsWith('/customer/orders') && !path.startsWith('/customer/map') },
+  { to: '/customer/map', label: 'City map' },
   { to: '/customer/orders', label: 'My orders' },
 ];
 
@@ -23,11 +25,17 @@ export default function CustomerDashboardPage() {
       <Routes>
         <Route index element={<RestaurantListPage />} />
         <Route path="r/:restaurantId" element={<MenuPage />} />
+        <Route path="map" element={<CustomerCityMap />} />
         <Route path="orders" element={<MyOrders />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>
   );
+}
+
+function CustomerCityMap() {
+  const navigate = useNavigate();
+  return <CityMapPanel onSelectRestaurant={(id) => navigate(`/customer/r/${id}`)} />;
 }
 
 function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) {

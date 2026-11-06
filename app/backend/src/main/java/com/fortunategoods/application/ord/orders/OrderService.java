@@ -282,6 +282,17 @@ public class OrderService {
 
     }
 
+    // Only the status change: RefundService adds the ledger entry and the Stripe refund in the same transaction.
+    @Transactional
+    public OrderServiceResult refundOrder(UserRole role, String orderId) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.refundOrderRoles(), "Only operators can refund orders");
+
+        Order order = findOrder(orderId);
+        OrderStatus previous = order.getStatus();
+        order.refundFromDelivered();
+        return saveTransition(orderId, order, previous);
+    }
+
     private Order findStaffOrder(String staffId, UserRole role, String orderId, Set<UserRole> allowedRoles) {
         OrdModulePermissions.requireRole(role, allowedRoles, "Only restaurant staff can perform this action");
         // Verify validity of staff id

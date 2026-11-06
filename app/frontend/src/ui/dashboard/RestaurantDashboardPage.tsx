@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import type { RestaurantStatus } from '../../domain';
 import { useUser } from '../../session';
 import { LoadError, Loading, money, Monogram, restaurantHue, Segmented, Stat, TERMINAL, useLoad } from '../common';
+import CityMapPanel from '../map/CityMapPanel';
 import IncomingOrdersList from '../ord/IncomingOrdersList';
 import MenuPage from '../ord/MenuPage';
 import { getRestaurantMenu, setRestaurantStatus } from '../ord/ordApi';
@@ -132,6 +133,8 @@ function RestaurantDashboard() {
           <IncomingOrdersList orders={ready} emptyIcon="box" emptyText="No bags waiting" onChanged={reload} />
         </section>
       </div>
+
+      <CityMapPanel />
 
       <MenuPage onChanged={reload} />
 

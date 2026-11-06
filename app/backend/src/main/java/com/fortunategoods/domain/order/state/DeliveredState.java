@@ -10,7 +10,7 @@ public class DeliveredState extends BaseOrderState {
     }
 
     @Override 
-    public void deliver(Order order){
+    public void refund(Order order){
         order.transitionTo(new RefundedState());
     }
     

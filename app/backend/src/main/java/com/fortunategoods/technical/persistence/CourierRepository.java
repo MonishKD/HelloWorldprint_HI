@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fortunategoods.domain.courier.PotentialCourier;
 import com.fortunategoods.domain.courier.CourierStatus;
+import com.fortunategoods.domain.courier.OnDutyCourier;
 
 /*
     Repository which will hold all couriers
@@ -81,5 +82,25 @@ public class CourierRepository {
         """; // COALESCE helps to either change it to the latitude/longitude set, or keep their current location if null
 
         return jdbc.update(sql, next.name(), latitude, longitude, Integer.parseInt(courierId), expected.name()) == 1;
+    }
+
+    // Every courier who is not offline, for the city map. Read only, so nothing is locked.
+    // A courier with no position yet can't be drawn, so it is left out.
+    public List<OnDutyCourier> findOnDuty() {
+        String sql = """
+            SELECT user_id, name, latitude, longitude, status
+            FROM couriers
+            WHERE status IN ('IDLE', 'ASSIGNED', 'CARRYING')
+            AND latitude IS NOT NULL
+            AND longitude IS NOT NULL
+            ORDER BY user_id
+            """;
+
+        return jdbc.query(sql, (row, number) -> new OnDutyCourier(
+            row.getString("user_id"),
+            row.getString("name"),
+            row.getDouble("latitude"),
+            row.getDouble("longitude"),
+            CourierStatus.valueOf(row.getString("status"))));
     }
 }

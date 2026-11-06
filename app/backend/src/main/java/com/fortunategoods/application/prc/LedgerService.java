@@ -80,6 +80,16 @@ public class LedgerService {
         }
     }
 
+    // A new REFUND entry next to the order's CHARGE entry, which stays as it is.
+    public void recordRefund(String orderId) {
+        LedgerEntry charge = ledgerRepo.findCharge(orderId);
+        if (charge == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "This order has no charge to refund");
+        }
+        List<OrderEvent> events = orderEventRepo.findByOrderId(orderId);
+        ledgerRepo.save(LedgerEntry.refund(charge, events.get(events.size() - 1).getTimestamp()));
+    }
+
     /*
         Receiver of GetHistoryCommand (#264, R-PRC-04). Each role only gets its own ledger rows, newest first:
           CUSTOMER    the orders they placed

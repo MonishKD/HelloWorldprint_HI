@@ -10,7 +10,7 @@
   border: 1px solid var(--line);
 }
 .map-card { display: grid; gap: 0.6rem; padding: 0.6rem; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
-.map-legend { display: flex; gap: 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.8rem; font-weight: 650; color: var(--muted); }
+.map-legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; padding: 0 0.5rem 0.2rem; font-size: 0.8rem; font-weight: 650; color: var(--muted); }
 .map-legend span { display: inline-flex; align-items: center; gap: 0.45rem; }
 .map-legend i { display: inline-block; }
 .lg-route { width: 22px; height: 4px; border-radius: 4px; background: var(--brand); }
@@ -106,12 +106,17 @@
 :root[data-theme='dark'] .pin-rider { color: var(--on-lime); }
 .is-rider.status-offline .pin-rider { opacity: 0.45; }
 .is-rider.status-idle .pin-rider { border-color: var(--ok-fg); }
-.is-rider.status-assigned .pin-rider, .is-rider.status-carrying .pin-rider { border-color: var(--route-fg); }
+.is-rider.status-assigned .pin-rider { border-color: var(--warn-fg); border-style: dashed; }
+.is-rider.status-carrying .pin-rider { border-color: var(--route-fg); border-radius: 9px; }
 
 .lg-open, .lg-off, .lg-rider, .lg-home { width: 12px; height: 12px; border-radius: 4px; }
 .lg-open { border: 2.5px solid var(--ok-fg); background: var(--surface-2); }
 .lg-off { border: 2.5px dashed var(--warn-fg); background: var(--surface-2); }
 .lg-rider { border-radius: 50%; background: var(--dark); }
 .lg-home { border-radius: 50%; background: var(--accent); }
+.lg-idle { border: 2.5px solid var(--ok-fg); }
+.lg-assigned { border: 2.5px dashed var(--warn-fg); }
+.lg-carrying { border: 2.5px solid var(--route-fg); border-radius: 4px; }
+.map-unplaced { margin: 0; padding: 0 0.5rem 0.2rem; font-size: 0.8rem; color: var(--muted); }
 
 .eta { display: flex; align-items: center; gap: 0.45rem; font-weight: 700; font-size: 0.9rem; color: var(--route-fg); background: var(--route-bg); padding: 0.5rem 0.75rem; border-radius: 12px; }
