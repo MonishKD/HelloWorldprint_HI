@@ -3,9 +3,10 @@ import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrde
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
 import CityMap from '../map/CityMap';
-import { errorMessage, send } from './dashboardApi';
+import { setRestaurantStatus } from '../ord/ordApi';
+import { errorMessage, getCityView, send } from './dashboardApi';
 import { DashboardLayout } from './DashboardRouter';
-import { cancelOrder, getCityView, listAllOrders, listDispatchQueue, listStalledOrders, reassignOrder, refundOrder, resetSystem, setRestaurantStatus } from './operatorApi';
+import { cancelOrder, listAllOrders, listDispatchQueue, listStalledOrders, reassignOrder, refundOrder, resetSystem } from './operatorApi';
 
 const FILTERS: Record<string, (o: Order) => boolean> = {
   All: () => true,
@@ -187,7 +188,7 @@ function OperatorDashboard() {
                   <tr key={o.id}>
                     <td>
                       <strong>#{o.id}</strong>
-                      <small className="muted block">{minutesSince(o.createdAt)}</small>
+                      {o.createdAt && <small className="muted block">{minutesSince(o.createdAt)}</small>}
                     </td>
                     <td>
                       {o.restaurantName} → {o.customerName}

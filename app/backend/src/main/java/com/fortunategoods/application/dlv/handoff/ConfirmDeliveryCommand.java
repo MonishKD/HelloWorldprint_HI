@@ -1,6 +1,7 @@
 package com.fortunategoods.application.dlv.handoff;
 import java.util.Set;
 
+import com.fortunategoods.application.ord.orders.OrderStatusResponse;
 import com.fortunategoods.application.dlv.DeliveryService;
 import com.fortunategoods.application.ord.execution.Command;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
@@ -9,7 +10,7 @@ import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.courier.DlvModulePermissions;
 import com.fortunategoods.domain.user.UserRole;
 
-public class ConfirmDeliveryCommand implements Command<HandoffResponse>{
+public class ConfirmDeliveryCommand implements Command<OrderStatusResponse>{
     private final DeliveryService service;
     private final Session session;
 
@@ -24,12 +25,12 @@ public class ConfirmDeliveryCommand implements Command<HandoffResponse>{
     }
 
     @Override
-    public CommandSuccess<HandoffResponse> execute() {
+    public CommandSuccess<OrderStatusResponse> execute() {
         // Confirm delivery and await result
         OrderServiceResult result = service.confirmDelivery(String.valueOf(session.getUserID()), session.getRole());
 
         // Build response based off result
-        HandoffResponse response = new HandoffResponse(result.getOrderId(), result.getStatus());
+        OrderStatusResponse response = new OrderStatusResponse(result.getOrderId(), result.getStatus());
 
         // Return response
         return new CommandSuccess<>(response, "Order delivered.", result.getEventId());

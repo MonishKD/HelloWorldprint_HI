@@ -8,13 +8,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import com.fortunategoods.application.ord.orders.OrderStatusResponse;
 import com.fortunategoods.application.dlv.reassignment.GetStalledOrdersCommand;
 import com.fortunategoods.application.dlv.reassignment.ReassignOrderCommand;
 import com.fortunategoods.application.dlv.reassignment.ReassignOrderResponse;
 import com.fortunategoods.application.dlv.reassignment.StalledOrderResponse;
 import com.fortunategoods.application.dlv.handoff.ConfirmDeliveryCommand;
 import com.fortunategoods.application.dlv.handoff.ConfirmPickupCommand;
-import com.fortunategoods.application.dlv.handoff.HandoffResponse;
 import com.fortunategoods.application.dlv.queue.DispatchQueueEntry;
 import com.fortunategoods.application.dlv.queue.GetDispatchQueueCommand;
 import com.fortunategoods.application.ord.execution.CommandInvoker;
@@ -48,14 +48,14 @@ public class DlvController {
 
     // Confirm pick up endpoint (couriers only or else 403)
     @PostMapping("/api/couriers/me/order/pickup")
-    public ResponseEntity<CommandSuccess<HandoffResponse>> confirmPickup() {
+    public ResponseEntity<CommandSuccess<OrderStatusResponse>> confirmPickup() {
         Session session = sessionValidator.currentSession();
         return ResponseEntity.ok(invoker.process(new ConfirmPickupCommand(deliveryService, session), session));
     }
 
     // Confirm delivery endpoint (couriers only or else 403)
     @PostMapping("/api/couriers/me/order/deliver")
-    public ResponseEntity<CommandSuccess<HandoffResponse>> confirmDelivery() {
+    public ResponseEntity<CommandSuccess<OrderStatusResponse>> confirmDelivery() {
         Session session = sessionValidator.currentSession();
         return ResponseEntity.ok(invoker.process(new ConfirmDeliveryCommand(deliveryService, session), session));
     }

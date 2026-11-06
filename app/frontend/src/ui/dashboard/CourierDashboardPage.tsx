@@ -3,6 +3,7 @@ import type { CourierDashboard as Dashboard, CourierJob } from '../../domain';
 import { ConfirmChange, Empty, LoadError, Loading, minutesSince, restaurantHue, StatusBadge, Switch, timeOf, useLoad, usePolling } from '../common';
 import { CurrentOrderCard, OfferCard } from '../dlv/CourierJobCards';
 import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getCourierDashboard, listDeliveries, listReadyOrders, setOnDuty } from '../dlv/dlvApi';
+import CityMapPanel from '../map/CityMapPanel';
 import MapView, { type MapDelivery } from '../map/MapView';
 import { point } from '../map/geo';
 import { errorMessage, logError, send } from './dashboardApi';
@@ -171,6 +172,8 @@ function CourierDashboard() {
           </ul>
         )}
       </section>
+
+      <CityMapPanel />
 
       <details className="history">
         <summary>

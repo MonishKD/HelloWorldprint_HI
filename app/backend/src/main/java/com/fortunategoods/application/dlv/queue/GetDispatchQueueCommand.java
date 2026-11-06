@@ -30,4 +30,9 @@ public final class GetDispatchQueueCommand implements Command<List<DispatchQueue
         List<DispatchQueueEntry> queue = service.dispatchQueue(session.getRole());
         return CommandSuccess.success(queue, queue.size() + " orders waiting for a courier");
     }
+
+    @Override
+    public boolean logsSuccess() {
+        return false;
+    }
 }

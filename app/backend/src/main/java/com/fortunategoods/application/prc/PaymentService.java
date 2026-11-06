@@ -19,6 +19,7 @@ import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.pricing.Fare;
 import com.fortunategoods.domain.pricing.FareCalculator;
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.payment.Payment;
 import com.fortunategoods.technical.payment.PaymentGateway;
 import com.fortunategoods.technical.persistence.OrderRepository;
@@ -32,7 +33,7 @@ import jakarta.transaction.Transactional;
       2. the browser confirms the card with Stripe (#260)
       3. placePaidOrder: place the order only if the money is held for exactly that fare, and remember the payment
       4. onOrderFinished: delivered -> take the money, rejected or cancelled -> release it
-      5. refundOrder: the operator's refund (#266) gives the money back
+      5. refundOrder: the operator's refund gives the money back
 
     How much to charge comes from Kaue's FareCalculator (pricing-rule strategies), never from the browser.
     Moving the money goes through PaymentGateway, so nothing here knows it is Stripe.
@@ -45,14 +46,16 @@ public class PaymentService {
     private final PaymentGateway paymentGateway;
     private final FareCalculator fareCalculator;
     private final OrderService orderService;
+    private final LedgerService ledgerService;
     private final OrderRepository orderRepo;
     private final RestaurantRepository restaurantRepo;
 
     public PaymentService(PaymentGateway paymentGateway, FareCalculator fareCalculator, OrderService orderService,
-            OrderRepository orderRepo, RestaurantRepository restaurantRepo) {
+            LedgerService ledgerService, OrderRepository orderRepo, RestaurantRepository restaurantRepo) {
         this.paymentGateway = paymentGateway;
         this.fareCalculator = fareCalculator;
         this.orderService = orderService;
+        this.ledgerService = ledgerService;
         this.orderRepo = orderRepo;
         this.restaurantRepo = restaurantRepo;
     }
@@ -118,13 +121,19 @@ public class PaymentService {
         }
     }
 
-    // Step 5, for the refund command (#266): gives back the money of a delivered order.
-    public void refundOrder(String orderId) {
+    // Step 5: the status, the ledger entry and the Stripe refund in one transaction.
+    @Transactional
+    public OrderServiceResult refundOrder(UserRole role, String orderId) {
+        OrderServiceResult result = orderService.refundOrder(role, orderId);
+        ledgerService.recordRefund(orderId);
+
         String paymentId = orderRepo.findPaymentId(orderId);
         if (paymentId == null) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "This order was not paid by card, there is nothing to refund");
         }
+        // Last on purpose: Stripe can't be rolled back, but a Stripe failure rolls back the two steps above.
         paymentGateway.refund(paymentId);
+        return result;
     }
 
     // The fare of a cart, priced the same way as at placement: the lines take the menu's current prices (OrderVerify),

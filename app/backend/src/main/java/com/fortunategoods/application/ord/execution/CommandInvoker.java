@@ -83,8 +83,10 @@ public final class CommandInvoker {
             throw new CommandExecutionException(500, "COMMAND_FAILED", "The action failed and could not be completed.", e);
         }
 
-        CommandLog successLog = new CommandLog(commandName, validSession, CommandLog.Result.SUCCESS, 200, "OK", result.getMsg(), result.getEventId());
-        commandLogRepo.save(successLog);
+        if (command.logsSuccess()) {
+            CommandLog successLog = new CommandLog(commandName, validSession, CommandLog.Result.SUCCESS, 200, "OK", result.getMsg(), result.getEventId());
+            commandLogRepo.save(successLog);
+        }
         return result;
     }
 
