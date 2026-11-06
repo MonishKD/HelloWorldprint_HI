@@ -1,5 +1,7 @@
 package com.fortunategoods.domain.courier;
 
+import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.Order;
 /*
     Assignment class represents the link between an Order and a Courier
 */
@@ -32,6 +34,38 @@ public class Assignment {
     // Constructor helper for orders that were OFFERED to couriers
     public static Assignment offered(String orderId, String courierId) {
         return new Assignment(null, orderId, courierId, Status.OFFERED, false, false);
+    }
+
+    // Method that checks if assignment is accepted and not picked up and not delivered for pickup
+    public void requirePickupAllowed(String actingCourierId) {
+        requireOwner(actingCourierId);
+
+        if (status != Status.ACCEPTED || pickedUp || delivered) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Pickup requires an accepted assignment that has not been picked up or delivered");
+        }
+    }
+
+    // Method that checks if assignment is accepted and not picked up and not delivered for delivery
+    public void requireDeliveryAllowed(String actingCourierId) {
+        requireOwner(actingCourierId);
+
+        if (status != Status.ACCEPTED || !pickedUp || delivered) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Delivery requires an accepted assignment that has been picked up and not delivered");
+        }
+    }
+    
+    // Method to check if order is still under this assignment/assigned to courier
+    public void requireOrder(Order order) {
+        if (order == null || orderId == null || courierId == null || !orderId.equals(order.getId()) || !courierId.equals(order.getCourierId())) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order is no longer linked to this assignment and courier");
+        }
+    }
+
+    // Helper method to check if courier picking up/delivering order is the one from the assignment
+    private void requireOwner(String actingCourierId){
+        if (courierId == null || !courierId.equals(actingCourierId)){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "Only allowed to confirm own assignments.");
+        }
     }
 
     public String getId() {
