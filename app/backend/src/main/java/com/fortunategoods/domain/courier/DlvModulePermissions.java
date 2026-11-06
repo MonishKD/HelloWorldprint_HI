@@ -11,4 +11,12 @@ public class DlvModulePermissions {
     public static Set<UserRole> viewDispatchQueueRoles() {
         return Set.of(UserRole.OPERATOR);
     }
+
+    public static Set<UserRole> confirmPickupRoles() {
+        return Set.of(UserRole.COURIER);
+    }
+
+    public static Set<UserRole> confirmDeliveryRoles() {
+        return Set.of(UserRole.COURIER);
+    }
 }

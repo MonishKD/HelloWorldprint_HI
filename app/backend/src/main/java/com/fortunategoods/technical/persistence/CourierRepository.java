@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fortunategoods.domain.courier.PotentialCourier;
+import com.fortunategoods.domain.courier.CourierStatus;
 
 /*
     Repository which will hold all couriers
@@ -22,7 +23,7 @@ public class CourierRepository {
 
     @Transactional(propagation = Propagation.MANDATORY)
     public List<PotentialCourier> findIdleWithoutOffer() {
-        jdbc.queryForList("SELECT user_id FROM couriers ORDER BY user_id FOR UPDATE", Integer.class);
+        lockAll();
 
         // Query all idle couriers who hasn't been assigned an order
         String sql = """
@@ -49,5 +50,36 @@ public class CourierRepository {
 
             return new PotentialCourier(row.getString("user_id"), latitude, longitude);
         });
+    }
+
+    // Transactional thread-lock method that finds all couriers using the courier id
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockAll() {
+        jdbc.queryForList("SELECT user_id FROM couriers ORDER BY user_id FOR UPDATE", Integer.class);
+    }
+
+    // Transactional thread-lock to fetch the status of user with null status to offline and return it
+    @Transactional(propagation = Propagation.MANDATORY)
+    public CourierStatus lockStatusById(String courierId) {
+        List<CourierStatus> found = jdbc.query("SELECT status FROM couriers WHERE user_id = ? FOR UPDATE",
+            (row, number) -> row.getString("status") == null ? CourierStatus.OFFLINE: CourierStatus.valueOf(row.getString("status")),
+            Integer.parseInt(courierId)
+        );
+
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // Transactional thread-lock method to update status and position of courier
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean updateStatusAndPosition(String courierId, CourierStatus expected, CourierStatus next, Double latitude, Double longitude) {
+        String sql = """
+        UPDATE couriers
+        SET status = ?,
+            latitude = COALESCE(?, latitude),
+            longitude = COALESCE(?, longitude)
+        WHERE user_id = ? AND status = ?
+        """; // COALESCE helps to either change it to the latitude/longitude set, or keep their current location if null
+
+        return jdbc.update(sql, next.name(), latitude, longitude, Integer.parseInt(courierId), expected.name()) == 1;
     }
 }

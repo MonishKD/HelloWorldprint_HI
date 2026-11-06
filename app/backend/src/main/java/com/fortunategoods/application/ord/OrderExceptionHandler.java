@@ -12,7 +12,12 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import com.fortunategoods.domain.order.state.IllegalTransitionException;
 
 
-@RestControllerAdvice(basePackages = {"com.fortunategoods.application.ord", "com.fortunategoods.application.dashboard", "com.fortunategoods.application.prc"})
+@RestControllerAdvice(basePackages = {
+    "com.fortunategoods.application.ord", 
+    "com.fortunategoods.application.dashboard", 
+    "com.fortunategoods.application.prc",
+    "com.fortunategoods.application.dlv"    
+})
 public final class OrderExceptionHandler {
     /*
         Method that will turn all CommandExecutionException into an HTTP response

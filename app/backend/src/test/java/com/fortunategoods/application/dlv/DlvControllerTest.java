@@ -35,6 +35,7 @@ class DlvControllerTest {
     private static final String URL = "/api/operator/dispatch-queue";
 
     @Autowired private MockMvc mvc;
+    @MockitoBean private DeliveryService deliveryService;
     @MockitoBean private OrderRepository orders;
     @MockitoBean private RestaurantRepository restaurants;
     @MockitoBean private CourierRepository couriers;
