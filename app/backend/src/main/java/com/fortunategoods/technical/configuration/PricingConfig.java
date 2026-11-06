@@ -29,10 +29,11 @@ public class PricingConfig {
 
     // The part of seed-config.json this class reads. Jackson fills it from the file and skips the other keys
     // (accounts, restaurants, ...), which SeedLoader reads.
-    // Wrapper types (Double, Integer) so a missing value arrives as null and can be reported by name.
+    // Wrapper type (Double) so a missing value arrives as null and can be reported by name.
+    // serviceFeePercent is a Double too, so a decimal like 12.5 reaches the check below instead of being cut to 12.
     record ConfigFile(PricingValues pricing) {}
     record PricingValues(Double deliveryFee, Double smallOrderThreshold, Double smallOrderSurcharge,
-            Integer serviceFeePercent) {}
+            Double serviceFeePercent) {}
 
     private final JsonMapper jsonReader = JsonMapper.builder().build();
 
@@ -44,7 +45,7 @@ public class PricingConfig {
         // The amounts are dollars with 2 decimals in the file (2.99). The PRC code works in cents (299).
         return new PricingRules(
                 toCents(pricing.deliveryFee()),
-                pricing.serviceFeePercent(),
+                pricing.serviceFeePercent().intValue(), // readPricing already refused a decimal
                 toCents(pricing.smallOrderThreshold()),
                 toCents(pricing.smallOrderSurcharge()));
     }
@@ -76,11 +77,15 @@ public class PricingConfig {
         checkValue("smallOrderThreshold", pricing.smallOrderThreshold());
         checkValue("smallOrderSurcharge", pricing.smallOrderSurcharge());
         checkValue("serviceFeePercent", pricing.serviceFeePercent());
+        // ServiceFeeRule works with a whole percent, so 12.5 is refused instead of silently charging 12%.
+        if (pricing.serviceFeePercent() % 1 != 0) {
+            throw new IllegalStateException("Pricing in the seed file is invalid: \"serviceFeePercent\" must be a whole number");
+        }
         return pricing;
     }
 
-    // Number covers both Double and Integer, so one check works for all four values.
-    private void checkValue(String name, Number value) {
+    // Checks one value: present and not negative.
+    private void checkValue(String name, Double value) {
         if (value == null) {
             throw new IllegalStateException("Pricing in the seed file is invalid: \"" + name + "\" is missing");
         }
