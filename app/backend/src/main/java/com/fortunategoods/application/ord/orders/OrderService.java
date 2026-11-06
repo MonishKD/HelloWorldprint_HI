@@ -269,13 +269,15 @@ public class OrderService {
 
         Order order = findOrder(orderId); // Find order from repo
         orderRepo.lockRestaurantQueue(order.getRestaurantId()); // Locks the queue using order's restaurant id
+        orderRepo.lockOrder(orderId);
         order = findOrder(orderId);
 
         // Current order status
         OrderStatus prev = order.getStatus();
         order.cancelOperator(); // accepted, preparing or ready otherwise it will throw domainRuleViolation
         OrderServiceResult result = saveTransition(orderId, order, prev);
-
+        dispatchService.cancelOrderAssignment(order);
+        
         // Use eventPublisher to let LedgerService know about the Order being cancelled, so it doesn't charge money
         eventPublisher.publishEvent(new OrderFinished(orderId, result.getStatus()));
         return result;

@@ -20,6 +20,7 @@ import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderStatus;
+import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.UserRole;
@@ -131,6 +132,51 @@ public class DispatchService {
             entries.add(new DispatchQueueEntry(waiting.order().getId(), restaurantName, waiting.readySince()));
         }
         return entries;
+    }
+
+    // Method to cancel an order and its assignment
+    @Transactional(propagation = Propagation.MANDATORY)
+    public DispatchResult cancelOrderAssignment(Order order) {
+        if (order == null || order.getStatus() != OrderStatus.CANCELLED) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Cancel the order before ending its assignment");
+        }
+
+        // Get all orders from DQ
+        List<DispatchQueue.WaitingOrder> waiting = orders.lockWaitingForDispatch();
+        couriers.lockAll(); // Lock all courier's current state
+        Assignment assignment = assignments.findActiveByOrder(order.getId()); // Find assignment associated with Order
+
+        if (assignment == null) {
+            if (order.getCourierId() != null) {
+                throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order has a courier but no active assignment");
+            }
+            return retryDispatch(waiting); // reload
+        }
+
+        // Get courier from the assignment, and fetch its status
+        String courierId = assignment.getCourierId();
+        CourierStatus current = couriers.lockStatusById(courierId);
+        if (current == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Courier not found");
+        }
+        // If courier's current status is ASSIGNED -> IDLE, else keep current status
+        CourierStatus next = assignment.courierStatusAfterCancellation(order, current);
+
+        // Cancel the assignment if it's not picked up, and not deliered
+        if (!assignments.markCancelled(assignment.getId())) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Assignment changed before it could be cancelled");
+        }
+        // Clear courier from assignment after cancellation
+        if (order.getCourierId() != null && !orders.clearCourierAfterCancellation(order.getId(), courierId)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Order's courier changed before cancellation");
+        }
+        // Update courier's current position
+        if (next != current && !couriers.updateStatusAndPosition(courierId, current, next, null, null)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Courier changed before it could be released");
+        }
+
+        order.setCourierId(null);
+        return retryDispatch(waiting);
     }
 
     // stillWaiting is oldest first: index 0 is position 1 in the dispatch queue.
