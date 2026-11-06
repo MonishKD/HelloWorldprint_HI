@@ -1,5 +1,6 @@
 package com.fortunategoods.application.prc.summary;
 
+import java.util.Locale;
 import java.util.Set;
 
 import com.fortunategoods.application.ord.execution.Command;
@@ -34,6 +35,7 @@ public final class GetOrderSummaryCommand implements Command<OrderSummaryRespons
     @Override
     public CommandSuccess<OrderSummaryResponse> execute() {
         OrderSummaryResponse summary = service.summaryOf(session, orderId);
-        return CommandSuccess.success(summary, "Summary of order " + orderId + " loaded: total $" + summary.getTotal());
+        String total = String.format(Locale.ROOT, "%.2f", summary.getTotalCents() / 100.0);
+        return CommandSuccess.success(summary, "Summary of order " + orderId + " loaded: total $" + total);
     }
 }

@@ -3,8 +3,6 @@ package com.fortunategoods.application.prc;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -174,23 +172,19 @@ public class LedgerService {
 
         List<OrderSummaryLineResponse> lines = new ArrayList<>();
         for (OrderLine line : order.getLines()) {
-            BigDecimal price = BigDecimal.valueOf(line.getPrice()).setScale(2, RoundingMode.HALF_UP);
-            lines.add(new OrderSummaryLineResponse(line.getName(), line.getQuantity(), price));
+            // The order line keeps dollars (29.99): rounded to cents the same way FareCalculator does, so it is exactly 2999
+            long priceCents = Math.round(line.getPrice() * 100);
+            lines.add(new OrderSummaryLineResponse(line.getName(), line.getQuantity(), priceCents));
         }
 
         Restaurant restaurant = restaurantRepo.findById(order.getRestaurantId());
         String restaurantName = restaurant == null ? null : restaurant.getName();
 
         return new OrderSummaryResponse(orderId, lines,
-                dollars(charge.getSubtotalCents()), dollars(charge.getDeliveryFeeCents()),
-                dollars(charge.getServiceFeeCents()), dollars(charge.getSurchargeCents()), dollars(charge.getAmountCents()),
+                charge.getSubtotalCents(), charge.getDeliveryFeeCents(),
+                charge.getServiceFeeCents(), charge.getSurchargeCents(), charge.getAmountCents(),
                 charge.getPlacedAt(), charge.getFinishedAt(), restaurantName,
                 userRepo.findDeliveringCourierName(orderId), order.getDeliveryAddress(),
                 orderRepo.findCardBrand(orderId), orderRepo.findCardLast4(orderId));
-    }
-
-    // The ledger keeps cents, the summary shows dollars: 1250 cents -> 12.50
-    private BigDecimal dollars(long cents) {
-        return BigDecimal.valueOf(cents, 2);
     }
 }

@@ -1,23 +1,22 @@
 package com.fortunategoods.application.prc.summary;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /*
     Class used to send a delivered order's summary to the frontend (#262, R-PRC-02).
     The fare parts and the total come from the order's CHARGE ledger entry, so the total is always
-    what was charged (#261). Money is in dollars with 2 decimals, like the item prices in lines.
+    what was charged (#261). Money is in cents, like the checkout (#259) and the history (#264).
     cardBrand and cardLast4 are empty for an order placed without card payment.
 */
 public class OrderSummaryResponse {
     private final String orderId;
     private final List<OrderSummaryLineResponse> lines;
-    private final BigDecimal subtotal;
-    private final BigDecimal deliveryFee;
-    private final BigDecimal serviceFee;
-    private final BigDecimal surcharge;
-    private final BigDecimal total;
+    private final long subtotalCents;
+    private final long deliveryFeeCents;
+    private final long serviceFeeCents;
+    private final long surchargeCents;
+    private final long totalCents;
     private final LocalDateTime placedAt;
     private final LocalDateTime deliveredAt;
     private final String restaurantName;
@@ -26,16 +25,16 @@ public class OrderSummaryResponse {
     private final String cardBrand;
     private final String cardLast4;
 
-    public OrderSummaryResponse(String orderId, List<OrderSummaryLineResponse> lines, BigDecimal subtotal, BigDecimal deliveryFee,
-            BigDecimal serviceFee, BigDecimal surcharge, BigDecimal total, LocalDateTime placedAt, LocalDateTime deliveredAt,
+    public OrderSummaryResponse(String orderId, List<OrderSummaryLineResponse> lines, long subtotalCents, long deliveryFeeCents,
+            long serviceFeeCents, long surchargeCents, long totalCents, LocalDateTime placedAt, LocalDateTime deliveredAt,
             String restaurantName, String courierName, String deliveryAddress, String cardBrand, String cardLast4) {
         this.orderId = orderId;
         this.lines = lines;
-        this.subtotal = subtotal;
-        this.deliveryFee = deliveryFee;
-        this.serviceFee = serviceFee;
-        this.surcharge = surcharge;
-        this.total = total;
+        this.subtotalCents = subtotalCents;
+        this.deliveryFeeCents = deliveryFeeCents;
+        this.serviceFeeCents = serviceFeeCents;
+        this.surchargeCents = surchargeCents;
+        this.totalCents = totalCents;
         this.placedAt = placedAt;
         this.deliveredAt = deliveredAt;
         this.restaurantName = restaurantName;
@@ -53,24 +52,24 @@ public class OrderSummaryResponse {
         return lines;
     }
 
-    public BigDecimal getSubtotal() {
-        return subtotal;
+    public long getSubtotalCents() {
+        return subtotalCents;
     }
 
-    public BigDecimal getDeliveryFee() {
-        return deliveryFee;
+    public long getDeliveryFeeCents() {
+        return deliveryFeeCents;
     }
 
-    public BigDecimal getServiceFee() {
-        return serviceFee;
+    public long getServiceFeeCents() {
+        return serviceFeeCents;
     }
 
-    public BigDecimal getSurcharge() {
-        return surcharge;
+    public long getSurchargeCents() {
+        return surchargeCents;
     }
 
-    public BigDecimal getTotal() {
-        return total;
+    public long getTotalCents() {
+        return totalCents;
     }
 
     public LocalDateTime getPlacedAt() {

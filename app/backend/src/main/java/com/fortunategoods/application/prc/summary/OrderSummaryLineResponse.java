@@ -1,20 +1,18 @@
 package com.fortunategoods.application.prc.summary;
 
-import java.math.BigDecimal;
-
 /*
-    One item line of an order summary (#262): { name, quantity, price }.
-    price is the price of one item, in dollars, as it was copied onto the order when it was placed.
+    One item line of an order summary (#262): { name, quantity, priceCents }.
+    priceCents is the price of one item, in cents, as it was copied onto the order when it was placed.
 */
 public class OrderSummaryLineResponse {
     private final String name;
     private final int quantity;
-    private final BigDecimal price;
+    private final long priceCents;
 
-    public OrderSummaryLineResponse(String name, int quantity, BigDecimal price) {
+    public OrderSummaryLineResponse(String name, int quantity, long priceCents) {
         this.name = name;
         this.quantity = quantity;
-        this.price = price;
+        this.priceCents = priceCents;
     }
 
     public String getName() {
@@ -25,7 +23,7 @@ public class OrderSummaryLineResponse {
         return quantity;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public long getPriceCents() {
+        return priceCents;
     }
 }
