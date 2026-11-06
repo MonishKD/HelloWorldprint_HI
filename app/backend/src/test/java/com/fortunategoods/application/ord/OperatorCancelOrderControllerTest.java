@@ -17,6 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fortunategoods.application.ord.orders.OrderController;
 import com.fortunategoods.application.ord.orders.OrderService;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
+import com.fortunategoods.application.ord.execution.CommandLog;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.user.UserRole;
@@ -49,6 +50,7 @@ class OperatorCancelOrderControllerTest {
         .andExpect(jsonPath("$.eventId").value(701));
 
         verify(service).operatorCancelOrder("9", UserRole.OPERATOR, "100");
+        verify(logs).save(argThat(log -> log.getResult() == CommandLog.Result.SUCCESS && Long.valueOf(701).equals(log.getEventId())));
     }
 
     @Test
@@ -63,7 +65,7 @@ class OperatorCancelOrderControllerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"INVALID,400", "NOT_FOUND,404", "CONFLICT,409"})
+    @CsvSource({"INVALID,400", "NOT_FOUND,404", "CONFLICT,409", "FORBIDDEN,403"})
     void serviceRefusalsUseSharedErrors(DomainRuleViolation.Reason reason, int httpStatus) throws Exception {
 
         when(service.operatorCancelOrder("9", UserRole.OPERATOR, "100")).thenThrow(new DomainRuleViolation(reason, "Cancellation refused"));
@@ -74,5 +76,14 @@ class OperatorCancelOrderControllerTest {
         .andExpect(status().is(httpStatus))
         .andExpect(jsonPath("$.code").value(reason.name()))
         .andExpect(jsonPath("$.message").value("Cancellation refused"));
+        verify(logs).save(argThat(log -> log.getResult() == CommandLog.Result.REFUSED));
+    }
+
+    @Test
+    void missingCsrfIsRefused() throws Exception {
+        mvc.perform(post(URL).with(loggedIn(9, UserRole.OPERATOR)))
+        .andExpect(status().isForbidden());
+
+        verifyNoInteractions(service);
     }
 }
