@@ -35,8 +35,22 @@ public class Fare {
         return totalCents;
     }
 
+    // Old spelling, still used by FareCalculatorTest. New code uses getSurchargeCents().
     public long getSutchargeCents() {
         return surchargeCents;
+    }
+
+    public long getSurchargeCents() {
+        return surchargeCents;
+    }
+
+    // The fare's parts for the checkout breakdown and the ledger (#259, #260, #261)
+    public long getDeliveryFeeCents() {
+        return deliveryFeeCents;
+    }
+
+    public long getServiceFeeCents() {
+        return serviceFeeCents;
     }
 
 

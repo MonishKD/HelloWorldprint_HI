@@ -117,8 +117,21 @@ class OrderCommandsTest {
 
         assertEquals(Set.of(UserRole.RESTAURANT), command.validRoles());
         assertEquals("ready", result.getData().getStatus());
-        assertEquals("Order marked ready.", result.getMsg());
+        assertEquals("Order marked ready. No courier is free for it, so it is waiting in the dispatch queue.", result.getMsg());
+        assertEquals("waiting", result.getData().getDispatchStatus());
         assertEquals(701L, result.getEventId());
+    }
+
+    @Test
+    void readyCommandReportsOfferedCourier() {
+        when(service.markAsReadyOrder("8", UserRole.RESTAURANT, "100"))
+            .thenReturn(new OrderServiceResult("100", OrderStatus.READY, 701, null, "15"));
+
+        var result = new ReadyOrderCommand(service, staff, "100").execute();
+
+        assertEquals("15", result.getData().getOfferedCourierId());
+        assertEquals("offered", result.getData().getDispatchStatus());
+        assertEquals("Order marked ready. Offered to courier 15", result.getMsg());
     }
 
     // A refused role never reaches OrderService, for every order command.

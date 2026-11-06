@@ -3,14 +3,7 @@ package com.fortunategoods.domain.order;
 import java.util.List;
 import java.util.Objects;
 
-import com.fortunategoods.domain.order.state.AcceptedState;
-import com.fortunategoods.domain.order.state.BaseOrderState;
-import com.fortunategoods.domain.order.state.CanceledState;
-import com.fortunategoods.domain.order.state.OrderState;
-import com.fortunategoods.domain.order.state.PlacedState;
-import com.fortunategoods.domain.order.state.PreparingState;
-import com.fortunategoods.domain.order.state.ReadyState;
-import com.fortunategoods.domain.order.state.RejectedState;
+import com.fortunategoods.domain.order.state.*;
 
 public class Order {
 
@@ -89,6 +82,12 @@ public class Order {
                 return new RejectedState();
             case CANCELLED:
                 return new CanceledState();
+            case PICKED_UP:
+                return new PickedUpState();
+            case DELIVERED:
+                return new DeliveredState();
+            case REFUNDED:
+                return new RefundedState();
             default:
                 return new BaseOrderState() {
                     @Override 
@@ -219,6 +218,28 @@ public class Order {
         markReady();
     }
 
+    public void pickUpFromReady(){
+        if (status != OrderStatus.READY){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "only orders that are ready can be picked up");
+        }
+        pickUp();
+    }
+
+     public void deliverFromPickedUp(){
+        if (status != OrderStatus.PICKED_UP){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "only orders that are picked up can be delivered");
+        }
+        deliver();
+    }
+
+
+     public void refundFromDelivered(){
+        if (status != OrderStatus.DELIVERED){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "only orders that are delivered can be refunded");
+        }
+        refund();
+    }
+
     //adding the state functins
     public void accept(){
         state.accept(this);
@@ -239,6 +260,18 @@ public class Order {
     }
     public void cancel(){
         state.cancel(this);
+    }
+
+    public void pickUp(){
+        state.pickUp(this);
+    }
+
+    public void deliver(){
+        state.deliver(this);
+    }
+
+    public void refund(){
+        state.refund(this);
     }
 
 }
