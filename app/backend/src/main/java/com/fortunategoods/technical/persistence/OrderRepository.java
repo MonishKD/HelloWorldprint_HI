@@ -95,6 +95,12 @@ public class OrderRepository {
         return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId));
     }
 
+    // Every order, oldest first, whatever its status (operator all-orders read, #274).
+    public List<Order> findAll() {
+        String sql = "SELECT * FROM orders ORDER BY id";
+        return jdbc.query(sql, (row, rowNumber) -> toOrder(row));
+    }
+
     // Returns a customer's orders, newest first.
     public List<Order> findByCustomerId(String customerId) {
         String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id DESC";
@@ -187,6 +193,18 @@ public class OrderRepository {
     // The Stripe payment of this order, or null when it was placed without card payment.
     public String findPaymentId(String orderId) {
         List<String> found = jdbc.queryForList("SELECT payment_intent_id FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // The brand of the card that paid this order (for example "visa"), or null when it was placed without card payment.
+    public String findCardBrand(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT card_brand FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // The last 4 digits of the card that paid this order, or null when it was placed without card payment.
+    public String findCardLast4(String orderId) {
+        List<String> found = jdbc.queryForList("SELECT card_last4 FROM orders WHERE id = ?", String.class, Integer.parseInt(orderId));
         return found.isEmpty() ? null : found.get(0);
     }
 

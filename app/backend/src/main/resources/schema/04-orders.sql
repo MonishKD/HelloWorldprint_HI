@@ -1,4 +1,4 @@
--- Orders, order lines, order events, order history and assignment tables
+-- Orders, order lines, order events and assignment tables
 -- For Issue #23
 -- Runs for every startup but uses CREATE TABLE IF NOT EXISTS so it doesnt drop. (Seeding at issue #25/#26)
 -- Depends on 01, 02, 03 sql schemas
@@ -7,7 +7,7 @@
 -- Technical Services only stores the current status. Which status can follow which is Domain (R-ORD-04).
 -- courier, delivery address / coordinates and reject reason can be empty since Phase II does not always fill them.
 -- There is no created_at here: when the order was placed is the time of its first event in order_events.
--- The total is not stored either, it is computed from the lines (it is only saved at the end, in order_history).
+-- The total is not stored either, it is computed from the lines (it is only saved at the end, in ledger_entries, see 06-ledger.sql).
 CREATE TABLE IF NOT EXISTS orders (
     id                    SERIAL PRIMARY KEY,
     customer_id           INTEGER      NOT NULL REFERENCES customers (user_id),
@@ -48,14 +48,6 @@ CREATE TABLE IF NOT EXISTS order_events (
     new_status         VARCHAR(20) NOT NULL CHECK (new_status IN ('PLACED', 'ACCEPTED', 'PREPARING', 'READY',
                            'PICKED_UP', 'DELIVERED', 'REJECTED', 'CANCELLED', 'REFUNDED')),
     created_at         TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
--- Phase III. One row per order once it is finished, nothing writes to it in Phase II.
-CREATE TABLE IF NOT EXISTS order_history (
-    order_id       INTEGER PRIMARY KEY REFERENCES orders (id),
-    final_status   VARCHAR(20) CHECK (final_status IN ('PLACED', 'ACCEPTED', 'PREPARING', 'READY',
-                       'PICKED_UP', 'DELIVERED', 'REJECTED', 'CANCELLED', 'REFUNDED')),
-    total_charges  DECIMAL(10, 2)
 );
 
 -- Phase III. Links a courier to the order they deliver, nothing writes to it in Phase II.

@@ -1,4 +1,10 @@
 {
+  "pricing": {
+    "deliveryFee": 2.99,
+    "serviceFeePercent": 10,
+    "smallOrderThreshold": 15.00,
+    "smallOrderSurcharge": 2.00
+  },
   "accounts": [
     { "username": "alice",       "email": "alice@example.com",       "password": "demo123", "role": "CUSTOMER" },
     { "username": "bob",         "email": "bob@example.com",         "password": "demo123", "role": "CUSTOMER" },
@@ -15,7 +21,10 @@
     { "username": "pizzeriaguy", "email": "pizzeriaguy@example.com",   "password": "demo123", "role": "RESTAURANT" },
     { "username": "bagelclark",  "email": "bagelclark@example.com",    "password": "demo123", "role": "RESTAURANT" },
     { "username": "sushibishop", "email": "sushibishop@example.com",   "password": "demo123", "role": "RESTAURANT" },
-    { "username": "taqueria",    "email": "taqueria@example.com",      "password": "demo123", "role": "RESTAURANT" }
+    { "username": "taqueria",    "email": "taqueria@example.com",      "password": "demo123", "role": "RESTAURANT" },
+    { "username": "dana",        "email": "dana@example.com",          "password": "demo123", "role": "COURIER" },
+    { "username": "eli",         "email": "eli@example.com",           "password": "demo123", "role": "COURIER" },
+    { "username": "fay",         "email": "fay@example.com",           "password": "demo123", "role": "COURIER" }
   ],
   "restaurants": [
     {
@@ -107,5 +116,15 @@
         { "id": "tp-2", "name": "Churros", "description": "With chocolate sauce.", "price": 3.00, "originalPrice": 6.50, "status": "SOLD_OUT" }
       ]
     }
+  ],
+  "customers": [
+    { "account": "alice", "name": "Alice Tremblay", "address": "1600 Rue Saint-Hubert, Montréal", "latitude": 45.5163, "longitude": -73.5617 },
+    { "account": "bob",   "name": "Bob Gagnon",     "address": "1830 Rue Tupper, Montréal",       "latitude": 45.4928, "longitude": -73.5788 }
+  ],
+  "couriers": [
+    { "account": "carl", "name": "Carl Bouchard", "latitude": 45.4957, "longitude": -73.5793, "status": "IDLE" },
+    { "account": "dana", "name": "Dana Roy",      "latitude": 45.5146, "longitude": -73.5684, "status": "IDLE" },
+    { "account": "eli",  "name": "Eli Côté",      "latitude": 45.5146, "longitude": -73.5598, "status": "IDLE" },
+    { "account": "fay",  "name": "Fay Leblanc",   "latitude": 45.5125, "longitude": -73.5694, "status": "OFFLINE" }
   ]
 }
