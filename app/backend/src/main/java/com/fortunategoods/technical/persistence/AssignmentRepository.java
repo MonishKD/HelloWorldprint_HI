@@ -103,4 +103,14 @@ public class AssignmentRepository {
         AND is_picked_up = TRUE AND is_delivered = FALSE
         """, Integer.parseInt(assignmentId)) == 1;
     }
+    
+    // Thread-lock method to set status of an order to reassign
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markReassigned(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET status = 'REASSIGNED'
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
 }
