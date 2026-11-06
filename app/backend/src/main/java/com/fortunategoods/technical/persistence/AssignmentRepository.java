@@ -62,4 +62,45 @@ public class AssignmentRepository {
 
         return new Assignment(String.valueOf(id), offer.getOrderId(), offer.getCourierId(), offer.getStatus(), offer.isPickedUp(), offer.isDelivered());
     }
+
+    // Method to find active assignments by courier_id
+    public Assignment findActiveByCourier(String courierId) {
+        String sql = """
+        SELECT * FROM assignments
+        WHERE courier_id = ?
+        AND status IN ('OFFERED', 'ACCEPTED')
+        AND is_delivered = FALSE
+        """;
+
+        List<Assignment> found = jdbc.query(sql, (row, number) -> new Assignment(
+            row.getString("id"),
+            row.getString("order_id"),
+            row.getString("courier_id"),
+            Assignment.Status.valueOf(row.getString("status")),
+            row.getBoolean("is_picked_up"),
+            row.getBoolean("is_delivered")
+        ), Integer.parseInt(courierId));
+
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // Method to change assignment pickedUp boolean to True
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markPickedUp(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET is_picked_up = TRUE
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
+
+    // Method to change assignment isDelivered boolean to True
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markDelivered(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET is_delivered = TRUE
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = TRUE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
 }
