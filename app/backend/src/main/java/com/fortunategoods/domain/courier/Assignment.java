@@ -2,6 +2,7 @@ package com.fortunategoods.domain.courier;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrderStatus;
 /*
     Assignment class represents the link between an Order and a Courier
 */
@@ -51,6 +52,15 @@ public class Assignment {
 
         if (status != Status.ACCEPTED || !pickedUp || delivered) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Delivery requires an accepted assignment that has been picked up and not delivered");
+        }
+    }
+
+    // Method that checks if order is ready accepted, idle courier, not picked up and not delivered
+    public void requireReassignmentAllowed(Order order, CourierStatus courierStatus) {
+        requireOrder(order);
+
+        if (status != Status.ACCEPTED || pickedUp || delivered || order.getStatus() != OrderStatus.READY || courierStatus != CourierStatus.OFFLINE) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Only an order accepted by an offline courier and not yet picked up can be reassigned");
         }
     }
     
