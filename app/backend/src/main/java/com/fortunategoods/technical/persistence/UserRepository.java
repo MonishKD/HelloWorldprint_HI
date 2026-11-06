@@ -115,6 +115,18 @@ public class UserRepository {
         return found.get(0);
     }
 
+    // The name a courier is shown by (couriers.name), or their username when they have no name saved.
+    // null if the user doesn't exist. Used for the current courier in the operator's all-orders read (#274).
+    public String findCourierName(String userId) {
+        String sql = "SELECT COALESCE(couriers.name, users.username) FROM users "
+                + "LEFT JOIN couriers ON couriers.user_id = users.id WHERE users.id = ?";
+        List<String> found = jdbc.queryForList(sql, String.class, Integer.parseInt(userId));
+        if (found.isEmpty()) {
+            return null;
+        }
+        return found.get(0);
+    }
+
     // The name of the courier who delivered this order (couriers.name, or their username when they have no name saved).
     // Who delivered an order is in assignments. null when no courier delivered it. Used by the order summary (#262).
     public String findDeliveringCourierName(String orderId) {

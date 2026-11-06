@@ -89,7 +89,9 @@ public class DashboardService {
             // The courier comes from the order's active assignment (offered or accepted, not delivered yet)
             Assignment active = assignmentRepository.findActiveByOrder(order.getId());
             String courierId = active == null ? null : active.getCourierId();
-            responses.add(new OperatorOrderResponse(DashboardOrder.of(order), courierId));
+            String courierName = courierId == null ? null : userRepository.findCourierName(courierId);
+            responses.add(new OperatorOrderResponse(DashboardOrder.of(order), restaurantName(order.getRestaurantId()),
+                    courierId, courierName));
         }
         return List.copyOf(responses);
     }
