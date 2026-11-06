@@ -5,6 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.fortunategoods.domain.order.DomainRuleViolation;
+import com.fortunategoods.domain.order.Order;
+import com.fortunategoods.domain.order.OrderStatus;
+
+import static com.fortunategoods.testsupport.TestData.order;
 
 class AssignmentTest {
     @Test
@@ -64,6 +68,21 @@ class AssignmentTest {
         assertEquals(DomainRuleViolation.Reason.CONFLICT, repeatedPickup.getReason());
         assertEquals(DomainRuleViolation.Reason.CONFLICT, pickupAfterDelivery.getReason());
         assertEquals(DomainRuleViolation.Reason.CONFLICT, repeatedDelivery.getReason());
+    }
+
+    @Test
+    void orderMustMatchAssignmentAndCourier() {
+        Assignment assignment = assignment(Assignment.Status.ACCEPTED, false, false);
+        Order existing = order("100", OrderStatus.READY);
+        existing.setCourierId("15");
+        assertDoesNotThrow(() -> assignment.requireOrder(existing));
+
+        existing.setCourierId("16");
+        assertThrows(DomainRuleViolation.class, () -> assignment.requireOrder(existing));
+        Order other = order("101", OrderStatus.READY);
+        other.setCourierId("15");
+        assertThrows(DomainRuleViolation.class, () -> assignment.requireOrder(other));
+        assertThrows(DomainRuleViolation.class, () -> assignment.requireOrder(null));
     }
 
     private Assignment assignment(Assignment.Status status, boolean pickedUp, boolean delivered) {

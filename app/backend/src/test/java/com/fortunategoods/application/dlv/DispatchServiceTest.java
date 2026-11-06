@@ -157,7 +157,7 @@ class DispatchServiceTest {
     @Test
     void readingTheQueueOffersNothing() {
         givenRestaurant();
-        givenWaiting(waiting("100", 0));
+        when(orders.findWaitingForDispatch()).thenReturn(List.of(waiting("100", 0)));
 
         DispatchQueueEntry first = service.dispatchQueue(UserRole.OPERATOR).get(0);
 

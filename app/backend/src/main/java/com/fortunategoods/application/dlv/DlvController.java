@@ -2,8 +2,6 @@ package com.fortunategoods.application.dlv;
 
 import java.util.List;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -41,14 +39,14 @@ public class DlvController {
         return ResponseEntity.ok(invoker.process(new GetDispatchQueueCommand(dispatchService, session), session));
     }
 
-    // Confirm pick up endpoint (operators only or else 403)
+    // Confirm pick up endpoint (couriers only or else 403)
     @PostMapping("/api/couriers/me/order/pickup")
     public ResponseEntity<CommandSuccess<HandoffResponse>> confirmPickup() {
         Session session = sessionValidator.currentSession();
         return ResponseEntity.ok(invoker.process(new ConfirmPickupCommand(deliveryService, session), session));
     }
 
-    // Confirm delivery endpoint (operators only or else 403)
+    // Confirm delivery endpoint (couriers only or else 403)
     @PostMapping("/api/couriers/me/order/deliver")
     public ResponseEntity<CommandSuccess<HandoffResponse>> confirmDelivery() {
         Session session = sessionValidator.currentSession();
