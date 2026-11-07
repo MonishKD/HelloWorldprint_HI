@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fortunategoods.domain.courier.PotentialCourier;
+import com.fortunategoods.domain.courier.Courier;
 import com.fortunategoods.domain.courier.CourierStatus;
 
 /*
@@ -51,6 +52,27 @@ public class CourierRepository {
             return new PotentialCourier(row.getString("user_id"), latitude, longitude);
         });
     }
+
+    //searches for a courier by their ID 
+    public Courier findById(String courierID){
+        List<Courier> found = jdbc.query("""
+        SELECT * FROM couriers 
+        WHERE user_id = ?
+        """, 
+        (row, number) -> {
+            String id = row.getString("user_id");
+            String name = row.getString("name");
+            Double latitude = row.getObject("latitude", Double.class);
+            Double longitude = row.getObject("longitude", Double.class);
+            String checkStatus = row.getString("status");
+            CourierStatus status = checkStatus == null ? CourierStatus.OFFLINE : CourierStatus.valueOf(checkStatus);
+            return new Courier(id, name, latitude, longitude, status);
+        },
+        Integer.parseInt(courierID));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+
 
     // Transactional thread-lock method that finds all couriers using the courier id
     @Transactional(propagation = Propagation.MANDATORY)
