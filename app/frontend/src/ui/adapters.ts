@@ -6,6 +6,7 @@
 //   - coordinates are `latitude` / `longitude` (and `deliveryLatitude` / `deliveryLongitude`), `lat` / `lng` here
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
+//   - times come without a zone (`2026-11-07T22:04:35`) and are UTC: read through `time()`
 // Adjust here, and only here, when a response changes.
 import type { CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
@@ -18,6 +19,14 @@ const text = (value: unknown, fallback = ''): string => (value === null || value
 const optionalText = (value: unknown): string | undefined => (value === null || value === undefined || value === '' ? undefined : String(value));
 /** DECIMAL columns may arrive as numbers or strings; empty stays undefined. */
 const optionalNumber = (value: unknown): number | undefined => (value === null || value === undefined || value === '' ? undefined : Number(value));
+/**
+ * The backend's times are LocalDateTime: no zone, and its clock is UTC (Docker), so they are read as UTC, like the
+ * console does (toLogEntry). Without this the browser reads them as local time and they land hours in the future.
+ */
+const time = (value: unknown): string | undefined => {
+  const t = optionalText(value);
+  return t && !/(Z|[+-]\d\d:\d\d)$/.test(t) ? `${t}Z` : t;
+};
 
 /** Frontend enum value -> what the backend expects (`'picked_up'` -> `'PICKED_UP'`), for request bodies. */
 export const toBackendEnum = (value: string): string => value.toUpperCase();
@@ -88,11 +97,11 @@ export function toOrder(j: Raw): Order {
     specialInstructions: text(j.instructions ?? j.specialInstructions),
     status: lower<OrderStatus>(j.status),
     total: optionalNumber(j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
-    createdAt: text(j.createdAt),
+    createdAt: time(j.createdAt) ?? '',
     rejectReason: optionalText(j.rejectReason),
     courierId: optionalText(j.courierId),
     courierName: optionalText(j.courierName),
-    pickedUpAt: optionalText(j.pickedUpAt),
+    pickedUpAt: time(j.pickedUpAt),
   };
 }
 
@@ -128,7 +137,7 @@ function toCourierJob(j: Raw): CourierJob {
     donation: Boolean(j.shelterId),
     lines: (j.lines ?? []).map((l: Raw) => ({ name: text(l.name), quantity: Number(l.quantity) })),
     specialInstructions: text(j.instructions),
-    pickedUpAt: optionalText(j.pickedUpAt),
+    pickedUpAt: time(j.pickedUpAt),
   };
 }
 
@@ -146,7 +155,7 @@ export function toReadyOrder(j: Raw): ReadyOrder {
     restaurantName: text(j.restaurantName),
     pickupAddress: text(j.pickupAddress),
     itemCount: Number(j.itemCount),
-    readyAt: text(j.readyAt),
+    readyAt: time(j.readyAt) ?? '',
   };
 }
 
@@ -155,7 +164,7 @@ export function toCourierDelivery(j: Raw): CourierDelivery {
     orderId: text(j.orderId),
     restaurantName: text(j.restaurantName),
     destinationName: text(j.destinationName),
-    deliveredAt: text(j.deliveredAt),
+    deliveredAt: time(j.deliveredAt) ?? '',
   };
 }
 
@@ -178,7 +187,7 @@ export function toCityView(j: Raw): CityView {
 }
 
 export function toWaitingOrder(j: Raw): WaitingOrder {
-  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), waitingSince: text(j.waitingSince) };
+  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), waitingSince: time(j.waitingSince) ?? '' };
 }
 
 export function toStalledOrder(j: Raw): StalledOrder {
