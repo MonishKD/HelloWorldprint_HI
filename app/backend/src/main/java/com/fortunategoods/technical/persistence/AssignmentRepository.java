@@ -63,6 +63,19 @@ public class AssignmentRepository {
         return new Assignment(String.valueOf(id), offer.getOrderId(), offer.getCourierId(), offer.getStatus(), offer.isPickedUp(), offer.isDelivered());
     }
 
+    // Method that changes the status of a given assignment directly to the database with JDBC
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean setStatus(Assignment.Status newStatus, Assignment.Status currentStatus, String assignmentID)
+    {
+        //? represents the parameters that are passed to this method, as shown at the bottom of this method, with the first ? being the first parameter, the second ? being the second parameter, etc.
+        return jdbc.update("""
+        UPDATE assignments SET status = ?
+        WHERE status = ? AND id = ?
+        """, newStatus.name(), currentStatus.name(), Integer.parseInt(assignmentID)) == 1;
+
+    }
+
+
     // Method to find active assignments by courier_id
     public Assignment findActiveByCourier(String courierId) {
         String sql = """

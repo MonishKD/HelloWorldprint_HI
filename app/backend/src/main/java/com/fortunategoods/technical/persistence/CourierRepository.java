@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fortunategoods.domain.courier.PotentialCourier;
+import com.fortunategoods.domain.courier.Courier;
 import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.domain.courier.OnDutyCourier;
 
@@ -53,6 +54,27 @@ public class CourierRepository {
         });
     }
 
+    //searches for a courier by their ID 
+    public Courier findById(String courierID){
+        List<Courier> found = jdbc.query("""
+        SELECT * FROM couriers 
+        WHERE user_id = ?
+        """, 
+        (row, number) -> {
+            String id = row.getString("user_id");
+            String name = row.getString("name");
+            Double latitude = row.getObject("latitude", Double.class);
+            Double longitude = row.getObject("longitude", Double.class);
+            String checkStatus = row.getString("status");
+            CourierStatus status = checkStatus == null ? CourierStatus.OFFLINE : CourierStatus.valueOf(checkStatus);
+            return new Courier(id, name, latitude, longitude, status);
+        },
+        Integer.parseInt(courierID));
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+
+
     // Transactional thread-lock method that finds all couriers using the courier id
     @Transactional(propagation = Propagation.MANDATORY)
     public void lockAll() {
@@ -78,7 +100,7 @@ public class CourierRepository {
         SET status = ?,
             latitude = COALESCE(?, latitude),
             longitude = COALESCE(?, longitude)
-        WHERE user_id = ? AND status = ?
+        WHERE user_id = ? AND COALESCE(status, 'OFFLINE') = ?
         """; // COALESCE helps to either change it to the latitude/longitude set, or keep their current location if null
 
         return jdbc.update(sql, next.name(), latitude, longitude, Integer.parseInt(courierId), expected.name()) == 1;
