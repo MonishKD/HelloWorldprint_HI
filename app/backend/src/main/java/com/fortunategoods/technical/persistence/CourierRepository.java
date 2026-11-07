@@ -99,7 +99,7 @@ public class CourierRepository {
         SET status = ?,
             latitude = COALESCE(?, latitude),
             longitude = COALESCE(?, longitude)
-        WHERE user_id = ? AND status = ?
+        WHERE user_id = ? AND COALESCE(status, 'OFFLINE') = ?
         """; // COALESCE helps to either change it to the latitude/longitude set, or keep their current location if null
 
         return jdbc.update(sql, next.name(), latitude, longitude, Integer.parseInt(courierId), expected.name()) == 1;
