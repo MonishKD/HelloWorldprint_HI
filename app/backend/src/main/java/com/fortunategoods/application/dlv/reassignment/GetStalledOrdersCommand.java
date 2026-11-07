@@ -28,4 +28,9 @@ public class GetStalledOrdersCommand implements Command<List<StalledOrderRespons
         List<StalledOrderResponse> result = service.stalledOrders(String.valueOf(session.getUserID()), session.getRole());
         return CommandSuccess.success(result, result.size() + " stalled orders");
     }
+
+    @Override
+    public boolean logsSuccess() {
+        return false;
+    }
 }

@@ -14,10 +14,12 @@ import com.fortunategoods.domain.courier.Assignment;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrdModulePermissions;
+import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.AssignmentRepository;
+import com.fortunategoods.technical.persistence.CourierRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -34,15 +36,17 @@ public class DashboardService {
     private final RestaurantRepository restaurantRepository;
     private final RestaurantOrderService restaurantOrderService; // already builds the queue for one restaurant
     private final AssignmentRepository assignmentRepository; // which courier has an order right now
+    private final CourierRepository courierRepository;
 
     public DashboardService(OrderRepository orderRepository, UserRepository userRepository,
             RestaurantRepository restaurantRepository, RestaurantOrderService restaurantOrderService,
-            AssignmentRepository assignmentRepository) {
+            AssignmentRepository assignmentRepository, CourierRepository courierRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantOrderService = restaurantOrderService;
         this.assignmentRepository = assignmentRepository;
+        this.courierRepository = courierRepository;
     }
 
     // Throws FORBIDDEN for any other role. No orders yet gives an empty list.
@@ -94,6 +98,21 @@ public class DashboardService {
                     courierId, courierName));
         }
         return List.copyOf(responses);
+    }
+
+    // Throws FORBIDDEN for a missing role. An empty city gives empty lists.
+    public CityView cityView(UserRole role) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.viewCityRoles(), "Sign in to see the city");
+
+        Map<String, Map<OrderStatus, Integer>> counts = orderRepository.orderCount();
+        List<CityView.CityRestaurant> restaurants = new ArrayList<>();
+        for (Restaurant restaurant : restaurantRepository.findAll()) {
+            Map<OrderStatus, Integer> count = counts.getOrDefault(restaurant.getId(), Map.of());
+            restaurants.add(new CityView.CityRestaurant(restaurant.getId(), restaurant.getName(), restaurant.getStatus(),
+                restaurant.getLatitude(), restaurant.getLongitude(), count.getOrDefault(OrderStatus.ACCEPTED, 0),
+                count.getOrDefault(OrderStatus.PREPARING, 0), count.getOrDefault(OrderStatus.READY, 0)));
+        }
+        return new CityView(restaurants, courierRepository.findOnDuty());
     }
 
     // null when the restaurant no longer exists.

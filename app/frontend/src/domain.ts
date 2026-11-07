@@ -40,6 +40,49 @@ export interface CourierLocation {
   courierState: CourierState;
 }
 
+/** What a courier sees of an order: where and what, never prices or payment details. */
+export interface CourierJob {
+  orderId: string;
+  status: OrderStatus;
+  restaurantName: string;
+  pickupAddress: string;
+  pickupLat?: number;
+  pickupLng?: number;
+  /** The customer, or the shelter when the order is a donation. */
+  destinationName: string;
+  destinationAddress: string;
+  destinationLat?: number;
+  destinationLng?: number;
+  donation: boolean;
+  lines: { name: string; quantity: number }[];
+  specialInstructions: string;
+  pickedUpAt?: string;
+}
+
+/** Everything the courier dashboard shows: a courier holds at most one offer or one order (R-DLV-03). */
+export interface CourierDashboard {
+  state: CourierState;
+  offer: CourierJob | null;
+  order: CourierJob | null;
+}
+
+/** An order any restaurant has ready, for the courier's overview. Who takes it is decided by the dispatch rule (R-DLV-02). */
+export interface ReadyOrder {
+  orderId: string;
+  restaurantName: string;
+  pickupAddress: string;
+  itemCount: number;
+  readyAt: string;
+}
+
+/** One row of a courier's history (R-PRC-04): deliveries they carried, with no money fields. */
+export interface CourierDelivery {
+  orderId: string;
+  restaurantName: string;
+  destinationName: string;
+  deliveredAt: string;
+}
+
 export interface Restaurant {
   id: string;
   name: string;
@@ -54,6 +97,29 @@ export interface Restaurant {
   rating?: number;
   distanceKm?: number;
   pickupWindow?: string;
+}
+
+/** A restaurant in the city read (#268), with its order counts by stage. */
+export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number };
+
+/** The state of the city (#268): no customer or payment data, so every role can read it. Only on-duty couriers are in it. */
+export interface CityView {
+  restaurants: CityRestaurant[];
+  couriers: CourierLocation[];
+}
+
+/** An order in the dispatch queue: ready, with no courier to take it yet (R-DLV-04). */
+export interface WaitingOrder {
+  orderId: string;
+  restaurantName: string;
+  waitingSince: string;
+}
+
+/** Accepted and not picked up, and the courier went offline (#219). Only an operator can reassign it. */
+export interface StalledOrder {
+  orderId: string;
+  restaurantName: string;
+  courierName: string;
 }
 
 export interface MenuItem {

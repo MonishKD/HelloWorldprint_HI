@@ -3,7 +3,10 @@ package com.fortunategoods.technical.persistence;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -286,6 +289,24 @@ public class OrderRepository {
         UPDATE orders SET courier_id = NULL
         WHERE id = ? AND courier_id = ? AND status = 'READY'
         """, Integer.parseInt(orderId), Integer.parseInt(courierId)) == 1;
+    }
+
+    // How many orders each restaurant has in the accepted, preparing and ready statuses, by restaurant id.
+    // A restaurant with none of these orders is left out of the result.
+    public Map<String, Map<OrderStatus, Integer>> orderCount() {
+        String sql = """
+            SELECT restaurant_id, status, COUNT(*) AS total
+            FROM orders
+            WHERE status IN ('ACCEPTED', 'PREPARING', 'READY')
+            GROUP BY restaurant_id, status
+            """;
+
+        Map<String, Map<OrderStatus, Integer>> counts = new HashMap<>();
+        jdbc.query(sql, row -> {
+            counts.computeIfAbsent(row.getString("restaurant_id"), id -> new EnumMap<>(OrderStatus.class))
+                .put(OrderStatus.valueOf(row.getString("status")), row.getInt("total"));
+        });
+        return counts;
     }
 
     // Thread-lock method to remove courier from order after assignment is cancelled

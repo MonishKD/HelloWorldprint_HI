@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import org.springframework.security.access.AccessDeniedException;
 
+import com.fortunategoods.application.ord.orders.OrderStatusResponse;
 import com.fortunategoods.application.ord.execution.Command;
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandLog;
@@ -25,7 +26,6 @@ import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
-import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
 import com.fortunategoods.application.ord.orders.ready.ReadyOrderCommand;
@@ -72,11 +72,11 @@ class OrderCommandsTest {
         when(service.cancelOrder("7", "100")).thenReturn(new OrderServiceResult("100", OrderStatus.CANCELLED, 701));
         CancelOrderCommand command = new CancelOrderCommand(service, customer, "100");
 
-        CommandSuccess<CancelOrderResponse> result = invoker.process(command, customer);
+        CommandSuccess<OrderStatusResponse> result = invoker.process(command, customer);
 
         assertEquals(Set.of(UserRole.CUSTOMER), command.validRoles());
-        assertEquals("100", result.getData().getOrderId());
-        assertEquals("cancelled", result.getData().getStatus());
+        assertEquals("100", result.getData().orderId());
+        assertEquals("cancelled", result.getData().status());
         assertEquals("Order cancelled.", result.getMsg());
         assertEquals(701L, result.getEventId());
     }

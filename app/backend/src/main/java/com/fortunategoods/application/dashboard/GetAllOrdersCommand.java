@@ -34,4 +34,9 @@ public class GetAllOrdersCommand implements Command<List<OperatorOrderResponse>>
         // Only a read: no state changes, so no eventId and no OrderEvent
         return CommandSuccess.success(orders, orders.size() + " orders loaded");
     }
+
+    @Override
+    public boolean logsSuccess() {
+        return false;
+    }
 }
