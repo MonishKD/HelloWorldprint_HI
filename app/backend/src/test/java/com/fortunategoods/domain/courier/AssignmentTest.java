@@ -85,6 +85,53 @@ class AssignmentTest {
         assertThrows(DomainRuleViolation.class, () -> assignment.requireOrder(null));
     }
 
+    @Test
+    void cancellationReleasesAssignedCouriersAndKeepsOfflineCouriersOffline() {
+        Order cancelled = order("100", OrderStatus.CANCELLED);
+        cancelled.setCourierId("15");
+        Assignment accepted = assignment(Assignment.Status.ACCEPTED, false, false);
+        assertEquals(CourierStatus.IDLE, accepted.courierStatusAfterCancellation(cancelled, CourierStatus.ASSIGNED));
+        assertEquals(CourierStatus.OFFLINE, accepted.courierStatusAfterCancellation(cancelled, CourierStatus.OFFLINE));
+
+        cancelled.setCourierId(null);
+        Assignment offered = assignment(Assignment.Status.OFFERED, false, false);
+        assertEquals(CourierStatus.IDLE, offered.courierStatusAfterCancellation(cancelled, CourierStatus.IDLE));
+        assertEquals(CourierStatus.OFFLINE, offered.courierStatusAfterCancellation(cancelled, CourierStatus.OFFLINE));
+    }
+
+    @Test
+    void endedOrPickedUpAssignmentsCannotBeCancelled() {
+        Order cancelled = order("100", OrderStatus.CANCELLED);
+        cancelled.setCourierId("15");
+        for (Assignment.Status status : Assignment.Status.values()) {
+            if (status == Assignment.Status.OFFERED || status == Assignment.Status.ACCEPTED) continue;
+            assertThrows(DomainRuleViolation.class, () -> assignment(status, false, false)
+                .courierStatusAfterCancellation(cancelled, CourierStatus.ASSIGNED));
+        }
+        assertThrows(DomainRuleViolation.class, () -> assignment(Assignment.Status.ACCEPTED, true, false)
+            .courierStatusAfterCancellation(cancelled, CourierStatus.CARRYING));
+        assertThrows(DomainRuleViolation.class, () -> assignment(Assignment.Status.ACCEPTED, false, true)
+            .courierStatusAfterCancellation(cancelled, CourierStatus.ASSIGNED));
+    }
+
+    @Test
+    void cancellationRequiresMatchingOrderAndCourierState() {
+        Order cancelled = order("100", OrderStatus.CANCELLED);
+        cancelled.setCourierId("15");
+        Assignment accepted = assignment(Assignment.Status.ACCEPTED, false, false);
+        assertThrows(DomainRuleViolation.class, () -> accepted.courierStatusAfterCancellation(cancelled, CourierStatus.IDLE));
+        assertThrows(DomainRuleViolation.class, () -> accepted.courierStatusAfterCancellation(null, CourierStatus.ASSIGNED));
+        assertThrows(DomainRuleViolation.class, () -> accepted.courierStatusAfterCancellation(order("100", OrderStatus.READY), CourierStatus.ASSIGNED));
+        assertThrows(DomainRuleViolation.class, () -> accepted.courierStatusAfterCancellation(order("101", OrderStatus.CANCELLED), CourierStatus.ASSIGNED));
+        cancelled.setCourierId("16");
+        assertThrows(DomainRuleViolation.class, () -> accepted.courierStatusAfterCancellation(cancelled, CourierStatus.ASSIGNED));
+
+        Assignment offered = assignment(Assignment.Status.OFFERED, false, false);
+        assertThrows(DomainRuleViolation.class, () -> offered.courierStatusAfterCancellation(cancelled, CourierStatus.IDLE));
+        cancelled.setCourierId(null);
+        assertThrows(DomainRuleViolation.class, () -> offered.courierStatusAfterCancellation(cancelled, CourierStatus.ASSIGNED));
+    }
+
     private Assignment assignment(Assignment.Status status, boolean pickedUp, boolean delivered) {
         return new Assignment("900", "100", "15", status, pickedUp, delivered);
     }
