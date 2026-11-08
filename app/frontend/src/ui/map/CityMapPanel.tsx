@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { Empty, LoadError, Loading, useLoad, usePolling } from '../common';
 import { getCityView, onCommandFinished } from '../dashboard/dashboardApi';
-import CityMap from './CityMap';
+import { CityMapWithDetails } from './RestaurantDetailsPanel';
 
 /** The city read on a map, for every dashboard. Reloads after each command and every few seconds. */
-export default function CityMapPanel({ onSelectRestaurant }: { onSelectRestaurant?: (restaurantId: string) => void }) {
+export default function CityMapPanel() {
   const { data, error, reload } = useLoad(getCityView, []);
   useEffect(() => onCommandFinished(reload), [reload]);
   usePolling(reload);
@@ -21,7 +21,7 @@ export default function CityMapPanel({ onSelectRestaurant }: { onSelectRestauran
           Restaurants and on-duty couriers will show up here.
         </Empty>
       ) : (
-        <CityMap restaurants={data.restaurants} couriers={data.couriers} onSelectRestaurant={onSelectRestaurant} />
+        <CityMapWithDetails restaurants={data.restaurants} couriers={data.couriers} />
       )}
     </section>
   );

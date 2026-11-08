@@ -120,3 +120,10 @@
 .map-unplaced { margin: 0; padding: 0 0.5rem 0.2rem; font-size: 0.8rem; color: var(--muted); }
 
 .eta { display: flex; align-items: center; gap: 0.45rem; font-weight: 700; font-size: 0.9rem; color: var(--route-fg); background: var(--route-bg); padding: 0.5rem 0.75rem; border-radius: 12px; }
+
+.restaurant-details { display: grid; gap: 0.6rem; margin-top: 0.75rem; }
+.restaurant-details p { margin: 0; }
+.restaurant-details-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
+.restaurant-details-head h3 { margin: 0; }
+.restaurant-details-head .btn { margin-left: auto; }
+.restaurant-queue { display: grid; gap: 0.3rem; margin: 0; padding-left: 1.2rem; }

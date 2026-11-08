@@ -100,7 +100,7 @@ export interface Restaurant {
 }
 
 /** A restaurant in the city read (#268), with its order counts by stage. */
-export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number };
+export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number; soldOutItems: string[] };
 
 /** The state of the city (#268): no customer or payment data, so every role can read it. Only on-duty couriers are in it. */
 export interface CityView {
