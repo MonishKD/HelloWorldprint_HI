@@ -1,8 +1,10 @@
 package com.fortunategoods.application.dashboard;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fortunategoods.domain.order.Order;
 
 /*
@@ -10,16 +12,24 @@ import com.fortunategoods.domain.order.Order;
     Status is lowercase, like every other response the frontend reads. The total is the sum of the lines.
 */
 public record DashboardOrder(String orderId, String restaurantId, String customerId, String status,
-        String instructions, String deliveryAddress, String rejectReason, List<Line> lines, double total) {
+        String instructions, String deliveryAddress, String rejectReason, List<Line> lines, double total,
+        // Left out when null: OperatorOrderResponse unwraps this record and writes its own courierName.
+        @JsonInclude(JsonInclude.Include.NON_NULL) String courierName,
+        LocalDateTime pickedUpAt, LocalDateTime deliveredAt, Double deliveryLat, Double deliveryLng) {
 
     public static DashboardOrder of(Order order) {
+        return of(order, OrderDelivery.NONE);
+    }
+
+    public static DashboardOrder of(Order order, OrderDelivery delivery) {
         List<Line> lines = order.getLines().stream()
                 .map(l -> new Line(l.getMenuItemId(), l.getName(), l.getPrice(), l.getOriginalPrice(), l.getQuantity()))
                 .toList();
         double total = lines.stream().mapToDouble(l -> l.price() * l.quantity()).sum();
         return new DashboardOrder(order.getId(), order.getRestaurantId(), order.getCustomerId(),
                 order.getStatus().name().toLowerCase(Locale.ROOT), order.getSpecialInstructions(),
-                order.getDeliveryAddress(), order.getRejectReason(), lines, total);
+                order.getDeliveryAddress(), order.getRejectReason(), lines, total, delivery.courierName(),
+                delivery.pickedUpAt(), delivery.deliveredAt(), delivery.deliveryLat(), delivery.deliveryLng());
     }
 
     // originalPrice is null when the item was not on discount.

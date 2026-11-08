@@ -28,7 +28,7 @@ import static com.fortunategoods.testsupport.TestData.order;
 
 // The dashboard routes, through the real security, CommandInvoker and DashboardService. Only the repositories are mocked.
 @SecuredControllerTest(DashboardController.class)
-@Import({DashboardService.class, OutputConsoleFeed.class})
+@Import({DashboardService.class, OutputConsoleFeed.class, OrderDeliveryReader.class})
 class DashboardControllerTest {
 
     @Autowired private MockMvc mvc;
@@ -39,6 +39,7 @@ class DashboardControllerTest {
     @MockitoBean private RestaurantOrderService restaurantOrders;
     @MockitoBean private CommandLogRepository logs;
     @MockitoBean private AssignmentRepository assignments;
+    @MockitoBean private OrderEventRepository orderEvents;
 
     // Used by GET /api/dashboard/orders, which DashboardOrdersRouteTest covers.
     @MockitoBean

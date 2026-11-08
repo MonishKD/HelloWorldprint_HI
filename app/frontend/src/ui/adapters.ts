@@ -102,6 +102,7 @@ export function toOrder(j: Raw): Order {
     courierId: optionalText(j.courierId),
     courierName: optionalText(j.courierName),
     pickedUpAt: time(j.pickedUpAt),
+    deliveredAt: time(j.deliveredAt),
   };
 }
 

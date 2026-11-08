@@ -126,8 +126,8 @@ public class OrderRepository {
                 OrderStatus.valueOf(row.getString("status")),
                 row.getString("special_instructions"),
                 row.getString("delivery_address"),
-                row.getDouble("delivery_latitude"),
-                row.getDouble("delivery_longitude"),
+                row.getObject("delivery_latitude", Double.class),
+                row.getObject("delivery_longitude", Double.class),
                 row.getString("reject_reason"),
                 findLines(id));
     }

@@ -15,12 +15,15 @@ import com.fortunategoods.technical.persistence.OrderRepository;
 @Service
 public class CustomerOrderList {
     private final OrderRepository orders;
+    private final OrderDeliveryReader deliveries;
 
-    public CustomerOrderList(OrderRepository orders) {
+    public CustomerOrderList(OrderRepository orders, OrderDeliveryReader deliveries) {
         this.orders = orders;
+        this.deliveries = deliveries;
     }
 
     public List<DashboardOrder> ordersOf(Session session) {
-        return orders.findByCustomer(String.valueOf(session.getUserID())).stream().map(DashboardOrder::of).toList();
+        return orders.findByCustomer(String.valueOf(session.getUserID())).stream()
+                .map(order -> DashboardOrder.of(order, deliveries.of(order))).toList();
     }
 }
