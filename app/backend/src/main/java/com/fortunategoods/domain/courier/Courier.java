@@ -1,5 +1,7 @@
 package com.fortunategoods.domain.courier;
 
+import com.fortunategoods.domain.order.DomainRuleViolation;
+
 public class Courier {
     private String courierID;
     private String name;
@@ -38,19 +40,22 @@ public class Courier {
     public void goOnDuty(){
         //check if on duty first
         if (status != CourierStatus.OFFLINE){
-            throw new IllegalStateException("Courier is already on duty!");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Courier is already on duty!");
         }
 
        //then check if courier has set their location 
         if (latitude == null || longitude == null){
-            throw new IllegalStateException("Courier should set their location before going on duty");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Courier should set their location before going on duty");
         }
         status = CourierStatus.IDLE;
     }
 
     public void goOffDuty(){
         if (status == CourierStatus.CARRYING){
-            throw new IllegalStateException("Courier cannot go off duty while carrying or delivering an order");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT,"Courier cannot go off duty while carrying or delivering an order");
+        }
+        if (status == CourierStatus.OFFLINE){
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "Courier is already offline/off duty");
         }
         status = CourierStatus.OFFLINE;
     }
