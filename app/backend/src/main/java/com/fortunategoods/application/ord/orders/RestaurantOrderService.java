@@ -58,12 +58,13 @@ public class RestaurantOrderService {
         // Verify ID validity
         OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(restaurantId, "Restaurant ID");
-        // Find staff's restaurant
-        String ownRestaurantId = users.findRestaurantIdByUserId(staffId);
-        // Compare PQ's restaurant to staff's restaurant
-        OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only view your own restaurant's queue");
+        // Staff only see their own restaurant's queue; the operator sees any restaurant's
+        if (role != UserRole.OPERATOR) {
+            String ownRestaurantId = users.findRestaurantIdByUserId(staffId);
+            OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only view your own restaurant's queue");
+        }
         // Create a PQ with all ACCEPTED orders from that restaurant
-        PreparationQueue queue = pq.forRestaurant(ownRestaurantId);
+        PreparationQueue queue = pq.forRestaurant(restaurantId);
         // Initialize an array to hold a response object for the PQs
         List<GetPreparationQueueResponse> result = new ArrayList<>();
 
