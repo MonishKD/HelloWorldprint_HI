@@ -92,8 +92,9 @@ public class OrdModulePermissions {
         return Set.of(UserRole.RESTAURANT);
     }
 
+    // The operator reads any restaurant's queue (Appendix A). The restaurant dashboard still refuses an operator: no restaurant is linked to them.
     public static Set<UserRole> viewPreparationQueueRoles() {
-        return Set.of(UserRole.RESTAURANT);
+        return Set.of(UserRole.RESTAURANT, UserRole.OPERATOR);
     }
 
     public static Set<UserRole> viewCityRoles() {

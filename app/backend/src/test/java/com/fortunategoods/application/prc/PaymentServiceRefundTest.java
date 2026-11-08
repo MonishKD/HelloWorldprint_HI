@@ -66,7 +66,7 @@ class PaymentServiceRefundTest {
         inOrder.verify(ledger).save(saved.capture());
         inOrder.verify(gateway).refund("pi_1");
         assertEquals(LedgerEntry.Type.REFUND, saved.getValue().getType());
-        assertEquals(1400, saved.getValue().getAmountCents());
+        assertEquals(-1400, saved.getValue().getAmountCents());
     }
 
     @Test

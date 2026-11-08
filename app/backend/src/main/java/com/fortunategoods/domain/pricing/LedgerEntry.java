@@ -51,10 +51,10 @@ public class LedgerEntry {
         return new LedgerEntry(orderId, Type.NO_CHARGE, finalStatus, 0, 0, 0, 0, 0, placedAt, finishedAt, null);
     }
 
-    // Same fare as the charge it gives back, with the refund's time. The amounts stay positive: the type says the money went back.
+    // The charge's fare negated, so the CHARGE and REFUND entries of an order add up to 0
     public static LedgerEntry refund(LedgerEntry charge, LocalDateTime refundedAt) {
-        return new LedgerEntry(charge.orderId, Type.REFUND, OrderStatus.REFUNDED, charge.subtotalCents, charge.deliveryFeeCents,
-                charge.serviceFeeCents, charge.surchargeCents, charge.amountCents, charge.placedAt, refundedAt, charge.paymentReference);
+        return new LedgerEntry(charge.orderId, Type.REFUND, OrderStatus.REFUNDED, -charge.subtotalCents, -charge.deliveryFeeCents,
+                -charge.serviceFeeCents, -charge.surchargeCents, -charge.amountCents, charge.placedAt, refundedAt, charge.paymentReference);
     }
 
     public String getOrderId() {
