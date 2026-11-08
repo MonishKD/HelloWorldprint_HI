@@ -62,7 +62,6 @@ class "Platform Operator" as PlatOp {
 class "Order" as Order {
     id: int
     status: OrderStatus
-    /totalCharges: double
     specialInstructions: String
 }
 
@@ -106,6 +105,13 @@ class "Assignment" as Offer {
     isDelivered: boolean
 }
 
+class "Fare" as Fare {
+    subtotalCents: long
+    deliveryFeeCents: long
+    serviceFeeCents: long
+    surchargeCents: long
+    /totalCents: long
+}
 
 '---------- List of associations/relationships -----------'
 User <|-- Courier
@@ -153,6 +159,8 @@ Restaurant "1" -down- "~*  " Order: "receives >"
 PlatOp "~*   " -up- "~*" Restaurant: "controls >"
 PlatOp "~*  " -down- "~*" Order: "oversees >" 
 
+'Order-Fares ==========================' 
+Order "1" -- "0..1" Fare : calculates <
 
 '-----List of possible enum classes: capitalize them??-------'
 enum "UserRoles" as UserRoles {
