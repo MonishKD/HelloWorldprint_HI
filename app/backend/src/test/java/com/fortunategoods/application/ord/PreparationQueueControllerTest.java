@@ -100,6 +100,17 @@ class PreparationQueueControllerTest {
     }
 
     @Test
+    void operatorViewsAnyRestaurantsQueue() throws Exception {
+        Order order = acceptedOrder(1, "2");
+        when(orders.findByRestaurantAndStatus("2", OrderStatus.ACCEPTED)).thenReturn(List.of(order));
+
+        mvc.perform(get("/api/restaurants/2/queue").with(loggedIn(5, UserRole.OPERATOR)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.data[0].orderId").value("101"));
+        verifyNoInteractions(users);
+    }
+
+    @Test
     void missingSessionAndWrongRoleAreRefused() throws Exception {
         mvc.perform(get("/api/restaurants/1/queue")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/restaurants/1/queue").with(loggedIn(8, UserRole.CUSTOMER))).andExpect(status().isForbidden());

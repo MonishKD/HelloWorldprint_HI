@@ -55,7 +55,7 @@ services:
             # The frontend's port, used to build the address the backend accepts requests from (CORS, see
             # app.cors.allowed-origin in application.properties). Must match the port the frontend is opened on.
             FRONTEND_PORT: ${FRONTEND_PORT:?Set FRONTEND_PORT in .env file. I know you forgot lol :P}
-            STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:?Set STRIPE_SECRET_KEY in .env file. I know you forgot the Stripe lol :P}
+            STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
         ports:
             # Left side = the door on your computer, right side = the backend's port inside the container. check in .env
             # This is what lets your browser reach the backend at localhost:8080.
@@ -76,7 +76,7 @@ services:
             #the addresses te frontend calls the backend at, this runs in your BROWSER, not inside docker.
             # so its localhost and port is published for the backend, not the service name "backend"
             VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in .env file. I know you forgot lol :P}
-            VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY:?Set VITE_STRIPE_PUBLISHABLE_KEY in .env file. I know you forgot lol :P}
+            VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY:-}
 
         ports:
             # Left side = the door on your computer, right side = the frontend's port inside the container.
