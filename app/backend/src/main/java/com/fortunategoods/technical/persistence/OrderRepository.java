@@ -12,10 +12,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
+
+import com.fortunategoods.domain.courier.CourierJob;
 import com.fortunategoods.domain.courier.DispatchQueue;
+import com.fortunategoods.domain.courier.ReadyOrderSummary;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
+
+import java.sql.Timestamp;
+
 
 // Places, finds and changes the status of orders in the database (#23).
 // Every status change also saves an event (R-ORD-05).
@@ -248,6 +254,80 @@ public class OrderRepository {
     public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() {
         return jdbc.query(WAITING_FOR_DISPATCH_SQL, (row, number) -> toWaitingOrder(row));
     }
+
+    public List<ReadyOrderSummary> findReadyOrdersForCourier() {
+        String sql = """
+        SELECT o.id,
+               r.name AS restaurant_name,
+               r.address AS pickup_address,
+               (SELECT COALESCE(SUM(quantity), 0) FROM order_lines WHERE order_id = o.id) AS item_count,
+               e.created_at AS ready_since
+        FROM orders o
+        JOIN restaurants r ON r.id = o.restaurant_id
+        JOIN order_events e ON e.order_id = o.id AND e.new_status = 'READY'
+        WHERE o.status = 'READY'
+        ORDER BY e.created_at, e.id
+        """;
+
+        return jdbc.query(sql, (row, number) -> new ReadyOrderSummary(
+            row.getString("id"),
+            row.getString("restaurant_name"),
+            row.getString("pickup_address"),
+            row.getInt("item_count"),
+            row.getTimestamp("ready_since").toLocalDateTime()
+        ));
+    }
+
+    public CourierJob findCourierJob(String orderId) {
+        String sql = """
+        SELECT o.id,
+               o.status,
+               o.special_instructions,
+               o.delivery_address,
+                o.delivery_latitude,
+                o.delivery_longitude,
+                r.name AS restaurant_name,
+                r.address AS pickup_address,
+                r.latitude AS pickup_latitude,
+                r.longitude AS pickup_longitude,
+                c.name AS customer_name,
+                p.created_at AS picked_up_at
+            FROM orders o
+            JOIN restaurants r ON r.id = o.restaurant_id
+            LEFT JOIN customers c ON c.user_id = o.customer_id
+            LEFT JOIN order_events p ON p.order_id = o.id AND p.new_status = 'PICKED_UP'
+            WHERE o.id = ? AND o.status IN ('READY', 'PICKED_UP')   
+               """;
+
+        List<CourierJob.Line> lines = jdbc.query(
+       "SELECT name, quantity FROM order_lines WHERE order_id = ? ORDER BY id",
+       (row, number) -> new CourierJob.Line(row.getString("name"), row.getInt("quantity")),
+       Integer.parseInt(orderId));
+
+       List<CourierJob> found = jdbc.query(sql, (row, number) -> {
+        Timestamp pickedUp = row.getTimestamp("picked_up_at");
+        return new CourierJob(
+            row.getString("id"),
+            row.getString("status"),
+            row.getString("restaurant_name"),
+            row.getString("pickup_address"),
+            row.getObject("pickup_latitude", Double.class),
+            row.getObject("pickup_longitude", Double.class),
+            row.getString("customer_name"),
+            row.getString("delivery_address"),
+            row.getObject("delivery_latitude", Double.class),
+            row.getObject("delivery_longitude", Double.class),
+            lines,
+            row.getString("special_instructions"),
+            pickedUp == null ? null : pickedUp.toLocalDateTime()
+        );
+       }, Integer.parseInt(orderId));
+
+       return found.isEmpty() ? null : found.get(0);
+    }
+
+
+
 
     // Same orders, but thread-locks them until the dispatch transaction ends, so a cancel can't change one
     // while it is being offered. If a cancel got there first, Postgres waits for it, sees the order is no
