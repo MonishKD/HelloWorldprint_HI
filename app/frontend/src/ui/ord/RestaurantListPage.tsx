@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../session';
-import { Empty, LoadError, Loading, money, restaurantHue, stagger, useLoad } from '../common';
+import { Empty, LoadError, Loading, money, restaurantHue, stagger, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
 import CityMap from '../map/CityMap';
 import { getDashboardOrders } from '../dashboard/dashboardApi';
@@ -19,11 +19,12 @@ export default function RestaurantListPage() {
   const user = useUser();
   const navigate = useNavigate();
   const { data, error, reload } = useLoad(() => Promise.all([listRestaurantSummaries(), getDashboardOrders()]), [user.id]);
+  usePolling(reload);
   const [query, setQuery] = useState('');
   const [cuisine, setCuisine] = useState('All');
   const [openOnly, setOpenOnly] = useState(false);
 
-  if (error) return <LoadError what="restaurants" message={error} onRetry={reload} />;
+  if (error && !data) return <LoadError what="restaurants" message={error} onRetry={reload} />;
   if (!data) return <Loading what="restaurants" />;
 
   const [restaurants, orders] = data;

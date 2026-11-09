@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, timeOf, useLoad } from '../common';
+import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, timeOf, useLoad, usePolling } from '../common';
 import MenuPage from '../ord/MenuPage';
 import CityMapPanel from '../map/CityMapPanel';
 import MapView from '../map/MapView';
@@ -13,21 +13,14 @@ import HistoryTable from '../prc/HistoryTable';
 import OrderSummaryPanel from '../prc/OrderSummaryPanel';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
-import { DashboardLayout, type NavItem } from './DashboardRouter';
+import { DashboardLayout } from './DashboardRouter';
 
 /** A summary exists once the order was charged, i.e. delivered (a refund keeps it). */
 const HAS_SUMMARY: Order['status'][] = ['delivered', 'refunded'];
 
-const NAV: NavItem[] = [
-  { to: '/customer', label: 'Discover', activeFor: (path) => !['/customer/orders', '/customer/map', '/customer/history'].some((p) => path.startsWith(p)) },
-  { to: '/customer/map', label: 'City map' },
-  { to: '/customer/orders', label: 'My orders' },
-  { to: '/customer/history', label: 'History' },
-];
-
 export default function CustomerDashboardPage() {
   return (
-    <DashboardLayout nav={NAV}>
+    <DashboardLayout>
       <Routes>
         <Route index element={<RestaurantListPage />} />
         <Route path="r/:restaurantId" element={<MenuPage />} />
@@ -84,6 +77,7 @@ function MyOrders() {
   const user = useUser();
   const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
   const { data, error, reload } = useLoad(() => Promise.all([getDashboardOrders(), listRestaurants()]), [user.id]);
+  usePolling(reload);
   const [actionError, setActionError] = useState('');
   const [cancelled, setCancelled] = useState('');
   const now = useNow(data?.[0].some((o) => o.status === 'picked_up') ? 1000 : null);
@@ -100,7 +94,7 @@ function MyOrders() {
     reload();
   }
 
-  if (error) return <LoadError what="your orders" message={error} onRetry={reload} />;
+  if (error && !data) return <LoadError what="your orders" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your orders" />;
 
   const [orders, restaurants] = data;

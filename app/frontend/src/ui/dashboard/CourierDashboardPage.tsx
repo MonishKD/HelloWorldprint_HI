@@ -8,7 +8,7 @@ import HistoryTable from '../prc/HistoryTable';
 import MapView, { type MapDelivery } from '../map/MapView';
 import { point } from '../map/geo';
 import { errorMessage, logError, send } from './dashboardApi';
-import { DashboardLayout } from './DashboardRouter';
+import { DashboardLayout, useDashboardTab } from './DashboardRouter';
 
 export default function CourierDashboardPage() {
   return (
@@ -52,6 +52,7 @@ function jobOnMap(job: CourierJob, courierName?: string): MapDelivery[] {
 function CourierDashboard() {
   const { data, error, reload } = useLoad(() => Promise.all([getCourierDashboard(), listReadyOrders()]), []);
   usePolling(reload); // a new offer shows up without reloading the page
+  const tab = useDashboardTab();
   const [actionError, setActionError] = useState('');
 
   async function run(action: string, call: () => Promise<unknown>) {
@@ -71,6 +72,9 @@ function CourierDashboard() {
   const { state, offer, order } = dashboard;
   const onDuty = state !== 'offline';
   const mapDeliveries = order ? jobOnMap(order, 'You') : offer ? jobOnMap(offer) : [];
+
+  if (tab === 'map') return <CityMapPanel />;
+  if (tab === 'history') return <HistoryTable open />;
 
   return (
     <>
@@ -173,10 +177,6 @@ function CourierDashboard() {
           </ul>
         )}
       </section>
-
-      <CityMapPanel />
-
-      <HistoryTable />
     </>
   );
 }

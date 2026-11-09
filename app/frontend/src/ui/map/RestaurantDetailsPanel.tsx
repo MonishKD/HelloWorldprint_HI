@@ -5,16 +5,17 @@ import { useUser } from '../../session';
 import { Segmented, StatusBadge, useLoad, usePolling } from '../common';
 import { errorMessage, getPreparationQueue, send } from '../dashboard/dashboardApi';
 import { setRestaurantStatus } from '../ord/ordApi';
+import { useDashboardInfo } from '../dashboard/InformationArea';
 import CityMap from './CityMap';
 
 /** The city map, opening a restaurant's details when its marker is clicked. */
 export function CityMapWithDetails({ restaurants, ...map }: Omit<ComponentProps<typeof CityMap>, 'restaurants' | 'onSelectRestaurant'> & { restaurants: CityRestaurant[] }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { selectedRestaurantId: selectedId, selectRestaurant: setSelectedId, showLabels } = useDashboardInfo();
   // Looked up on every render, so the counts follow the map's refresh.
   const selected = restaurants.find((r) => r.id === selectedId);
   return (
     <>
-      <CityMap {...map} restaurants={restaurants} onSelectRestaurant={setSelectedId} />
+      <CityMap {...map} restaurants={restaurants} showLabels={showLabels} onSelectRestaurant={setSelectedId} />
       {selected && <RestaurantDetailsPanel key={selected.id} restaurant={selected} onClose={() => setSelectedId(null)} />}
     </>
   );
@@ -76,7 +77,7 @@ function RestaurantDetailsPanel({ restaurant: r, onClose }: { restaurant: CityRe
         </button>
       )}
       {ownRestaurant && (
-        <button type="button" className="btn btn-sm" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+        <button type="button" className="btn btn-sm" onClick={() => navigate('/restaurant')}>
           Go to my orders
         </button>
       )}
