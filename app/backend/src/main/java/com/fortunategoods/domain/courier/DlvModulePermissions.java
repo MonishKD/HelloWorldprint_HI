@@ -44,4 +44,14 @@ public class DlvModulePermissions {
     public static Set<UserRole> viewReadyOrdersRoles() {
         return Set.of(UserRole.COURIER);
     }
+
+    public static Set<UserRole> acceptOfferRoles()
+    {
+        return Set.of(UserRole.COURIER);
+    }
+
+    public static Set<UserRole> declineOfferRoles()
+    {
+        return Set.of(UserRole.COURIER);
+    }
 }

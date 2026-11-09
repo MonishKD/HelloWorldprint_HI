@@ -255,6 +255,8 @@ public class OrderRepository {
         return jdbc.query(WAITING_FOR_DISPATCH_SQL, (row, number) -> toWaitingOrder(row));
     }
 
+
+
     public List<ReadyOrderSummary> findReadyOrdersForCourier() {
         String sql = """
         SELECT o.id,
@@ -370,6 +372,18 @@ public class OrderRepository {
         WHERE id = ? AND courier_id = ? AND status = 'READY'
         """, Integer.parseInt(orderId), Integer.parseInt(courierId)) == 1;
     }
+
+
+    // Sets the courier on an order when they accept its offer. Only works while the order is still READY with no courier.
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean assignCourierIfUnchanged(String orderId, String courierId) {
+        return jdbc.update("""
+        UPDATE orders SET courier_id = ?
+        WHERE id = ? AND courier_id IS NULL AND status = 'READY'
+        """, Integer.parseInt(courierId), Integer.parseInt(orderId)) == 1;
+    }
+
+
 
     // How many orders each restaurant has in the accepted, preparing and ready statuses, by restaurant id.
     // A restaurant with none of these orders is left out of the result.
