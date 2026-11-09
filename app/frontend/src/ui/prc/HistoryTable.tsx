@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { CourierDelivery, HistoryRow, LedgerRow } from '../../domain';
 import { useUser } from '../../session';
-import { Empty, LoadError, Loading, money, StatusBadge, timeOf, useLoad } from '../common';
+import { Empty, LoadError, Loading, money, StatusBadge, timeOf, useLoad, usePolling } from '../common';
 import { onCommandFinished } from '../dashboard/dashboardApi';
 import { getHistory } from './prcApi';
 
@@ -19,12 +19,12 @@ export function refundsUnderTheirOrder(rows: LedgerRow[]): LedgerRow[] {
 /**
  * Pricing & History (R-PRC-04, #265): the signed-in user's history, read from the backend (#264), which picks the rows
  * from the session. Couriers get their deliveries with no money; everyone else gets the ledger with each fare part.
- * Until #273's tab bar exists, it is a collapsible section on each dashboard (the customer's is its own tab).
  */
 export default function HistoryTable({ open }: { open?: boolean }) {
   const user = useUser();
   const { data, error, reload } = useLoad(getHistory, [user.id]);
   useEffect(() => onCommandFinished(reload), [reload]);
+  usePolling(reload);
 
   return (
     <details className="history" open={open}>

@@ -23,7 +23,7 @@ export default function App() {
           }
         />
         <Route
-          path="/restaurant"
+          path="/restaurant/*"
           element={
             <RequireRole role="restaurant">
               <RestaurantDashboardPage />
@@ -31,7 +31,7 @@ export default function App() {
           }
         />
         <Route
-          path="/courier"
+          path="/courier/*"
           element={
             <RequireRole role="courier">
               <CourierDashboardPage />
@@ -39,7 +39,7 @@ export default function App() {
           }
         />
         <Route
-          path="/operator"
+          path="/operator/*"
           element={
             <RequireRole role="operator">
               <OperatorDashboardPage />
