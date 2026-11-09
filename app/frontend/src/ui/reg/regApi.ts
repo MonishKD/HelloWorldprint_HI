@@ -24,7 +24,6 @@ export async function login(usernameOrEmail: string, password: string): Promise<
  * closed restaurant, so only that role sends a restaurant name and address. The backend refuses operator and taken names.
  * Every role sends where it is (`latitude`, `longitude`, #244); a customer also sends their `name` and `deliveryAddress`
  * (not `address`: the backend keeps that key for restaurants and refuses it on a customer).
- * Saving them is #243 (backend): until it merges, the backend ignores those keys.
  */
 export async function register(input: {
   username: string;

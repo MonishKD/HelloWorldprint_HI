@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import com.fortunategoods.application.reg.RegistrationResult.RegistrationOutcome;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
+import com.fortunategoods.domain.user.SignUpLocation;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.security.AuthenticationService;
@@ -19,6 +20,8 @@ import com.fortunategoods.technical.security.AuthenticationService;
 // Registration: RegController checks the input and the Domain rules, then calls AuthenticationService.
 // AuthenticationService is faked: it remembers what it was asked to save and saves nothing.
 class RegControllerTest {
+
+    private static final SignUpLocation PLACE = new SignUpLocation(45.5, -73.6, "Alice", "1 Main St");
 
     // What the fake AuthenticationService was last asked to do. null = it was never called.
     private String savedRole;
@@ -28,12 +31,12 @@ class RegControllerTest {
 
     private final AuthenticationService authenticationService = new AuthenticationService(null, null, null, null, null, null, null) {
         @Override
-        public User registerCustomer(String username, String email, String password) {
+        public User registerCustomer(String username, String email, String password, SignUpLocation location) {
             return save("CUSTOMER", username, email, password);
         }
 
         @Override
-        public User registerCourier(String username, String email, String password) {
+        public User registerCourier(String username, String email, String password, SignUpLocation location) {
             return save("COURIER", username, email, password);
         }
 
@@ -56,7 +59,7 @@ class RegControllerTest {
     // A customer is saved with the CUSTOMER role, and the result has no password.
     @Test
     void customerIsRegistered() {
-        RegistrationResult result = regController.register(" alice ", "alice@mail.com", "secret", "customer", null, null);
+        RegistrationResult result = regController.register(" alice ", "alice@mail.com", "secret", "customer", null, null, PLACE);
 
         assertEquals("CUSTOMER", savedRole);
         assertEquals("alice", savedUsername); // spaces trimmed
@@ -71,7 +74,7 @@ class RegControllerTest {
     // A courier is saved with the COURIER role. The role can be typed in any case.
     @Test
     void courierIsRegistered() {
-        RegistrationResult result = regController.register("carl", "carl@mail.com", "secret", "COURIER", null, null);
+        RegistrationResult result = regController.register("carl", "carl@mail.com", "secret", "COURIER", null, null, PLACE);
 
         assertEquals("COURIER", savedRole);
         assertEquals(UserRole.COURIER, result.role());
@@ -80,7 +83,7 @@ class RegControllerTest {
     // A restaurant account comes with its own new restaurant: CLOSED, empty menu, with the given name and address.
     @Test
     void restaurantIsRegisteredWithAClosedRestaurant() {
-        RegistrationResult result = regController.register("green", "green@mail.com", "secret", "restaurant", " Green Leaf ", " 1 Main St ");
+        RegistrationResult result = regController.register("green", "green@mail.com", "secret", "restaurant", " Green Leaf ", " 1 Main St ", PLACE);
 
         assertEquals("RESTAURANT", savedRole);
         assertEquals(UserRole.RESTAURANT, result.role());
@@ -88,36 +91,47 @@ class RegControllerTest {
         assertEquals(RestaurantStatus.CLOSED, savedRestaurant.getStatus());
         assertTrue(savedRestaurant.getMenu().isEmpty());
         assertEquals("1 Main St", savedAddress);
+        assertEquals(45.5, savedRestaurant.getLatitude());
         assertEquals("1", result.restaurantId());
+    }
+
+    // Every role needs a real position, and a customer also needs a name and a delivery address.
+    @Test
+    void badLocationsAreRefused() {
+        assertInvalid(() -> regController.register("c", "c@mail.com", "secret", "courier", null, null, new SignUpLocation(null, -73.6, null, null)));
+        assertInvalid(() -> regController.register("c", "c@mail.com", "secret", "courier", null, null, new SignUpLocation(91.0, -73.6, null, null)));
+        assertInvalid(() -> regController.register("c", "c@mail.com", "secret", "courier", null, null, new SignUpLocation(0.0, 0.0, null, null)));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "customer", null, null, new SignUpLocation(45.5, -73.6, " ", "1 Main St")));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "customer", null, null, new SignUpLocation(45.5, -73.6, "Alice", null)));
     }
 
     // Operators can't sign up, and nothing is saved.
     @Test
     void operatorIsRefused() {
-        assertInvalid(() -> regController.register("op", "op@mail.com", "secret", "operator", null, null));
+        assertInvalid(() -> regController.register("op", "op@mail.com", "secret", "operator", null, null, PLACE));
     }
 
     // A missing or unknown role is refused.
     @Test
     void missingOrUnknownRoleIsRefused() {
-        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", null, null, null));
-        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "admin", null, null));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", null, null, null, PLACE));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "admin", null, null, PLACE));
     }
 
     // Username, email and password are required.
     @Test
     void missingFieldsAreRefused() {
-        assertInvalid(() -> regController.register(" ", "a@mail.com", "secret", "customer", null, null));
-        assertInvalid(() -> regController.register("a", null, "secret", "customer", null, null));
-        assertInvalid(() -> regController.register("a", "a@mail.com", "", "customer", null, null));
+        assertInvalid(() -> regController.register(" ", "a@mail.com", "secret", "customer", null, null, PLACE));
+        assertInvalid(() -> regController.register("a", null, "secret", "customer", null, null, PLACE));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "", "customer", null, null, PLACE));
     }
 
     // A restaurant needs a name and an address. Other roles can't send them.
     @Test
     void restaurantFieldsOnlyForRestaurants() {
-        assertInvalid(() -> regController.register("g", "g@mail.com", "secret", "restaurant", null, "1 Main St"));
-        assertInvalid(() -> regController.register("g", "g@mail.com", "secret", "restaurant", "Green Leaf", " "));
-        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "customer", "Green Leaf", null));
+        assertInvalid(() -> regController.register("g", "g@mail.com", "secret", "restaurant", null, "1 Main St", PLACE));
+        assertInvalid(() -> regController.register("g", "g@mail.com", "secret", "restaurant", "Green Leaf", " ", PLACE));
+        assertInvalid(() -> regController.register("a", "a@mail.com", "secret", "customer", "Green Leaf", null, PLACE));
     }
 
     // Checks that the sign-up comes back as INVALID_INPUT with a message, and that AuthenticationService was never asked to save anything.
