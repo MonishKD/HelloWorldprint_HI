@@ -67,8 +67,10 @@ function CourierDashboard() {
   // Once loaded, a failed refresh keeps the page up: useLoad has already logged it to the console.
   if (!data) return error ? <LoadError what="your deliveries" message={error} onRetry={reload} /> : <Loading what="your deliveries" />;
 
-  const [dashboard, readyOrders] = data;
+  const [dashboard, ready] = data;
   const { state, offer, order } = dashboard;
+  // The backend lists every READY order; one this courier already holds isn't waiting for pickup any more.
+  const readyOrders = ready.filter((r) => r.orderId !== order?.orderId);
   const onDuty = state !== 'offline';
   const mapDeliveries = order ? jobOnMap(order, 'You') : offer ? jobOnMap(offer) : [];
 
