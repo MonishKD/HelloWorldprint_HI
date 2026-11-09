@@ -4,14 +4,20 @@ import com.fortunategoods.technical.persistence.AssignmentRepository;
 import com.fortunategoods.technical.persistence.CourierRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import com.fortunategoods.domain.courier.Courier;
 import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.domain.courier.DispatchQueue;
+import com.fortunategoods.domain.courier.DlvModulePermissions;
+import com.fortunategoods.domain.courier.ReadyOrderSummary;
 import com.fortunategoods.domain.order.DomainRuleViolation;
-
+import com.fortunategoods.domain.order.OrdModulePermissions;
+import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.domain.courier.Assignment;
 
 import java.util.List;
@@ -76,4 +82,9 @@ public class CourierDutyService {
         }
         dispatch.retryDispatch(waitingOrders);
     }
+
+    public List<ReadyOrderSummary> readyOrders(UserRole role) {
+       OrdModulePermissions.requireRole(role, DlvModulePermissions.viewReadyOrdersRoles(), "Only couriers can see the ready orders");
+       return orders.findReadyOrdersForCourier();
+   }
 }

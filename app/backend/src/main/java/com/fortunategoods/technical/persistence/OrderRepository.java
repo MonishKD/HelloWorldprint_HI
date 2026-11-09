@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.annotation.Propagation;
 import com.fortunategoods.domain.courier.DispatchQueue;
+import com.fortunategoods.domain.courier.ReadyOrderSummary;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
@@ -247,6 +248,29 @@ public class OrderRepository {
     // Read only, for the operator's view of the queue
     public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() {
         return jdbc.query(WAITING_FOR_DISPATCH_SQL, (row, number) -> toWaitingOrder(row));
+    }
+
+    public List<ReadyOrderSummary> findReadyOrdersForCourier() {
+        String sql = """
+        SELECT o.id,
+               r.name AS restaurant_name,
+               r.address AS pickup_address,
+               (SELECT COALESCE(SUM(quantity), 0) FROM order_lines WHERE order_id = o.id) AS item_count,
+               e.created_at AS ready_since
+        FROM orders o
+        JOIN restaurants r ON r.id = o.restaurant_id
+        JOIN order_events e ON e.order_id = o.id AND e.new_status = 'READY'
+        WHERE o.status = 'READY'
+        ORDER BY e.created_at, e.id
+        """;
+
+        return jdbc.query(sql, (row, number) -> new ReadyOrderSummary(
+            row.getString("id"),
+            row.getString("restaurant_name"),
+            row.getString("pickup_address"),
+            row.getInt("item_count"),
+            row.getTimestamp("ready_since").toLocalDateTime()
+        ));
     }
 
     // Same orders, but thread-locks them until the dispatch transaction ends, so a cancel can't change one
