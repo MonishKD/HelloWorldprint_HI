@@ -17,7 +17,8 @@ const FILTERS: Record<string, (o: Order) => boolean> = {
   Issues: (o) => ['rejected', 'cancelled', 'refunded'].includes(o.status),
 };
 
-const BEFORE_PICKUP: Order['status'][] = ['placed', 'accepted', 'preparing', 'ready'];
+// The operator cancels accepted orders not picked up yet (#239). A placed order is the restaurant's to accept or reject.
+const BEFORE_PICKUP: Order['status'][] = ['accepted', 'preparing', 'ready'];
 
 export default function OperatorDashboardPage() {
   return (

@@ -1,12 +1,9 @@
 // dlvApi (a2: ui.dlv): every courier call to the backend.
 // Each function is one REST call; adapters.ts turns the backend's JSON into the types in domain.ts.
-//
-// The courier routes don't exist yet (#245, #248, #252), so requests go to a fake backend for now.
-// To connect the real one, change the import below to `import { request } from '../http';` and delete dlvMock.ts.
-// If the routes or JSON end up different: routes are fixed here, field names in adapters.ts.
+// Accept and decline answer once #248 lands; until then they fail and the error shows in the output console.
 import type { CourierDashboard, ReadyOrder } from '../../domain';
 import { toCourierDashboard, toReadyOrder } from '../adapters';
-import { mockRequest as request } from './dlvMock';
+import { request } from '../http';
 
 /** GET /couriers/me: the courier's state, current offer and current order (#245). */
 export async function getCourierDashboard(): Promise<CourierDashboard> {
@@ -38,10 +35,7 @@ export async function confirmDelivery(): Promise<void> {
   await request('/couriers/me/order/deliver', { method: 'POST' });
 }
 
-/**
- * GET /couriers/ready-orders: every restaurant's ready orders, oldest first, read-only.
- * No issue covers this route yet: the backend needs to add it, with no customer or payment fields.
- */
+/** GET /couriers/ready-orders (#245): every restaurant's ready orders, oldest first, read-only. */
 export async function listReadyOrders(): Promise<ReadyOrder[]> {
   return (await request<unknown[]>('/couriers/ready-orders')).map(toReadyOrder);
 }
