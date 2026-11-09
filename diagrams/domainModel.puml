@@ -30,6 +30,7 @@ class "User" as User {
 class "Customer" as Customer {
     id: int
     name: String
+    address: String
     latAddress: double
     longAddress: double
 }
@@ -74,7 +75,7 @@ class "Order Line" as OrderLine {
     quantity: int
     name: String
     price: double
-    originalPrice: double
+    originalPrice: Double
 }
 
 class "Menu" as Menu {
@@ -151,13 +152,13 @@ OrderLine "1..~* " -right- "1" Order: "contains <"
 ' (MenuItem, Order) .. OrderLine
 
 'Restaurant -> PQ -> Order ========================='
-PQ "1 "-down- "~*   " Order: "holds >"
+PQ "0..1 "-down- "~*   " Order: "holds >"
 Restaurant *-down- "1 " PQ: "handles >"
 
 
 'Customer, DQ -> Order ===================='
 Customer "1" -left- "~*" Order: "requests >" 
-DQ "1 " -right- "~*" Order: "holds >"
+DQ "0..1 " -right- "~*" Order: "holds >"
 
 
 'Courier -> Offer -> Order ====================''
@@ -166,7 +167,7 @@ Courier "1   " -- "~*" Order: "accepts >"
 
 
 'Order-> History, State Transition ====================''
-OrderHistory "1 " -up- "1 " Order: "maintains <"
+OrderHistory "~* " -up- "1 " Order: "maintains <"
 Order "1" -down- "1..  ~*" OST: "records >"
 
 'Restaurant-Order =================='
