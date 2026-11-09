@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
 import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, timeOf, useLoad } from '../common';
@@ -34,8 +34,7 @@ export default function CustomerDashboardPage() {
 }
 
 function CustomerCityMap() {
-  const navigate = useNavigate();
-  return <CityMapPanel onSelectRestaurant={(id) => navigate(`/customer/r/${id}`)} />;
+  return <CityMapPanel />;
 }
 
 function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) {

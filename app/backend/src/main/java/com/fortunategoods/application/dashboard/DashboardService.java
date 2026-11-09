@@ -109,12 +109,14 @@ public class DashboardService {
         OrdModulePermissions.requireRole(role, OrdModulePermissions.viewCityRoles(), "Sign in to see the city");
 
         Map<String, Map<OrderStatus, Integer>> counts = orderRepository.orderCount();
+        Map<String, List<String>> soldOut = restaurantRepository.findSoldOutItemNames();
         List<CityView.CityRestaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : restaurantRepository.findAll()) {
             Map<OrderStatus, Integer> count = counts.getOrDefault(restaurant.getId(), Map.of());
             restaurants.add(new CityView.CityRestaurant(restaurant.getId(), restaurant.getName(), restaurant.getStatus(),
                 restaurant.getLatitude(), restaurant.getLongitude(), count.getOrDefault(OrderStatus.ACCEPTED, 0),
-                count.getOrDefault(OrderStatus.PREPARING, 0), count.getOrDefault(OrderStatus.READY, 0)));
+                count.getOrDefault(OrderStatus.PREPARING, 0), count.getOrDefault(OrderStatus.READY, 0),
+                soldOut.getOrDefault(restaurant.getId(), List.of())));
         }
         return new CityView(restaurants, courierRepository.findOnDuty());
     }

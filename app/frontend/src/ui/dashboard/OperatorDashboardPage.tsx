@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrder } from '../../domain';
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
-import CityMap from '../map/CityMap';
+import { CityMapWithDetails } from '../map/RestaurantDetailsPanel';
 import { setRestaurantStatus } from '../ord/ordApi';
 import { errorMessage, getCityView, send } from './dashboardApi';
 import { DashboardLayout } from './DashboardRouter';
@@ -145,7 +145,7 @@ function OperatorDashboard() {
         </section>
       )}
 
-      <CityMap
+      <CityMapWithDetails
         restaurants={restaurants}
         couriers={couriers}
         homes={orders.filter(FILTERS.Active).flatMap((o) => (o.deliveryLat === undefined || o.deliveryLng === undefined ? [] : [{ id: o.id, lat: o.deliveryLat, lng: o.deliveryLng, label: `#${o.id} · ${o.customerName}` }]))}

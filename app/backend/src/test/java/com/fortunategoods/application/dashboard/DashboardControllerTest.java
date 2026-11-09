@@ -119,6 +119,7 @@ class DashboardControllerTest {
     void everyRoleGetsTheCityWithItsCounts() throws Exception {
         when(restaurants.findAll()).thenReturn(List.of(new Restaurant("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of())));
         when(orders.orderCount()).thenReturn(Map.of("1", Map.of(OrderStatus.ACCEPTED, 2, OrderStatus.READY, 1)));
+        when(restaurants.findSoldOutItemNames()).thenReturn(Map.of("1", List.of("Quiche")));
         when(couriers.findOnDuty()).thenReturn(List.of(new OnDutyCourier("5", "Carl", 45.49, -73.57, CourierStatus.IDLE)));
 
         for (UserRole role : UserRole.values()) {
@@ -127,6 +128,7 @@ class DashboardControllerTest {
                 .andExpect(jsonPath("$.data.restaurants[0].queued").value(2))
                 .andExpect(jsonPath("$.data.restaurants[0].inPreparation").value(0))
                 .andExpect(jsonPath("$.data.restaurants[0].ready").value(1))
+                .andExpect(jsonPath("$.data.restaurants[0].soldOutItems[0]").value("Quiche"))
                 .andExpect(jsonPath("$.data.couriers[0].name").value("Carl"))
                 .andExpect(jsonPath("$.data.couriers[0].status").value("IDLE"));
         }

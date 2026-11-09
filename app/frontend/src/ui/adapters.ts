@@ -176,6 +176,7 @@ export function toCityView(j: Raw): CityView {
       queued: Number(r.queued),
       inPreparation: Number(r.inPreparation),
       ready: Number(r.ready),
+      soldOutItems: (r.soldOutItems ?? []).map(String),
     })),
     couriers: (j.couriers ?? []).map((c: Raw) => ({
       id: text(c.id),
