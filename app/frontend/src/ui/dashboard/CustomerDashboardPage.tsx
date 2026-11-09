@@ -9,14 +9,20 @@ import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
+import HistoryTable from '../prc/HistoryTable';
+import OrderSummaryPanel from '../prc/OrderSummaryPanel';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
 import { DashboardLayout, type NavItem } from './DashboardRouter';
 
+/** A summary exists once the order was charged, i.e. delivered (a refund keeps it). */
+const HAS_SUMMARY: Order['status'][] = ['delivered', 'refunded'];
+
 const NAV: NavItem[] = [
-  { to: '/customer', label: 'Discover', activeFor: (path) => !path.startsWith('/customer/orders') && !path.startsWith('/customer/map') },
+  { to: '/customer', label: 'Discover', activeFor: (path) => !['/customer/orders', '/customer/map', '/customer/history'].some((p) => path.startsWith(p)) },
   { to: '/customer/map', label: 'City map' },
   { to: '/customer/orders', label: 'My orders' },
+  { to: '/customer/history', label: 'History' },
 ];
 
 export default function CustomerDashboardPage() {
@@ -27,6 +33,7 @@ export default function CustomerDashboardPage() {
         <Route path="r/:restaurantId" element={<MenuPage />} />
         <Route path="map" element={<CustomerCityMap />} />
         <Route path="orders" element={<MyOrders />} />
+        <Route path="history" element={<HistoryTable open />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>
@@ -112,7 +119,7 @@ function MyOrders() {
       title={restaurantOf(o)?.name ?? o.restaurantName}
       subtitle={courierLine(o, restaurantOf(o), now)}
       tracker
-      media={showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
+      media={HAS_SUMMARY.includes(o.status) ? <OrderSummaryPanel orderId={o.id} /> : showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
       style={stagger(i)}
     >
       {handoffTimes(o) && <small className="muted">{handoffTimes(o)}</small>}

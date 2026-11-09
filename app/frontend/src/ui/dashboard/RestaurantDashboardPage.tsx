@@ -3,6 +3,7 @@ import type { RestaurantStatus } from '../../domain';
 import { useUser } from '../../session';
 import { LoadError, Loading, money, Monogram, restaurantHue, Segmented, Stat, TERMINAL, useLoad } from '../common';
 import CityMapPanel from '../map/CityMapPanel';
+import HistoryTable from '../prc/HistoryTable';
 import IncomingOrdersList from '../ord/IncomingOrdersList';
 import MenuPage from '../ord/MenuPage';
 import { getRestaurantMenu, setRestaurantStatus } from '../ord/ordApi';
@@ -144,6 +145,8 @@ function RestaurantDashboard() {
         </summary>
         <IncomingOrdersList orders={history} emptyIcon="inbox" emptyText="No finished orders yet" onChanged={reload} />
       </details>
+
+      <HistoryTable />
     </>
   );
 }

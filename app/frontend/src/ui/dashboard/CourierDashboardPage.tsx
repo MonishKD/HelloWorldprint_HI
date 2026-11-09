@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import type { CourierDashboard as Dashboard, CourierJob } from '../../domain';
-import { ConfirmChange, Empty, LoadError, Loading, minutesSince, restaurantHue, StatusBadge, Switch, timeOf, useLoad, usePolling } from '../common';
+import { ConfirmChange, Empty, LoadError, Loading, minutesSince, restaurantHue, StatusBadge, Switch, useLoad, usePolling } from '../common';
 import { CurrentOrderCard, OfferCard } from '../dlv/CourierJobCards';
-import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getCourierDashboard, listDeliveries, listReadyOrders, setOnDuty } from '../dlv/dlvApi';
+import { acceptOffer, confirmDelivery, confirmPickup, declineOffer, getCourierDashboard, listReadyOrders, setOnDuty } from '../dlv/dlvApi';
 import CityMapPanel from '../map/CityMapPanel';
+import HistoryTable from '../prc/HistoryTable';
 import MapView, { type MapDelivery } from '../map/MapView';
 import { point } from '../map/geo';
 import { errorMessage, logError, send } from './dashboardApi';
@@ -49,7 +50,7 @@ function jobOnMap(job: CourierJob, courierName?: string): MapDelivery[] {
 }
 
 function CourierDashboard() {
-  const { data, error, reload } = useLoad(() => Promise.all([getCourierDashboard(), listDeliveries(), listReadyOrders()]), []);
+  const { data, error, reload } = useLoad(() => Promise.all([getCourierDashboard(), listReadyOrders()]), []);
   usePolling(reload); // a new offer shows up without reloading the page
   const [actionError, setActionError] = useState('');
 
@@ -66,7 +67,7 @@ function CourierDashboard() {
   // Once loaded, a failed refresh keeps the page up: useLoad has already logged it to the console.
   if (!data) return error ? <LoadError what="your deliveries" message={error} onRetry={reload} /> : <Loading what="your deliveries" />;
 
-  const [dashboard, deliveries, readyOrders] = data;
+  const [dashboard, readyOrders] = data;
   const { state, offer, order } = dashboard;
   const onDuty = state !== 'offline';
   const mapDeliveries = order ? jobOnMap(order, 'You') : offer ? jobOnMap(offer) : [];
@@ -175,25 +176,7 @@ function CourierDashboard() {
 
       <CityMapPanel />
 
-      <details className="history">
-        <summary>
-          Delivery history <span className="count">{deliveries.length}</span>
-        </summary>
-        {deliveries.length === 0 ? (
-          <Empty icon="bike" title="No deliveries yet" />
-        ) : (
-          <ul className="history-list">
-            {[...deliveries].reverse().map((d) => (
-              <li key={d.orderId}>
-                <span>
-                  <strong>#{d.orderId}</strong> {d.restaurantName} → {d.destinationName}
-                </span>
-                <span className="muted small">{timeOf(d.deliveredAt)}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </details>
+      <HistoryTable />
     </>
   );
 }

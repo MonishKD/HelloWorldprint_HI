@@ -54,12 +54,11 @@ interface Db {
   /** How many orders were delivered, which also picks the next job. */
   delivered: number;
   offerAt: number;
-  history: Job[];
 }
 
 function load(): Db {
   const saved = sessionStorage.getItem(STORE_KEY);
-  return saved ? JSON.parse(saved) : { status: 'OFFLINE', offer: null, currentOrder: null, delivered: 0, offerAt: 0, history: [] };
+  return saved ? JSON.parse(saved) : { status: 'OFFLINE', offer: null, currentOrder: null, delivered: 0, offerAt: 0 };
 }
 
 /** The nth order of the simulation: orders come up in a fixed cycle of JOBS. */
@@ -110,12 +109,10 @@ const ROUTES: Record<string, (db: Db) => unknown> = {
     db.status = 'CARRYING';
   },
   'POST /couriers/me/order/deliver': (db) => {
-    db.history.push({ ...db.currentOrder, deliveredAt: new Date().toISOString() });
     db.currentOrder = null;
     db.delivered += 1;
     waitForOffer(db);
   },
-  'GET /history': (db) => db.history,
 };
 
 /** Same call shape as request() in ../http.ts. A successful answer has no envelope, so send() logs it to the console itself. */

@@ -61,23 +61,6 @@ export async function setMenuItemStatus(restaurantId: string, itemId: string, st
   await request(`/restaurants/${restaurantId}/menu/${itemId}/availability`, { method: 'PATCH', body: { status } });
 }
 
-/**
- * POST /orders. The backend refuses (409/400) a closed restaurant, a sold-out item or an empty order,
- * and answers with the new order's id and status.
- */
-export async function placeOrder(input: {
-  restaurantId: string;
-  lines: { itemId: string; quantity: number }[];
-  instructions: string;
-  deliveryAddress: string;
-}): Promise<{ id: string; status: OrderStatus }> {
-  const placed = await request<{ orderId: string; status: OrderStatus }>('/orders', {
-    method: 'POST',
-    body: { ...input, instructions: input.instructions.trim(), deliveryAddress: input.deliveryAddress.trim() },
-  });
-  return { id: placed.orderId, status: placed.status };
-}
-
 /** POST /orders/{id}/cancel. The backend refuses (409) unless the order is still `placed`. */
 export async function cancelOrder(orderId: string): Promise<void> {
   await request(`/orders/${orderId}/cancel`, { method: 'POST' });
