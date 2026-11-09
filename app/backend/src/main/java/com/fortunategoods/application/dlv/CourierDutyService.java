@@ -10,6 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.fortunategoods.domain.courier.Courier;
+import com.fortunategoods.domain.courier.CourierDashboardView;
+import com.fortunategoods.domain.courier.CourierJob;
 import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.domain.courier.DispatchQueue;
 import com.fortunategoods.domain.courier.DlvModulePermissions;
@@ -87,4 +89,32 @@ public class CourierDutyService {
        OrdModulePermissions.requireRole(role, DlvModulePermissions.viewReadyOrdersRoles(), "Only couriers can see the ready orders");
        return orders.findReadyOrdersForCourier();
    }
+
+   // The signed-in courier's own state, current offer and current order. Read only.
+    @Transactional(readOnly = true)
+    public CourierDashboardView courierDashboard(UserRole role, String courierId) {
+        OrdModulePermissions.requireRole(role, DlvModulePermissions.viewOwnCourierStateRoles(), "Only couriers can see their own dashboard");
+
+        Courier courier = couriers.findById(courierId);
+        if (courier == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Courier not found");
+        }
+
+        Assignment active = assignments.findActiveByCourier(courierId);
+
+        CourierJob offer = null;
+        CourierJob currentOrder = null;
+
+        if (active != null) {
+            CourierJob job = orders.findCourierJob(active.getOrderId());
+            if (active.getStatus() == Assignment.Status.OFFERED) {
+                offer = job;
+            } else if (active.getStatus() == Assignment.Status.ACCEPTED) {
+                currentOrder = job;
+            }
+        }
+        
+        return new CourierDashboardView(courier.getStatus(), offer, currentOrder);
+    }
+
 }

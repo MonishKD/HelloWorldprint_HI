@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fortunategoods.application.ord.execution.CommandInvoker;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
+import com.fortunategoods.domain.courier.CourierDashboardView;
 import com.fortunategoods.domain.courier.CourierStatus;
 import com.fortunategoods.technical.security.SessionValidator;
 import com.fortunategoods.application.reg.Session;
@@ -47,6 +48,13 @@ public class CourierController {
     {
         Session session = sessionValidator.currentSession();
         return ResponseEntity.ok(invoker.process(new GetReadyOrdersCommand(dutyService, session), session));
+    }
+
+    // Couriers only (403 otherwise). The signed-in courier's own state.
+    @GetMapping("/api/couriers/me")
+    public ResponseEntity<CommandSuccess<CourierDashboardView>> getCourierDashboard() {
+        Session session = sessionValidator.currentSession();
+        return ResponseEntity.ok(invoker.process(new GetCourierDashboardCommand(dutyService, session), session));
     }
     
 }
