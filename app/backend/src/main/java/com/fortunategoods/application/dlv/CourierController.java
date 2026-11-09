@@ -21,11 +21,13 @@ public class CourierController {
     private final CourierDutyService dutyService;
     private final SessionValidator sessionValidator;
     private final CommandInvoker invoker;
+    private final CourierOfferService offerService;
 
-    public CourierController(CourierDutyService givenDutyService, SessionValidator givenSessionValidator, CommandInvoker givenInvoker) {
+    public CourierController(CourierDutyService givenDutyService, SessionValidator givenSessionValidator, CommandInvoker givenInvoker, CourierOfferService offerService) {
         this.dutyService = givenDutyService;
         this.sessionValidator = givenSessionValidator;
         this.invoker = givenInvoker;
+        this.offerService = offerService;
     }
 
     @PostMapping("/api/couriers/me/on-duty") 
@@ -55,6 +57,20 @@ public class CourierController {
     public ResponseEntity<CommandSuccess<CourierDashboardView>> getCourierDashboard() {
         Session session = sessionValidator.currentSession();
         return ResponseEntity.ok(invoker.process(new GetCourierDashboardCommand(dutyService, session), session));
+    }
+
+    // Couriers only (403 otherwise).
+    @PostMapping("/api/couriers/me/offer/accept")
+    public ResponseEntity<CommandSuccess<CourierStatus>> acceptOffer() {
+        Session session = sessionValidator.currentSession();
+        return ResponseEntity.ok(invoker.process(new AcceptOfferCommand(offerService, session), session));
+    }
+
+    // Couriers only (403 otherwise). The order goes back to the dispatch queue.
+    @PostMapping("/api/couriers/me/offer/decline")
+    public ResponseEntity<CommandSuccess<CourierStatus>> declineOffer() {
+        Session session = sessionValidator.currentSession();
+        return ResponseEntity.ok(invoker.process(new DeclineOfferCommand(offerService, session), session));
     }
     
 }
