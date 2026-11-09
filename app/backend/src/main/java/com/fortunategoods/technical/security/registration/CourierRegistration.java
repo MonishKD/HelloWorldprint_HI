@@ -2,7 +2,10 @@ package com.fortunategoods.technical.security.registration;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.fortunategoods.domain.courier.CourierStatus;
+import com.fortunategoods.domain.user.SignUpLocation;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -20,8 +23,11 @@ public class CourierRegistration extends Registration {
         super(userRepository, passwordEncoder);
     }
 
-    // Saves the courier's account and returns it with its new id.
-    public User register(String username, String email, String password) {
-        return saveAccount(username, email, password, UserRole.COURIER);
+    // Saves the courier's account and position, all or none, and returns it with its new id. A new courier starts off duty.
+    @Transactional
+    public User register(String username, String email, String password, SignUpLocation location) {
+        User courier = saveAccount(username, email, password, UserRole.COURIER);
+        userRepository.saveCourierProfile(courier.getId(), username, location.latitude(), location.longitude(), CourierStatus.OFFLINE);
+        return courier;
     }
 }
