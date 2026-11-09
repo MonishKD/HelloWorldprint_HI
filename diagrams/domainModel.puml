@@ -63,10 +63,18 @@ class "Order" as Order {
     id: int
     status: OrderStatus
     specialInstructions: String
+    deliveryAddress: String
+    deliveryLatitude: Double
+    deliveryLongitude: Double
+    rejectReason: String
 }
 
 class "Order Line" as OrderLine {
+    id: String
     quantity: int
+    name: String
+    price: double
+    originalPrice: double
 }
 
 class "Menu" as Menu {
@@ -76,8 +84,9 @@ class "Menu" as Menu {
 class "Menu Item" as MenuItem {
     id: int
     name: String
-    price: double
     status: MenuItemStatus
+    price: double
+    originalPrice: Double
 }
 
 class "Preparation Queue" as PQ {
@@ -101,9 +110,9 @@ class "Ledger Entry" as OrderHistory {
     paymentReference: String
 }
 
-class "Order State Transitions" as OST {
-    eventId: int
-    prevStatus: OrderStatus
+class "Order Event" as OST {
+    id: int
+    previousStatus: OrderStatus
     newStatus: OrderStatus
     timestamp: DateTime
 }
@@ -134,7 +143,6 @@ OrderCatalog *-up- "~*     " Order: "contains >"
 
 'Restaurant -> MenuItem -> Order ===================='
 Restaurant o-right- "~*" RestPers: "works for <"
-RestPers "1 owner" -- "~* staff" RestPers: "manages >"
 Restaurant "1" -left- "1" Menu : "has >"
 Menu *-down- "~*  " MenuItem 
 MenuItem "1  " <-down- "~*  " OrderLine: "references <"
@@ -170,7 +178,10 @@ PlatOp "~*   " -up- "~*" Restaurant: "controls >"
 PlatOp "~*  " -down- "~*" Order: "oversees >" 
 
 'Order-Fares ==========================' 
-Order "1" -- "0..1" Fare : calculates <
+Order "1" -- "0..1   " Fare : calculates <
+
+'Addtional relationships ================='
+OST -- " 0..1 previous" OST : registers >
 
 '-----List of possible enum classes: capitalize them??-------'
 enum "UserRoles" as UserRoles {
@@ -217,7 +228,7 @@ enum "Type" as Type {
     refund
 }
 
-enum "Assignment Status" as AssignmentStatus {
+enum "AssignmentStatus" as AssignmentStatus {
     offered
     accepted
     declined
