@@ -4,6 +4,7 @@ import { dashboardPath, useSession } from '../../session';
 import { errorMessage, send } from '../dashboard/dashboardApi';
 import { Icon, type IconName } from '../icons';
 import AuthShell from './AuthShell';
+import LocationPicker, { type PickedLocation } from './LocationPicker';
 import { register, type RegisterRole } from './regApi';
 
 const ROLES: { value: RegisterRole; label: string; hint: string; icon: IconName }[] = [
@@ -18,6 +19,8 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
   const [address, setAddress] = useState('');
+  const [name, setName] = useState('');
+  const [location, setLocation] = useState<PickedLocation>({ lat: '', lng: '' });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -30,7 +33,7 @@ export default function RegisterPage() {
     setBusy(true);
     setError('');
     try {
-      setUser(await send(`Register ${role} ${username}`, () => register({ username, email, password, role, restaurantName, address })));
+      setUser(await send(`Register ${role} ${username}`, () => register({ username, email, password, role, latitude: Number(location.lat), longitude: Number(location.lng), restaurantName, name, address })));
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);
@@ -84,6 +87,23 @@ export default function RegisterPage() {
             </label>
           </>
         )}
+        {role === 'customer' && (
+          <>
+            <label className="field">
+              <span>Your name</span>
+              <input required pattern=".*\S.*" autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} />
+            </label>
+            <label className="field">
+              <span>Delivery address</span>
+              <input required pattern=".*\S.*" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+            </label>
+          </>
+        )}
+        <LocationPicker
+          label={role === 'restaurant' ? 'Where is your restaurant?' : role === 'customer' ? 'Where should we deliver?' : 'Where do you start from?'}
+          value={location}
+          onChange={setLocation}
+        />
         <label className="field">
           <span>Email</span>
           <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />

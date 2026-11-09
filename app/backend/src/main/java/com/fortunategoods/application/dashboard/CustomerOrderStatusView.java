@@ -1,5 +1,6 @@
 package com.fortunategoods.application.dashboard;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -18,7 +19,8 @@ public record CustomerOrderStatusView(List<OrderRow> orders) {
     }
 
     public record OrderRow(String id, String restaurantId, String restaurantName, String status, double total,
-            String deliveryAddress, String specialInstructions, String rejectReason, List<LineRow> lines) {
+            String deliveryAddress, String specialInstructions, String rejectReason, List<LineRow> lines,
+            String courierName, LocalDateTime pickedUpAt, LocalDateTime deliveredAt, Double deliveryLat, Double deliveryLng) {
     }
 
     // name and price are the copy saved when the order was placed.
@@ -26,19 +28,21 @@ public record CustomerOrderStatusView(List<OrderRow> orders) {
     }
 
     // restaurantNames: restaurant id -> name, for the restaurants these orders come from.
-    public static CustomerOrderStatusView of(List<Order> orders, Map<String, String> restaurantNames) {
+    // deliveries: order id -> how its delivery is going.
+    public static CustomerOrderStatusView of(List<Order> orders, Map<String, String> restaurantNames, Map<String, OrderDelivery> deliveries) {
         return new CustomerOrderStatusView(orders.stream()
-                .map(order -> row(order, restaurantNames.get(order.getRestaurantId())))
+                .map(order -> row(order, restaurantNames.get(order.getRestaurantId()), deliveries.get(order.getId())))
                 .toList());
     }
 
-    private static OrderRow row(Order order, String restaurantName) {
+    private static OrderRow row(Order order, String restaurantName, OrderDelivery delivery) {
         List<LineRow> lines = order.getLines().stream()
                 .map(line -> new LineRow(line.getMenuItemId(), line.getName(), line.getQuantity(), line.getPrice(), line.getOriginalPrice()))
                 .toList();
         double total = order.getLines().stream().mapToDouble(line -> line.getPrice() * line.getQuantity()).sum();
         return new OrderRow(order.getId(), order.getRestaurantId(), restaurantName,
                 order.getStatus().name().toLowerCase(Locale.ROOT), total, order.getDeliveryAddress(),
-                order.getSpecialInstructions(), order.getRejectReason(), lines);
+                order.getSpecialInstructions(), order.getRejectReason(), lines, delivery.courierName(),
+                delivery.pickedUpAt(), delivery.deliveredAt(), delivery.deliveryLat(), delivery.deliveryLng());
     }
 }

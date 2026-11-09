@@ -7,8 +7,9 @@
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
 //   - times come without a zone (`2026-11-07T22:04:35`) and are UTC: read through `time()`
+//   - money from the pricing routes (checkout, summary, history) is in cents (`totalCents`), dollars here
 // Adjust here, and only here, when a response changes.
-import type { CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
+import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -102,6 +103,7 @@ export function toOrder(j: Raw): Order {
     courierId: optionalText(j.courierId),
     courierName: optionalText(j.courierName),
     pickedUpAt: time(j.pickedUpAt),
+    deliveredAt: time(j.deliveredAt),
   };
 }
 
@@ -175,6 +177,7 @@ export function toCityView(j: Raw): CityView {
       queued: Number(r.queued),
       inPreparation: Number(r.inPreparation),
       ready: Number(r.ready),
+      soldOutItems: (r.soldOutItems ?? []).map(String),
     })),
     couriers: (j.couriers ?? []).map((c: Raw) => ({
       id: text(c.id),
@@ -192,4 +195,52 @@ export function toWaitingOrder(j: Raw): WaitingOrder {
 
 export function toStalledOrder(j: Raw): StalledOrder {
   return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), courierName: text(j.courierName) };
+}
+
+// ---------- Pricing (PRC): money comes in cents ----------
+
+const dollars = (cents: unknown): number => Number(cents ?? 0) / 100;
+
+/** The fare parts every pricing response carries. History rows call the total `amountCents`. */
+function toFare(j: Raw): Fare {
+  return {
+    subtotal: dollars(j.subtotalCents),
+    deliveryFee: dollars(j.deliveryFeeCents),
+    serviceFee: dollars(j.serviceFeeCents),
+    surcharge: dollars(j.surchargeCents),
+    total: dollars(j.totalCents ?? j.amountCents),
+  };
+}
+
+export function toCheckout(j: Raw): Checkout {
+  return { paymentId: text(j.paymentId), clientSecret: text(j.clientSecret), fare: toFare(j) };
+}
+
+export function toOrderSummary(j: Raw): OrderSummary {
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName, 'Restaurant'),
+    courierName: optionalText(j.courierName),
+    deliveryAddress: text(j.deliveryAddress),
+    lines: (j.lines ?? []).map((l: Raw) => ({ name: text(l.name), quantity: Number(l.quantity), price: dollars(l.priceCents) })),
+    fare: toFare(j),
+    placedAt: time(j.placedAt) ?? '',
+    deliveredAt: time(j.deliveredAt) ?? '',
+    cardBrand: optionalText(j.cardBrand),
+    cardLast4: optionalText(j.cardLast4),
+  };
+}
+
+/** A courier's row has no money keys at all (`entryType` included), so that is what tells the two apart. */
+export function toHistoryRow(j: Raw): HistoryRow {
+  if (j.entryType === undefined || j.entryType === null) return toCourierDelivery(j);
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName, 'Restaurant'),
+    entryType: lower<LedgerEntryType>(j.entryType),
+    finalStatus: lower<OrderStatus>(j.finalStatus),
+    fare: toFare(j),
+    placedAt: time(j.placedAt) ?? '',
+    finishedAt: time(j.finishedAt) ?? '',
+  };
 }

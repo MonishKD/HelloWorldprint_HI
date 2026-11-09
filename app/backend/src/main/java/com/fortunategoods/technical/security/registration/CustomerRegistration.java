@@ -2,7 +2,9 @@ package com.fortunategoods.technical.security.registration;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.fortunategoods.domain.user.SignUpLocation;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -20,8 +22,12 @@ public class CustomerRegistration extends Registration {
         super(userRepository, passwordEncoder);
     }
 
-    // Saves the customer's account and returns it with its new id.
-    public User register(String username, String email, String password) {
-        return saveAccount(username, email, password, UserRole.CUSTOMER);
+    // Saves the customer's account with their name and delivery location, all or none, and returns it with its new id.
+    @Transactional
+    public User register(String username, String email, String password, SignUpLocation location) {
+        User customer = saveAccount(username, email, password, UserRole.CUSTOMER);
+        userRepository.saveCustomerLocation(customer.getId(), location.name().trim(), location.deliveryAddress().trim(),
+                location.latitude(), location.longitude());
+        return customer;
     }
 }

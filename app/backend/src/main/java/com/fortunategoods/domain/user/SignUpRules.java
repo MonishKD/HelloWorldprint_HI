@@ -45,9 +45,33 @@ public final class SignUpRules {
         }
     }
 
+    // Every new account needs a real position; 0, 0 means "no location" on the map. A customer also needs a name and a delivery address.
+    public static void checkLocation(UserRole role, SignUpLocation location) {
+        Double latitude = location.latitude();
+        Double longitude = location.longitude();
+        if (latitude == null || longitude == null) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "Choose your location on the map");
+        }
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180 || (latitude == 0 && longitude == 0)) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, "That location is not valid");
+        }
+        if (role == UserRole.CUSTOMER) {
+            requireText(location.name(), 100, "Your name");
+            requireText(location.deliveryAddress(), 255, "Your delivery address");
+        }
+    }
+
+    private static void requireText(String value, int maxLength, String label) {
+        if (value == null || value.isBlank()) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, label + " is required");
+        }
+        if (value.trim().length() > maxLength) {
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID, label + " must be at most " + maxLength + " characters");
+        }
+    }
+
     // The restaurant a new restaurant account owns: CLOSED, empty menu, no id yet (the database gives it one).
-    // No coordinates yet, sign-up doesn't ask for them.
-    public static Restaurant newRestaurant(String restaurantName) {
-        return new Restaurant(null, restaurantName.trim(), RestaurantStatus.CLOSED, 0, 0, List.of());
+    public static Restaurant newRestaurant(String restaurantName, SignUpLocation location) {
+        return new Restaurant(null, restaurantName.trim(), RestaurantStatus.CLOSED, location.latitude(), location.longitude(), List.of());
     }
 }

@@ -37,16 +37,18 @@ public class DashboardService {
     private final RestaurantOrderService restaurantOrderService; // already builds the queue for one restaurant
     private final AssignmentRepository assignmentRepository; // which courier has an order right now
     private final CourierRepository courierRepository;
+    private final OrderDeliveryReader orderDeliveryReader;
 
     public DashboardService(OrderRepository orderRepository, UserRepository userRepository,
             RestaurantRepository restaurantRepository, RestaurantOrderService restaurantOrderService,
-            AssignmentRepository assignmentRepository, CourierRepository courierRepository) {
+            AssignmentRepository assignmentRepository, CourierRepository courierRepository, OrderDeliveryReader orderDeliveryReader) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
         this.restaurantOrderService = restaurantOrderService;
         this.assignmentRepository = assignmentRepository;
         this.courierRepository = courierRepository;
+        this.orderDeliveryReader = orderDeliveryReader;
     }
 
     // Throws FORBIDDEN for any other role. No orders yet gives an empty list.
@@ -57,10 +59,12 @@ public class DashboardService {
         List<Order> orders = orderRepository.findByCustomerId(userId);
         // Each restaurant is looked up once, however many orders come from it.
         Map<String, String> restaurantNames = new HashMap<>();
+        Map<String, OrderDelivery> deliveries = new HashMap<>();
         for (Order order : orders) {
             restaurantNames.computeIfAbsent(order.getRestaurantId(), this::restaurantName);
+            deliveries.put(order.getId(), orderDeliveryReader.of(order));
         }
-        return CustomerOrderStatusView.of(orders, restaurantNames);
+        return CustomerOrderStatusView.of(orders, restaurantNames, deliveries);
     }
 
     // Throws FORBIDDEN for any other role or a staff account with no restaurant. An empty queue gives an empty list.
@@ -105,12 +109,14 @@ public class DashboardService {
         OrdModulePermissions.requireRole(role, OrdModulePermissions.viewCityRoles(), "Sign in to see the city");
 
         Map<String, Map<OrderStatus, Integer>> counts = orderRepository.orderCount();
+        Map<String, List<String>> soldOut = restaurantRepository.findSoldOutItemNames();
         List<CityView.CityRestaurant> restaurants = new ArrayList<>();
         for (Restaurant restaurant : restaurantRepository.findAll()) {
             Map<OrderStatus, Integer> count = counts.getOrDefault(restaurant.getId(), Map.of());
             restaurants.add(new CityView.CityRestaurant(restaurant.getId(), restaurant.getName(), restaurant.getStatus(),
                 restaurant.getLatitude(), restaurant.getLongitude(), count.getOrDefault(OrderStatus.ACCEPTED, 0),
-                count.getOrDefault(OrderStatus.PREPARING, 0), count.getOrDefault(OrderStatus.READY, 0)));
+                count.getOrDefault(OrderStatus.PREPARING, 0), count.getOrDefault(OrderStatus.READY, 0),
+                soldOut.getOrDefault(restaurant.getId(), List.of())));
         }
         return new CityView(restaurants, courierRepository.findOnDuty());
     }

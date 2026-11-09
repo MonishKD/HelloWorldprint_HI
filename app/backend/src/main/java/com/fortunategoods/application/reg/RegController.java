@@ -9,6 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import com.fortunategoods.application.reg.RegistrationResult.RegistrationOutcome;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.SignUpLocation;
 import com.fortunategoods.domain.user.SignUpRules;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.domain.user.UserRole;
@@ -77,7 +78,8 @@ public class RegController {
     @PostMapping("/register")
     public ResponseEntity<?> registerAccount(@RequestBody RegisterReqJSON request) {
         RegistrationResult result = register(request.getUsername(), request.getEmail(), request.getPassword(),
-                request.getRole(), request.getRestaurantName(), request.getAddress());
+                request.getRole(), request.getRestaurantName(), request.getAddress(),
+                new SignUpLocation(request.getLatitude(), request.getLongitude(), request.getName(), request.getDeliveryAddress()));
         return switch (result.outcome()) {
             case SUCCESS -> ResponseEntity.status(HttpStatus.CREATED).body(RegisterResponse.of(result));
             case INVALID_INPUT -> error(HttpStatus.BAD_REQUEST, "INVALID_INPUT", result.message());
@@ -99,7 +101,7 @@ public class RegController {
         Any refusal comes back as a RegistrationResult failure with a message, never as a crash.
     */
     public RegistrationResult register(String username, String email, String password, String role,
-            String restaurantName, String address) {
+            String restaurantName, String address, SignUpLocation location) {
 
         // 1. Required fields. 255 matches the limit used for login above.
         if (isBlank(username) || isBlank(email) || isBlank(password)) {
@@ -120,9 +122,10 @@ public class RegController {
             // 2. The Domain's rules. Each one throws a DomainRuleViolation if the input breaks it.
             UserRole chosenRole = SignUpRules.publicRole(role);
             SignUpRules.checkRestaurantDetails(chosenRole, restaurantName, address);
+            SignUpRules.checkLocation(chosenRole, location);
 
             // 3. Save the account the way its role needs.
-            User newAccount = saveAccount(chosenRole, cleanUsername, cleanEmail, password, restaurantName, address);
+            User newAccount = saveAccount(chosenRole, cleanUsername, cleanEmail, password, restaurantName, address, location);
             // A restaurant account also gets back the id of the restaurant just created for it (#144).
             String restaurantId = null;
             if (chosenRole == UserRole.RESTAURANT) {
@@ -144,15 +147,15 @@ public class RegController {
     // Picks the AuthenticationService method for the role. SignUpRules.publicRole() already refused OPERATOR,
     // so only these three roles can reach this method.
     private User saveAccount(UserRole role, String username, String email, String password,
-            String restaurantName, String address) {
+            String restaurantName, String address, SignUpLocation location) {
         switch (role) {
             case CUSTOMER:
-                return authenticationService.registerCustomer(username, email, password);
+                return authenticationService.registerCustomer(username, email, password, location);
             case COURIER:
-                return authenticationService.registerCourier(username, email, password);
+                return authenticationService.registerCourier(username, email, password, location);
             case RESTAURANT:
                 // The Domain builds the new restaurant: closed, with an empty menu (#144).
-                Restaurant newRestaurant = SignUpRules.newRestaurant(restaurantName);
+                Restaurant newRestaurant = SignUpRules.newRestaurant(restaurantName, location);
                 return authenticationService.registerRestaurant(username, email, password, newRestaurant,
                         address.trim());
             default:

@@ -2,10 +2,12 @@ import { useState } from 'react';
 import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrder } from '../../domain';
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
-import CityMap from '../map/CityMap';
+import { LONG_QUEUE } from '../map/CityMap';
+import { CityMapWithDetails } from '../map/RestaurantDetailsPanel';
+import HistoryTable from '../prc/HistoryTable';
 import { setRestaurantStatus } from '../ord/ordApi';
 import { errorMessage, getCityView, send } from './dashboardApi';
-import { DashboardLayout } from './DashboardRouter';
+import { DashboardLayout, useDashboardTab } from './DashboardRouter';
 import { cancelOrder, listAllOrders, listDispatchQueue, listStalledOrders, reassignOrder, refundOrder, resetSystem } from './operatorApi';
 
 const FILTERS: Record<string, (o: Order) => boolean> = {
@@ -15,9 +17,8 @@ const FILTERS: Record<string, (o: Order) => boolean> = {
   Issues: (o) => ['rejected', 'cancelled', 'refunded'].includes(o.status),
 };
 
-/** Six queued orders is the "long" band of R-DASH-03. */
-const LONG_QUEUE = 6;
-const BEFORE_PICKUP: Order['status'][] = ['placed', 'accepted', 'preparing', 'ready'];
+// The operator cancels accepted orders not picked up yet (#239). A placed order is the restaurant's to accept or reject.
+const BEFORE_PICKUP: Order['status'][] = ['accepted', 'preparing', 'ready'];
 
 export default function OperatorDashboardPage() {
   return (
@@ -87,6 +88,7 @@ function StalledOrdersPanel({ stalled, onReassign }: { stalled: StalledOrder[]; 
 function OperatorDashboard() {
   const { data, error, reload } = useLoad(() => Promise.all([getCityView(), listAllOrders(), listDispatchQueue(), listStalledOrders()]), []);
   usePolling(reload);
+  const tab = useDashboardTab();
   const [filter, setFilter] = useState('Active');
   const [actionError, setActionError] = useState('');
 
@@ -145,18 +147,49 @@ function OperatorDashboard() {
         </section>
       )}
 
-      <CityMap
+      {tab === 'map' && (
+      <CityMapWithDetails
         restaurants={restaurants}
         couriers={couriers}
         homes={orders.filter(FILTERS.Active).flatMap((o) => (o.deliveryLat === undefined || o.deliveryLng === undefined ? [] : [{ id: o.id, lat: o.deliveryLat, lng: o.deliveryLng, label: `#${o.id} · ${o.customerName}` }]))}
         height={360}
       />
+      )}
 
+      {tab === 'delivery' && (
+        <>
       <div className="split">
         <DispatchQueuePanel queue={queue} />
         <StalledOrdersPanel stalled={stalled} onReassign={(o) => run(`Reassign order #${o.orderId}`, () => reassignOrder(o.orderId))} />
       </div>
 
+        <section className="card">
+          <h2>Couriers on duty</h2>
+          {couriers.length === 0 ? (
+            <Empty icon="moon" title="No couriers on duty" />
+          ) : (
+            <ul className="roster">
+              {couriers.map((c) => (
+                <li key={c.id}>
+                  <span className="avatar" aria-hidden="true">
+                    {initials(c.name)}
+                  </span>
+                  <span className="roster-name">
+                    <strong>{c.name}</strong>
+                  </span>
+                  <StatusBadge status={c.courierState} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        </>
+      )}
+
+      {tab === 'history' && <HistoryTable open />}
+
+      {tab === '' && (
+        <>
       <section className="card">
         <div className="page-head">
           <h2>Orders</h2>
@@ -219,7 +252,6 @@ function OperatorDashboard() {
         )}
       </section>
 
-      <div className="split">
         <section className="card">
           <h2>Restaurants</h2>
           <ul className="roster">
@@ -244,27 +276,8 @@ function OperatorDashboard() {
             ))}
           </ul>
         </section>
-        <section className="card">
-          <h2>Couriers on duty</h2>
-          {couriers.length === 0 ? (
-            <Empty icon="moon" title="No couriers on duty" />
-          ) : (
-            <ul className="roster">
-              {couriers.map((c) => (
-                <li key={c.id}>
-                  <span className="avatar" aria-hidden="true">
-                    {initials(c.name)}
-                  </span>
-                  <span className="roster-name">
-                    <strong>{c.name}</strong>
-                  </span>
-                  <StatusBadge status={c.courierState} />
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+        </>
+      )}
     </>
   );
 }
