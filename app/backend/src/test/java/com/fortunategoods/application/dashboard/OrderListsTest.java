@@ -13,6 +13,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import tools.jackson.databind.json.JsonMapper;
+
 import com.fortunategoods.application.reg.Session;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
@@ -20,6 +22,7 @@ import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
@@ -36,7 +39,7 @@ public class OrderListsTest {
     void setup() {
         orders = mock(OrderRepository.class);
         users = mock(UserRepository.class);
-        customerView = new CustomerOrderList(orders);
+        customerView = new CustomerOrderList(orders, new OrderDeliveryReader(users, mock(OrderEventRepository.class)));
         restaurantView = new RestaurantOrderList(orders, users);
     }
 
@@ -56,6 +59,16 @@ public class OrderListsTest {
         assertNull(first.lines().get(1).originalPrice()); // not on discount
         assertEquals(3.0 * 2 + 5.0, first.total());
         verify(orders).findByCustomer("7");
+    }
+
+    @Test
+    void operatorJsonHasOneCourierName() {
+        OperatorOrderResponse response = new OperatorOrderResponse(DashboardOrder.of(order("100", OrderStatus.READY)), "Bistro", "5", "Carl");
+
+        String json = new JsonMapper().writeValueAsString(response);
+
+        assertEquals(2, json.split("\"courierName\"", -1).length);
+        assertTrue(json.contains("\"courierName\":\"Carl\""));
     }
 
     @Test

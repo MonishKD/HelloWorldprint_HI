@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, useLoad } from '../common';
+import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, timeOf, useLoad } from '../common';
 import MenuPage from '../ord/MenuPage';
 import CityMapPanel from '../map/CityMapPanel';
 import MapView from '../map/MapView';
@@ -65,6 +65,15 @@ function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) 
   );
 }
 
+function handoffTimes(o: Order) {
+  return [
+    o.pickedUpAt && `Picked up ${timeOf(o.pickedUpAt)}${o.courierName ? ` by ${o.courierName}` : ''}`,
+    o.deliveredAt && `Delivered ${timeOf(o.deliveredAt)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 function MyOrders() {
   const user = useUser();
   const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
@@ -107,6 +116,7 @@ function MyOrders() {
       media={showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
       style={stagger(i)}
     >
+      {handoffTimes(o) && <small className="muted">{handoffTimes(o)}</small>}
       {o.status === 'placed' && (
         <ConfirmButton label="Cancel order" question={`Cancel order #${o.id}?`} variant="danger" onConfirm={() => cancel(o)} />
       )}

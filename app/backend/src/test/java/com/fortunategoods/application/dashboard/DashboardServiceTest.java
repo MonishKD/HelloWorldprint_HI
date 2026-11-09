@@ -41,7 +41,8 @@ class DashboardServiceTest {
                 new GetPreparationQueueResponse(1, "102", OrderStatus.ACCEPTED),
                 new GetPreparationQueueResponse(2, "103", OrderStatus.ACCEPTED)));
 
-        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class), mock(CourierRepository.class));
+        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class), mock(CourierRepository.class),
+                new OrderDeliveryReader(users, mock(OrderEventRepository.class)));
     }
 
     @Test
