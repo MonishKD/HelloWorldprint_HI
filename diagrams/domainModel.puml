@@ -88,9 +88,17 @@ class "Dispatch Queue" as DQ {
 
 }
 
-class "Order History" as OrderHistory {
+class "Ledger Entry" as OrderHistory {
+    type: Type
     finalStatus: OrderStatus
-    totalCharges: double
+    subtotalCents: long
+    deliveryFeeCents: long
+    serviceFeeCents: long
+    surchargeCents: long
+    amountCents: long
+    placedAt: DateTime
+    finishedAt: DateTime
+    paymentReference: String
 }
 
 class "Order State Transitions" as OST {
@@ -199,6 +207,12 @@ enum "CourierState" as CourierState {
     idle
     assigned
     carrying
+}
+
+enum "Type" as Type {
+    charge
+    no_charge
+    refund
 }
 
 @enduml
