@@ -109,6 +109,8 @@ class "Order State Transitions" as OST {
 }
 
 class "Assignment" as Offer {
+    id: String
+    status: AssignmentStatus
     isPickedUp: boolean
     isDelivered: boolean
 }
@@ -213,6 +215,15 @@ enum "Type" as Type {
     charge
     no_charge
     refund
+}
+
+enum "Assignment Status" as AssignmentStatus {
+    offered
+    accepted
+    declined
+    withdrawn
+    reassigned
+    cancelled
 }
 
 @enduml
