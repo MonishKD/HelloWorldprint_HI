@@ -46,6 +46,12 @@ public class CourierOfferServiceTest {
         jdbc.update("INSERT INTO orders (id, customer_id, restaurant_id, status) VALUES (?, ?, ?, ?)",
             Integer.parseInt(orderId), Integer.parseInt(customerId), Integer.parseInt(restaurantId), "READY");
 
+        // one line on the order: the dispatch queue can't load an order without one
+        jdbc.update("INSERT INTO menus (id, restaurant_id) VALUES (900001, ?)", Integer.parseInt(restaurantId));
+        jdbc.update("INSERT INTO menu_items (id, menu_id, name, price, status) VALUES (900001, 900001, 'Item', 5.00, 'AVAILABLE')");
+        jdbc.update("INSERT INTO order_lines (order_id, menu_item_id, quantity, name, price) VALUES (?, 900001, 1, 'Item', 5.00)",
+            Integer.parseInt(orderId));
+
         // the READY event, which the dispatch queue joins on
         jdbc.update("INSERT INTO order_events (order_id, new_status) VALUES (?, ?)",
             Integer.parseInt(orderId), "READY");
@@ -122,7 +128,7 @@ public class CourierOfferServiceTest {
         jdbc.update("UPDATE orders SET status = 'CANCELLED' WHERE id = ?", Integer.parseInt(orderId));
         DomainRuleViolation exception = assertThrows(DomainRuleViolation.class, () -> service.accept(courierId));
         assertEquals(DomainRuleViolation.Reason.CONFLICT, exception.getReason());
-        assertEquals("courier hasn't been assigned!", exception.getMessage());
+        assertEquals("Order is no longer available!", exception.getMessage());
     }
 
     @Test 

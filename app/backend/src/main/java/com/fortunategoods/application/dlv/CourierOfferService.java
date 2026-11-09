@@ -52,7 +52,7 @@ public class CourierOfferService {
         }
         if (!assignments.setStatus(Assignment.Status.ACCEPTED, Assignment.Status.OFFERED, active.getId()))
         {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "assignment status has been set improperly!");
+            throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "This offer is no longer available");
         }
         if (!couriers.updateStatusAndPosition(courierId, CourierStatus.IDLE, CourierStatus.ASSIGNED, null, null))
         {
@@ -68,17 +68,17 @@ public class CourierOfferService {
     @Transactional
     public void decline(String courierId)
     {
-
-        //lock the waiting orders FIRST!
-        orders.lockWaitingForDispatch();
-        couriers.lockAll();
-
         Assignment active = assignments.findActiveByCourier(courierId);
         if (active == null || active.getStatus() != Assignment.Status.OFFERED)
         {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "You have no pending offer");
         }
-        
+
+        // Orders before couriers, like a cancel, or the two can deadlock. The offered order isn't in the waiting list yet.
+        orders.lockOrder(active.getOrderId());
+        orders.lockWaitingForDispatch();
+        couriers.lockAll();
+
         if (!assignments.setStatus(Assignment.Status.DECLINED, Assignment.Status.OFFERED, active.getId())) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "This offer is no longer available");
         }
