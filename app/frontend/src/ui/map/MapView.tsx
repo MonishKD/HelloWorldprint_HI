@@ -38,6 +38,10 @@ export interface MapPin {
   detail?: string;
   /** Makes the pin clickable (and keyboard-focusable). */
   onSelect?: () => void;
+  /** Restaurant queue band (R-DASH-03): colours the pin instead of `status`. */
+  band?: 'short' | 'building' | 'long';
+  /** Always-visible label under the pin, e.g. "Uniburger · 4 queued". */
+  tag?: string;
 }
 
 const DOWNTOWN: LatLng = [45.5017, -73.5673];
@@ -50,14 +54,26 @@ type PinKind = 'store' | 'home' | 'courier' | 'request' | 'restaurant' | 'rider'
 const SIZES: Record<PinKind, number> = { store: 34, home: 34, courier: 40, request: 34, restaurant: 38, rider: 30 };
 
 /** DOM marker. Only restaurants, customer homes and couriers ever appear on the map: no other points of interest. */
-function marker(at: LatLng, kind: PinKind, inner: string, label: string, opts: { hue?: number; status?: string; detail?: string; onSelect?: () => void } = {}) {
+function marker(
+  at: LatLng,
+  kind: PinKind,
+  inner: string,
+  label: string,
+  opts: { hue?: number; status?: string; detail?: string; onSelect?: () => void; band?: string; tag?: string } = {},
+) {
   const size = SIZES[kind];
   const el = document.createElement('div');
-  el.className = `map-marker is-${kind}${opts.status ? ` status-${opts.status}` : ''}`;
+  el.className = `map-marker is-${kind}${opts.status ? ` status-${opts.status}` : ''}${opts.band ? ` band-${opts.band}` : ''}`;
   el.style.cssText = `width:${size}px;height:${size}px;--hue:${opts.hue ?? 168}`;
   el.dataset.label = label;
   if (opts.detail) el.dataset.detail = `\n${opts.detail}`;
   el.innerHTML = inner;
+  if (opts.tag) {
+    const tag = document.createElement('span');
+    tag.className = 'pin-tag';
+    tag.textContent = opts.tag;
+    el.append(tag);
+  }
   if (opts.onSelect) {
     const select = opts.onSelect;
     el.classList.add('is-clickable');
@@ -84,8 +100,18 @@ function courierAt(d: MapDelivery, path: LatLng[]): LatLng {
   return d.pickedUpAt ? pointAlong(path, deliveryProgress(d.pickedUpAt)) : d.from;
 }
 
-/** Stylised OpenStreetMap view: delivery routes with a moving courier, and/or standalone pins. */
-export default function MapView({ deliveries, pins = [], height = 280 }: { deliveries: MapDelivery[]; pins?: MapPin[]; height?: number }) {
+/** Stylised OpenStreetMap view: delivery routes with a moving courier, and/or standalone pins. `onPick` makes a click choose a point. */
+export default function MapView({
+  deliveries,
+  pins = [],
+  height = 280,
+  onPick,
+}: {
+  deliveries: MapDelivery[];
+  pins?: MapPin[];
+  height?: number;
+  onPick?: (at: LatLng) => void;
+}) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<maplibregl.Map | null>(null);
   const markers = useRef<maplibregl.Marker[]>([]);
@@ -94,6 +120,9 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
   const fittedFor = useRef('');
   const fittedBounds = useRef<maplibregl.LngLatBounds | null>(null);
   const [paths, setPaths] = useState<Record<string, LatLng[]>>({});
+  // The map is created once, so its click handler reads the latest onPick through a ref.
+  const pick = useRef(onPick);
+  pick.current = onPick;
   // Parents re-render every second for ETAs; only redraw when the data actually changes.
   const dataKey = JSON.stringify([deliveries, pins]);
 
@@ -133,6 +162,7 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
     // Surface tile / style problems in the console instead of failing silently.
     m.on('error', (e) => console.error('[map]', e.error?.message ?? e));
     m.on('style.load', syncRoutes);
+    m.on('click', (e) => pick.current?.([e.lngLat.lat, e.lngLat.lng]));
     const themeWatch = new MutationObserver(() => {
       // style.load fires again after setStyle, which re-adds the route in the new colours
       m.setStyle(buildStyle());
@@ -193,7 +223,7 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
       path.forEach((p) => bounds.extend(lngLat(p)));
     }
     for (const p of pins) {
-      const opts = { hue: p.hue, status: p.status, detail: p.detail, onSelect: p.onSelect };
+      const opts = { hue: p.hue, status: p.status, detail: p.detail, onSelect: p.onSelect, band: p.band, tag: p.tag };
       const kind = p.kind ?? 'request';
       add(marker(p.at, kind, kind === 'home' ? homePin : kind === 'rider' ? riderPin : storePin(p.label), p.label, opts));
       bounds.extend(lngLat(p.at));
@@ -220,5 +250,5 @@ export default function MapView({ deliveries, pins = [], height = 280 }: { deliv
     return () => clearInterval(id);
   }, [dataKey, paths]);
 
-  return <div ref={el} className="map" style={{ height }} role="region" aria-label="Map" />;
+  return <div ref={el} className={onPick ? 'map is-picker' : 'map'} style={{ height }} role="region" aria-label="Map" />;
 }

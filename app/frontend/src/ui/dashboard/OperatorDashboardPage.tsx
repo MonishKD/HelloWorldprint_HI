@@ -2,7 +2,9 @@ import { useState } from 'react';
 import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrder } from '../../domain';
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
+import { LONG_QUEUE } from '../map/CityMap';
 import { CityMapWithDetails } from '../map/RestaurantDetailsPanel';
+import HistoryTable from '../prc/HistoryTable';
 import { setRestaurantStatus } from '../ord/ordApi';
 import { errorMessage, getCityView, send } from './dashboardApi';
 import { DashboardLayout } from './DashboardRouter';
@@ -15,8 +17,6 @@ const FILTERS: Record<string, (o: Order) => boolean> = {
   Issues: (o) => ['rejected', 'cancelled', 'refunded'].includes(o.status),
 };
 
-/** Six queued orders is the "long" band of R-DASH-03. */
-const LONG_QUEUE = 6;
 const BEFORE_PICKUP: Order['status'][] = ['placed', 'accepted', 'preparing', 'ready'];
 
 export default function OperatorDashboardPage() {
@@ -265,6 +265,8 @@ function OperatorDashboard() {
           )}
         </section>
       </div>
+
+      <HistoryTable />
     </>
   );
 }

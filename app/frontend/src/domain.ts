@@ -164,3 +164,51 @@ export interface Order {
   /** When the restaurant accepted the order; the preparation queue is ordered by this (first accepted, first prepared). */
   acceptedAt?: string;
 }
+
+// ---------- Pricing (PRC) ----------
+
+/** What an order costs, in dollars (R-PRC-01). The backend sends cents; adapters.ts converts. */
+export interface Fare {
+  subtotal: number;
+  deliveryFee: number;
+  serviceFee: number;
+  surcharge: number;
+  total: number;
+}
+
+/** The amount held on the card at checkout (#259), before the order is placed. */
+export interface Checkout {
+  paymentId: string;
+  clientSecret: string;
+  fare: Fare;
+}
+
+/** A delivered order's summary (R-PRC-02, #262): what was charged, line by line. */
+export interface OrderSummary {
+  orderId: string;
+  restaurantName: string;
+  courierName?: string;
+  deliveryAddress: string;
+  lines: { name: string; quantity: number; price: number }[];
+  fare: Fare;
+  placedAt: string;
+  deliveredAt: string;
+  cardBrand?: string;
+  cardLast4?: string;
+}
+
+export type LedgerEntryType = 'charge' | 'no_charge' | 'refund';
+
+/** One ledger row of a history (R-PRC-04, #264): customers, restaurants and the operator. A refund's amounts are negative. */
+export interface LedgerRow {
+  orderId: string;
+  restaurantName: string;
+  entryType: LedgerEntryType;
+  finalStatus: OrderStatus;
+  fare: Fare;
+  placedAt: string;
+  finishedAt: string;
+}
+
+/** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */
+export type HistoryRow = LedgerRow | CourierDelivery;
