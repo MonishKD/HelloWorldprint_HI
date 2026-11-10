@@ -1,6 +1,7 @@
 package com.fortunategoods.application.dashboard;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,7 @@ class DashboardServiceTest {
 
     private OrderRepository orders;
     private RestaurantOrderService restaurantOrders;
+    private LedgerRepository ledger;
     private DashboardService dashboardService;
 
     @BeforeEach
@@ -33,6 +35,7 @@ class DashboardServiceTest {
         UserRepository users = mock(UserRepository.class);
         RestaurantRepository restaurants = mock(RestaurantRepository.class);
         restaurantOrders = mock(RestaurantOrderService.class);
+        ledger = mock(LedgerRepository.class);
 
         when(orders.findByCustomerId("7")).thenReturn(List.of(order("101", OrderStatus.PLACED), order("100", OrderStatus.REJECTED, "Sold out")));
         when(users.findRestaurantIdByUserId("8")).thenReturn("1");
@@ -42,7 +45,18 @@ class DashboardServiceTest {
                 new GetPreparationQueueResponse(2, "103", OrderStatus.ACCEPTED)));
 
         dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, mock(AssignmentRepository.class), mock(CourierRepository.class),
-                new OrderDeliveryReader(users, mock(OrderEventRepository.class)));
+                new OrderDeliveryReader(users, mock(OrderEventRepository.class)), ledger);
+    }
+
+    @Test
+    void operatorSeesWhatAnOrderWasCharged() {
+        when(orders.findAll()).thenReturn(List.of(order("100", OrderStatus.DELIVERED), order("101", OrderStatus.READY)));
+        when(ledger.findChargedAmounts()).thenReturn(Map.of("100", 1269L));
+
+        List<OperatorOrderResponse> rows = dashboardService.allOrders("6", UserRole.OPERATOR);
+
+        assertEquals(12.69, rows.get(0).getChargedTotal());
+        assertNull(rows.get(1).getChargedTotal());
     }
 
     @Test
