@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrder } from '../../domain';
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
@@ -6,9 +6,9 @@ import { LONG_QUEUE } from '../map/CityMap';
 import { CityMapWithDetails } from '../map/RestaurantDetailsPanel';
 import HistoryTable from '../prc/HistoryTable';
 import { setRestaurantStatus } from '../ord/ordApi';
-import { errorMessage, getCityView, send } from './dashboardApi';
+import { errorMessage, getCityView, onCommandFinished, send } from './dashboardApi';
 import { DashboardLayout, useDashboardTab } from './DashboardRouter';
-import { cancelOrder, listAllOrders, listDispatchQueue, listStalledOrders, reassignOrder, refundOrder, resetSystem } from './operatorApi';
+import { cancelOrder, listAllOrders, listDispatchQueue, listStalledOrders, reassignOrder, refundOrder } from './operatorApi';
 
 const FILTERS: Record<string, (o: Order) => boolean> = {
   All: () => true,
@@ -88,6 +88,7 @@ function StalledOrdersPanel({ stalled, onReassign }: { stalled: StalledOrder[]; 
 function OperatorDashboard() {
   const { data, error, reload } = useLoad(() => Promise.all([getCityView(), listAllOrders(), listDispatchQueue(), listStalledOrders()]), []);
   usePolling(reload);
+  useEffect(() => onCommandFinished(reload), [reload]); // e.g. Reset in the information area (#277)
   const tab = useDashboardTab();
   const [filter, setFilter] = useState('Active');
   const [actionError, setActionError] = useState('');
@@ -117,7 +118,6 @@ function OperatorDashboard() {
           <h1>Platform overview</h1>
           <p className="muted">Everything happening on FortunateGoods right now.</p>
         </div>
-        <ConfirmButton variant="danger" label="Reset" question="Reset everything back to the seed?" onConfirm={() => run('Reset the system', resetSystem)} />
       </div>
 
       {actionError && (
