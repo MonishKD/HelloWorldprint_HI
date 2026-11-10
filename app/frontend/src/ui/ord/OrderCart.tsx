@@ -2,8 +2,8 @@ import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Checkout, MenuItem, OrderLine, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { money } from '../common';
-import { errorMessage, send } from '../dashboard/dashboardApi';
+import { money, useLoad } from '../common';
+import { errorMessage, getDashboardOrders, send } from '../dashboard/dashboardApi';
 import { Icon } from '../icons';
 import CardPayment, { type ConfirmCard } from '../prc/CardPayment';
 import FareLines from '../prc/FareLines';
@@ -27,6 +27,14 @@ export default function OrderCart({
   const navigate = useNavigate();
   const panelRef = useRef<HTMLElement>(null);
   const [address, setAddress] = useState(user.address ?? '');
+  // The backend delivers to the customer's saved address (#233) and copies it, with its coordinates, onto each order.
+  // No route returns that address yet, so it is read from the newest such order, read-only. A customer with no saved
+  // location (or no order yet) types one, which the backend uses when there is no saved location.
+  // ponytail: add the saved address to GET /auth/session and read it from there once the backend has it.
+  const { data: pastOrders, error: pastOrdersError } = useLoad(getDashboardOrders, []);
+  const savedAddress = pastOrders && [...pastOrders].reverse().find((o) => o.deliveryLat !== undefined)?.deliveryAddress;
+  const addressLoading = !pastOrders && !pastOrdersError;
+  const deliveryAddress = savedAddress ?? address;
   const [instructions, setInstructions] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -41,7 +49,7 @@ export default function OrderCart({
   const saved = lines.reduce((sum, l) => sum + (l.originalPrice - l.price) * l.quantity, 0);
   const cartKey = JSON.stringify(lines.map((l) => [l.itemId, l.quantity]));
   const held = payment?.cart === cartKey ? payment.checkout : null;
-  const order: CartOrder = { restaurantId: restaurant.id, lines: lines.map((l) => ({ itemId: l.itemId, quantity: l.quantity })), instructions, deliveryAddress: address };
+  const order: CartOrder = { restaurantId: restaurant.id, lines: lines.map((l) => ({ itemId: l.itemId, quantity: l.quantity })), instructions, deliveryAddress };
 
   // UI-level checks only; the backend will own the real ordering rules.
   const blockedReason =
@@ -53,7 +61,7 @@ export default function OrderCart({
           ? 'Everything is sold out right now. Check back later!'
           : '';
 
-  const cannotOrder = busy || !!blockedReason || lines.length === 0 || !address.trim();
+  const cannotOrder = busy || !!blockedReason || lines.length === 0 || !deliveryAddress.trim();
 
   /** Step 1 (#259): the backend prices the cart and holds that amount; the fare breakdown and the card field appear. */
   async function startCheckout() {
@@ -121,7 +129,12 @@ export default function OrderCart({
 
         <label className="field">
           <span>Deliver to</span>
-          <input required placeholder="Street address, apt" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+          {savedAddress || addressLoading ? (
+            <input readOnly value={savedAddress ?? ''} placeholder="Loading your saved address…" />
+          ) : (
+            <input required placeholder="Street address, apt" autoComplete="street-address" value={address} onChange={(e) => setAddress(e.target.value)} />
+          )}
+          {savedAddress && <small className="muted">Your saved address: every order goes here.</small>}
         </label>
         <label className="field">
           <span>Special instructions (optional)</span>
@@ -166,7 +179,7 @@ export default function OrderCart({
             {busy ? 'Checking out…' : 'Continue to payment'}
           </button>
         )}
-        {lines.length > 0 && !address.trim() && <p className="muted small center">Add a delivery address to continue.</p>}
+        {lines.length > 0 && !deliveryAddress.trim() && !addressLoading && <p className="muted small center">Add a delivery address to continue.</p>}
       </aside>
 
       {count > 0 && (
