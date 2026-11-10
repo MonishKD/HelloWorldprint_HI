@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useUser } from '../../session';
-import { Switch, useLoad, usePolling } from '../common';
-import { getCityView, onCommandFinished } from './dashboardApi';
+import { ConfirmButton, Switch, useLoad, usePolling } from '../common';
+import { getCityView, onCommandFinished, send } from './dashboardApi';
+import { resetSystem } from './operatorApi';
 
 interface DashboardInfo {
   selectedRestaurantId: string | null;
@@ -25,7 +26,10 @@ export function useDashboardInfo(): DashboardInfo {
   return info;
 }
 
-/** Who is signed in, the selected restaurant's counts (from the city read) and the map labels switch. */
+/**
+ * Who is signed in, the selected restaurant's counts (from the city read), the map labels switch and, for the operator,
+ * Reset (#277). Every view reloads after a command finishes, and the other signed-in users' views poll, so all reload after Reset.
+ */
 export default function InformationArea() {
   const user = useUser();
   const { selectedRestaurantId, showLabels, setShowLabels } = useDashboardInfo();
@@ -51,6 +55,10 @@ export default function InformationArea() {
       <span className="info-labels">
         Map labels <Switch checked={showLabels} label="Map labels" onChange={() => setShowLabels(!showLabels)} />
       </span>
+      {user.role === 'operator' && (
+        // A refusal is already in the output console (send logs it), so there is nothing else to show here.
+        <ConfirmButton variant="danger" label="Reset" question="Reset everything back to the seed? Every order and change is lost." onConfirm={() => send('Reset the system', resetSystem).catch(() => {})} />
+      )}
     </section>
   );
 }
