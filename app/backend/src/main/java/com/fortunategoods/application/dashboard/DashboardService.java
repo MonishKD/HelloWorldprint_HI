@@ -20,6 +20,7 @@ import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.AssignmentRepository;
 import com.fortunategoods.technical.persistence.CourierRepository;
+import com.fortunategoods.technical.persistence.LedgerRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
@@ -38,10 +39,12 @@ public class DashboardService {
     private final AssignmentRepository assignmentRepository; // which courier has an order right now
     private final CourierRepository courierRepository;
     private final OrderDeliveryReader orderDeliveryReader;
+    private final LedgerRepository ledgerRepository;
 
     public DashboardService(OrderRepository orderRepository, UserRepository userRepository,
             RestaurantRepository restaurantRepository, RestaurantOrderService restaurantOrderService,
-            AssignmentRepository assignmentRepository, CourierRepository courierRepository, OrderDeliveryReader orderDeliveryReader) {
+            AssignmentRepository assignmentRepository, CourierRepository courierRepository, OrderDeliveryReader orderDeliveryReader,
+            LedgerRepository ledgerRepository) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
@@ -49,6 +52,7 @@ public class DashboardService {
         this.assignmentRepository = assignmentRepository;
         this.courierRepository = courierRepository;
         this.orderDeliveryReader = orderDeliveryReader;
+        this.ledgerRepository = ledgerRepository;
     }
 
     // Throws FORBIDDEN for any other role. No orders yet gives an empty list.
@@ -92,14 +96,16 @@ public class DashboardService {
         OrdModulePermissions.requireRole(role, OrdModulePermissions.viewAllOrdersRoles(), "Only the operator can view all orders");
         OrderVerify.requireId(userId, "Operator ID");
 
+        Map<String, Long> chargedCents = ledgerRepository.findChargedAmounts();
         List<OperatorOrderResponse> responses = new ArrayList<>();
         for (Order order : orderRepository.findAll()) {
             // The courier comes from the order's active assignment (offered or accepted, not delivered yet)
             Assignment active = assignmentRepository.findActiveByOrder(order.getId());
             String courierId = active == null ? null : active.getCourierId();
             String courierName = courierId == null ? null : userRepository.findCourierName(courierId);
+            Long charged = chargedCents.get(order.getId());
             responses.add(new OperatorOrderResponse(DashboardOrder.of(order), restaurantName(order.getRestaurantId()),
-                    courierId, courierName));
+                    courierId, courierName, charged == null ? null : charged / 100.0));
         }
         return List.copyOf(responses);
     }

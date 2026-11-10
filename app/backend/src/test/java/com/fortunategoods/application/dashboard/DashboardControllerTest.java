@@ -40,6 +40,7 @@ class DashboardControllerTest {
     @MockitoBean private CommandLogRepository logs;
     @MockitoBean private AssignmentRepository assignments;
     @MockitoBean private OrderEventRepository orderEvents;
+    @MockitoBean private LedgerRepository ledger;
 
     // Used by GET /api/dashboard/orders, which DashboardOrdersRouteTest covers.
     @MockitoBean

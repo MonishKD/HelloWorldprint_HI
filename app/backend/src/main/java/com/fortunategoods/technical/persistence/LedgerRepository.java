@@ -3,7 +3,9 @@ package com.fortunategoods.technical.persistence;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -72,6 +74,14 @@ public class LedgerRepository {
             return null;
         }
         return found.get(0);
+    }
+
+    // What each charged order cost, in cents, by order id. One query, because the operator's order list polls.
+    public Map<String, Long> findChargedAmounts() {
+        Map<String, Long> amounts = new HashMap<>();
+        jdbc.query("SELECT order_id, amount FROM ledger_entries WHERE entry_type = 'CHARGE'",
+                row -> { amounts.put(row.getString("order_id"), row.getLong("amount")); });
+        return amounts;
     }
 
     // Turns one row of the ledger_entries table into a LedgerEntry.

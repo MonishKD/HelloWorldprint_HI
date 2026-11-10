@@ -97,7 +97,7 @@ export function toOrder(j: Raw): Order {
     lines,
     specialInstructions: text(j.instructions ?? j.specialInstructions),
     status: lower<OrderStatus>(j.status),
-    total: optionalNumber(j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
+    total: optionalNumber(j.chargedTotal ?? j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
     createdAt: time(j.createdAt) ?? '',
     rejectReason: optionalText(j.rejectReason),
     courierId: optionalText(j.courierId),

@@ -63,7 +63,7 @@ public class OrderListsTest {
 
     @Test
     void operatorJsonHasOneCourierName() {
-        OperatorOrderResponse response = new OperatorOrderResponse(DashboardOrder.of(order("100", OrderStatus.READY)), "Bistro", "5", "Carl");
+        OperatorOrderResponse response = new OperatorOrderResponse(DashboardOrder.of(order("100", OrderStatus.READY)), "Bistro", "5", "Carl", null);
 
         String json = new JsonMapper().writeValueAsString(response);
 
