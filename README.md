@@ -9,6 +9,8 @@ FortunateGoods: food surplus delivery app, in two parts:
 
 - Java 25
 - Node.js 20.19 or newer
+- Docker Desktop (to run everything with one command, see Docker startup)
+- An internet connection: card payments go through Stripe (test mode) and the map tiles come from OpenFreeMap
 
 No need to install Maven: the backend uses the Maven wrapper (`mvnw`), which downloads the right Maven version the first time you run it.
 
@@ -51,6 +53,7 @@ What each line means:
 - `FRONTEND_PORT`: use 5173 if you want the same as me. The backend uses this one to know which website it accepts requests from (CORS), so it must match the port you open the site on.
 - `SEED_MODE`: `keep` only fills the database with starting data if it is empty. `reset` wipes it and seeds again. If you leave it out it defaults to `keep`.
 - `VITE_API_URL`: where your BROWSER calls the backend. Leave it as in the example.
+- `STRIPE_SECRET_KEY` (`sk_test_...`) and `VITE_STRIPE_PUBLISHABLE_KEY` (`pk_test_...`): the Stripe **test mode** keys, for card payments. Get them from the [Stripe dashboard](https://dashboard.stripe.com/test/apikeys) (switch on Test mode, then Developers → API keys), or ask on discord for the team's. Never put live keys (`sk_live_...`) here. Without real test keys the app still starts, but checkout fails.
 
 If you forget one, compose stops and tells you which one is missing (I know you will forget lol).
 
@@ -164,8 +167,57 @@ Try `docker compose up --build` first. If it still acts weird, do `docker compos
 ## Running the app
 
 Use the Docker startup above: `docker compose up --build`, then open the website at `http://localhost:5173`.
-Every seeded account uses the password `demo123` (customers `alice` and `bob`, restaurants such as `pouletrouge` and `uniburger`,
-courier `carl`, operator `operator`). Couriers and operators can sign in, but their dashboards aren't part of Phase II.
+Every seeded account uses the password `demo123`:
+
+| Role | Accounts |
+|---|---|
+| Customer | `alice`, `bob` |
+| Restaurant | `pouletrouge` and `uniburger` (open, with items), `fromagerie` (open, everything sold out), `atwater` (open, empty menu), `boustan`, `pholambert`, `pizzeriaguy`, `bagelclark` (paused), `lolarosa`, `myriade`, `sushibishop`, `taqueria` (closed) |
+| Courier | `carl`, `dana`, `eli` (on duty), `fay` (off duty) |
+| Operator | `operator` |
+
+**Back to the initial state:** sign in as `operator` and press **Reset** in the information area at the top. It wipes every
+order and change and seeds again, without restarting anything. The other way is `SEED_MODE=reset` in `.env` for one start
+(then back to `keep`).
+
+**Card payments (Stripe test mode):** in the cart, Continue to payment shows the fees, then Stripe's card form. The money is
+only held on the card when the order is placed, and taken when the courier delivers it (cancelled or rejected: released).
+
+| Card number | Result |
+|---|---|
+| `4242 4242 4242 4242` | Paid |
+| `4000 0000 0000 0002` | Declined: the message shows in the cart and the console, nothing is placed |
+
+Any future expiry date and any 3-digit CVC. Leave Stripe's optional "save my information" (Link) fields empty.
+
+**Pricing values:** the `pricing` block of `app/backend/src/main/resources/seed-config.json`. Nothing about fees is written in the code.
+
+| Value | Seeded |
+|---|---|
+| `deliveryFee` | $2.99 per order |
+| `serviceFeePercent` | 10% of the subtotal, rounded to the cent |
+| `smallOrderThreshold` / `smallOrderSurcharge` | $2.00 added when the subtotal is under $15.00 |
+
+They are read when the backend starts, so after changing one run `docker compose up --build` (Reset doesn't reload them).
+Example: one Poulet Rouge bowl is $7.50 + $2.99 + $0.75 + $2.00 = **$13.24**.
+
+## Phase III demo
+
+Start with Reset (operator). Use one normal and one private browser window, since both tabs of one window share a sign-in.
+The output console on the right lists every command and the backend's answer.
+
+1. **Happy path**: `alice` orders a Poulet Rouge bowl and pays with `4242…`. `pouletrouge` accepts, starts preparing and
+   marks it ready. The nearest idle courier (`carl`) gets the offer on his dashboard without a reload; he accepts, confirms
+   pickup and delivery. In alice's My orders, Order summary shows each fee and the total charged ($13.24), matching the
+   hand calculation above and the payment captured in the Stripe test dashboard.
+2. **No courier available**: `carl`, `dana` and `eli` go off duty (`fay` already is). An order marked ready waits in the
+   dispatch queue: the operator sees the alert and the order under Delivery. As soon as a courier goes on duty, it is offered to them.
+3. **Sold out / paused**: Lentil soup at Poulet Rouge is sold out and can't be added; Boustan is paused, so ordering is off.
+   The operator pauses Uniburger mid-session: its pin turns red and dashed on the map, and an order there is refused with
+   "Restaurant is paused, try again later" (the held amount is released).
+4. **Dinner rush**: 6 orders accepted at Poulet Rouge turn its pin red ("Poulet Rouge · 6 queued", amber from 3), and the
+   operator gets "Poulet Rouge has 6 orders queued: consider pausing it". The operator pauses it from the Orders tab.
+   Downtown pins sit close together: zoom in once or twice on the map to show it.
 
 ## Phase II demo
 
