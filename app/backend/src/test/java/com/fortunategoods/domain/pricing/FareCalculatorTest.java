@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
-import com.fortunategoods.domain.pricing.strategy.*;
+import com.fortunategoods.domain.pricing.decorator.*;
 
 
 
@@ -43,9 +43,9 @@ class FareCalculatorTest {
 
     @Test
     void eachRuleWorksOnItsOwn() {
-        assertEquals(350, new DeliveryFeeRule(350).compute(1000));
-        assertEquals(300, new ServiceFeeRule(10).compute(2999));
-        assertEquals(200, new SmallOrderSurchargeRule(3000, 200).compute(2999));
-        assertEquals(0, new SmallOrderSurchargeRule(3000, 200).compute(3000));
+        assertEquals(350, new DeliveryFeeRule(new BaseFare(), 350).compute(1000));
+        assertEquals(300, new ServiceFeeRule(new BaseFare(),10).compute(2999));
+        assertEquals(200, new SmallOrderSurchargeRule(new BaseFare(), 3000, 200).compute(2999));
+        assertEquals(0, new SmallOrderSurchargeRule(new BaseFare(),3000, 200).compute(3000));
     }
 }
