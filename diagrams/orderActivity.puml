@@ -1,0 +1,135 @@
+@startuml orderActivityPart1
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 14
+skinparam ArrowThickness 1.5
+skinparam ArrowColor #black
+
+title SOEN 343 Phase III Order Activity (part 1 of 2)
+
+legend top right
+  **bold** = order state, <i>italic</i> = requirement
+  (C) cancelled, (N) no charge, (2) continues in part 2
+  each state change gets an event id (<i>R-ORD-05</i>)
+endlegend
+
+|Customer|
+|Restaurant|
+|System|
+|Operator|
+
+'Customer places order ====================
+|Customer|
+start
+if (restaurant open and\nno item sold out?\n<i>R-ORD-02</i>) then (yes)
+else (no)
+  stop
+endif
+:placeOrder(), card hold\n**placed**  <i>R-PRC-01</i>;
+if (customer cancels?\n<i>R-ORD-04</i>) then (no)
+else (yes)
+  (C)
+  detach
+endif
+
+'Restaurant -> Order ====================
+|Restaurant|
+if (staff accepts?\n<i>R-ORD-04</i>) then (yes)
+else (no)
+  :reject(reason)\n**rejected**;
+  (N)
+  detach
+endif
+:accept()\n**accepted**;
+|Operator|
+if (operator cancels?\n<i>R-ORD-04</i>) then (no)
+else (yes)
+  (C)
+  detach
+endif
+|Restaurant|
+:startPreparing()\n**preparing**  <i>R-ORD-03</i>;
+|Operator|
+if (operator cancels?\n<i>R-ORD-04</i>) then (no)
+else (yes)
+  (C)
+  detach
+endif
+|Restaurant|
+:markReady()\n**ready**;
+(2)
+detach
+
+'cancelled + rejected end here (part 2 cancels come here too)
+|System|
+(C)
+:cancel()\n**cancelled**;
+(N)
+:release card hold,\nno-charge ledger entry\n<i>R-PRC-03</i>;
+stop
+@enduml
+
+@startuml orderActivityPart2
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 14
+skinparam ArrowThickness 1.5
+skinparam ArrowColor #black
+
+title SOEN 343 Phase III Order Activity (part 2 of 2)
+
+legend top right
+  **bold** = order state, <i>italic</i> = requirement
+  (2) from part 1, (C) cancelled (ending in part 1), (D) dispatch
+  each state change gets an event id (<i>R-ORD-05</i>)
+endlegend
+
+|System|
+|Courier|
+|Operator|
+
+'Dispatch, R-DLV ====================
+|System|
+(2)
+(D)
+while (idle on-duty courier?\n<i>R-DLV-04</i>) is (no)
+  :wait in dispatch queue;
+endwhile (yes)
+:offer to nearest idle courier\n<i>R-DLV-01, R-DLV-02</i>;
+
+|Courier|
+if (courier accepts?\n<i>R-DLV-03</i>) then (yes)
+else (no)
+  :declineOffer()\nback to dispatch queue;
+  (D)
+  detach
+endif
+
+|Operator|
+if (operator cancels\nbefore pickup?\n<i>R-ORD-04</i>) then (no)
+else (yes)
+  (C)
+  detach
+endif
+
+|Courier|
+if (courier went offline\nbefore pickup?\n<i>R-DLV-02</i>) then (no)
+else (yes)
+  |Operator|
+  :reassignOrder()\nback to dispatch queue;
+  (D)
+  detach
+endif
+
+'Pickup, delivery, PRC ====================
+|Courier|
+:pickUp()\n**picked_up**  <i>R-ORD-04</i>;
+:deliver()\n**delivered**;
+|System|
+:charge card, CHARGE ledger entry,\norder summary\n<i>R-PRC-01, R-PRC-02, R-PRC-03</i>;
+|Operator|
+if (operator refunds?\n<i>R-PRC-05</i>) then (no)
+  stop
+else (yes)
+  :refund(), REFUND ledger entry\n**refunded**  <i>R-PRC-05</i>;
+  stop
+endif
+@enduml
