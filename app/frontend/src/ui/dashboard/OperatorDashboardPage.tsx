@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import type { CityRestaurant, Order, RestaurantStatus, StalledOrder, WaitingOrder } from '../../domain';
 import { ConfirmButton, Empty, initials, LoadError, Loading, minutesSince, money, Monogram, restaurantHue, Segmented, Stat, StatusBadge, TERMINAL, useLoad, usePolling } from '../common';
 import { Icon } from '../icons';
 import { LONG_QUEUE } from '../map/CityMap';
 import { CityMapWithDetails } from '../map/RestaurantDetailsPanel';
 import HistoryTable from '../prc/HistoryTable';
+import OrderSummaryPanel from '../prc/OrderSummaryPanel';
 import { setRestaurantStatus } from '../ord/ordApi';
 import { errorMessage, getCityView, onCommandFinished, send } from './dashboardApi';
 import { DashboardLayout, useDashboardTab } from './DashboardRouter';
@@ -19,6 +20,9 @@ const FILTERS: Record<string, (o: Order) => boolean> = {
 
 // The operator cancels accepted orders not picked up yet (#239). A placed order is the restaurant's to accept or reject.
 const BEFORE_PICKUP: Order['status'][] = ['accepted', 'preparing', 'ready'];
+
+// Orders whose card was charged: their payment can be opened, refund included.
+const CHARGED: Order['status'][] = ['delivered', 'refunded'];
 
 export default function OperatorDashboardPage() {
   return (
@@ -92,15 +96,29 @@ function OperatorDashboard() {
   const tab = useDashboardTab();
   const [filter, setFilter] = useState('Active');
   const [actionError, setActionError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [paymentOf, setPaymentOf] = useState<string | null>(null);
 
-  async function run(action: string, call: () => Promise<unknown>) {
+  /** Runs one operator action; true when the backend accepted it. */
+  async function run(action: string, call: () => Promise<unknown>): Promise<boolean> {
     setActionError('');
+    setNotice('');
     try {
       await send(action, call);
+      return true;
     } catch (e) {
       setActionError(errorMessage(e));
+      return false;
+    } finally {
+      reload();
     }
-    reload();
+  }
+
+  async function refund(o: Order) {
+    if (!(await run(`Refund order #${o.id}`, () => refundOrder(o.id)))) return;
+    setNotice(`Order #${o.id} refunded: Stripe is returning ${money(o.total)} to ${o.customerName}'s card.`);
+    setPaymentOf(o.id); // open its payment so the refund shows next to the charge
+    setFilter((f) => (f === 'Delivered' ? 'Issues' : f)); // a refunded order leaves Delivered: follow it
   }
 
   // Once loaded, a failed refresh keeps the page up: useLoad has already logged it to the console.
@@ -123,6 +141,11 @@ function OperatorDashboard() {
       {actionError && (
         <p className="alert alert-error" role="alert">
           {actionError}
+        </p>
+      )}
+      {notice && (
+        <p className="alert alert-success" role="status">
+          {notice}
         </p>
       )}
 
@@ -218,7 +241,8 @@ function OperatorDashboard() {
               </thead>
               <tbody>
                 {shown.map((o) => (
-                  <tr key={o.id}>
+                  <Fragment key={o.id}>
+                  <tr>
                     <td>
                       <strong>#{o.id}</strong>
                       {o.createdAt && <small className="muted block">{minutesSince(o.createdAt)}</small>}
@@ -235,16 +259,24 @@ function OperatorDashboard() {
                       {BEFORE_PICKUP.includes(o.status) && (
                         <ConfirmButton variant="danger" label="Cancel" question={`Cancel #${o.id}?`} onConfirm={() => run(`Cancel order #${o.id}`, () => cancelOrder(o.id))} />
                       )}
+                      {CHARGED.includes(o.status) && (
+                        <button type="button" className="btn btn-ghost btn-sm" aria-expanded={paymentOf === o.id} onClick={() => setPaymentOf(paymentOf === o.id ? null : o.id)}>
+                          Payment
+                        </button>
+                      )}
                       {o.status === 'delivered' && (
-                        <ConfirmButton
-                          variant="secondary"
-                          label="Refund"
-                          question={`Refund ${money(o.total)} on #${o.id}?`}
-                          onConfirm={() => run(`Refund order #${o.id}`, () => refundOrder(o.id))}
-                        />
+                        <ConfirmButton variant="secondary" label="Refund" question={`Refund ${money(o.total)} on #${o.id}?`} onConfirm={() => refund(o)} />
                       )}
                     </td>
                   </tr>
+                  {paymentOf === o.id && CHARGED.includes(o.status) && (
+                    <tr className="row-detail">
+                      <td colSpan={6}>
+                        <OrderSummaryPanel orderId={o.id} refunded={o.status === 'refunded'} open />
+                      </td>
+                    </tr>
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

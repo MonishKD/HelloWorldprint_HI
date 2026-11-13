@@ -1,32 +1,35 @@
-import { useState } from 'react';
-import type { OrderSummary } from '../../domain';
+import { useEffect, useState } from 'react';
 import { money, timeOf } from '../common';
 import { errorMessage } from '../dashboard/dashboardApi';
 import FareLines from './FareLines';
-import { getOrderSummary } from './prcApi';
+import PaymentTimeline from './PaymentTimeline';
+import { getPaymentTrail, type PaymentTrail } from './prcApi';
 
 /**
  * A delivered order's summary (R-PRC-02, #263): read from the backend when opened, so the fee lines and the total
- * are exactly what was charged (#262), not recomputed here.
+ * are exactly what was charged (#262), not recomputed here. Below it, the payment as Stripe saw it, refund included.
+ * `refunded` reloads it when the order is refunded while it is open (the operator's view).
  */
-export default function OrderSummaryPanel({ orderId }: { orderId: string }) {
-  const [summary, setSummary] = useState<OrderSummary | null>(null);
+export default function OrderSummaryPanel({ orderId, refunded = false, open = false }: { orderId: string; refunded?: boolean; open?: boolean }) {
+  const [opened, setOpened] = useState(open);
+  const [trail, setTrail] = useState<PaymentTrail | null>(null);
   const [error, setError] = useState('');
 
-  function load(open: boolean) {
-    if (!open || summary) return;
+  useEffect(() => {
+    if (!opened) return;
     setError('');
-    getOrderSummary(orderId).then(setSummary, (e) => setError(errorMessage(e)));
-  }
+    getPaymentTrail(orderId).then(setTrail, (e) => setError(errorMessage(e)));
+  }, [opened, orderId, refunded]);
 
+  const summary = trail?.summary;
   return (
-    <details className="summary-panel" onToggle={(e) => load(e.currentTarget.open)}>
-      <summary>Order summary</summary>
+    <details className="summary-panel" open={open} onToggle={(e) => e.currentTarget.open && setOpened(true)}>
+      <summary>{refunded ? 'Order summary · refunded' : 'Order summary'}</summary>
       {error ? (
         <p className="alert alert-error" role="alert">
           {error}
         </p>
-      ) : !summary ? (
+      ) : !trail || !summary ? (
         <p className="muted small">Loading the summary…</p>
       ) : (
         <div className="stack">
@@ -44,8 +47,8 @@ export default function OrderSummaryPanel({ orderId }: { orderId: string }) {
           <p className="muted small">
             Placed {timeOf(summary.placedAt)}, delivered {timeOf(summary.deliveredAt)}
             {summary.courierName && ` by ${summary.courierName}`} to {summary.deliveryAddress}
-            {summary.cardLast4 && ` · ${summary.cardBrand ?? 'Card'} ending in ${summary.cardLast4}`}
           </p>
+          <PaymentTimeline trail={trail} />
         </div>
       )}
     </details>

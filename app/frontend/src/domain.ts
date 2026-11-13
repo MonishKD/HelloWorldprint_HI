@@ -208,6 +208,8 @@ export interface LedgerRow {
   fare: Fare;
   placedAt: string;
   finishedAt: string;
+  /** The Stripe PaymentIntent (pi_…) behind the order. Only set once the backend sends `paymentReference`, see prcApi. */
+  paymentId?: string;
 }
 
 /** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */

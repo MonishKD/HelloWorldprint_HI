@@ -113,7 +113,7 @@ function MyOrders() {
       title={restaurantOf(o)?.name ?? o.restaurantName}
       subtitle={courierLine(o, restaurantOf(o), now)}
       tracker
-      media={HAS_SUMMARY.includes(o.status) ? <OrderSummaryPanel orderId={o.id} /> : showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
+      media={HAS_SUMMARY.includes(o.status) ? <OrderSummaryPanel orderId={o.id} refunded={o.status === 'refunded'} /> : showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
       style={stagger(i)}
     >
       {handoffTimes(o) && <small className="muted">{handoffTimes(o)}</small>}

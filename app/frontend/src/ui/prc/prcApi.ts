@@ -1,7 +1,7 @@
 // prcApi (a2: ui.prc): every pricing, payment and history call to the backend.
 // Each function is one REST call; adapters.ts turns the backend's JSON into the types in domain.ts.
 // Money comes from the backend in cents; the adapters turn it into dollars, like every other price on screen.
-import type { Checkout, HistoryRow, OrderStatus, OrderSummary } from '../../domain';
+import type { Checkout, HistoryRow, LedgerRow, OrderStatus, OrderSummary } from '../../domain';
 import { toCheckout, toHistoryRow, toOrderSummary } from '../adapters';
 import { request } from '../http';
 
@@ -46,4 +46,25 @@ export async function getOrderSummary(orderId: string): Promise<OrderSummary> {
  */
 export async function getHistory(): Promise<HistoryRow[]> {
   return (await request<unknown[]>('/history')).map(toHistoryRow);
+}
+
+/** One order's card payment as Stripe saw it: the summary (card, amount, times) and the refund ledger row, if any. */
+export interface PaymentTrail {
+  summary: OrderSummary;
+  refund?: LedgerRow;
+  /** The Stripe PaymentIntent, for the operator's link to the Stripe dashboard. */
+  paymentId?: string;
+}
+
+/**
+ * GET /orders/{id}/summary + GET /history: the summary has the card and the charge, the ledger has the refund
+ * (amount and time). Customers and the operator only (the summary refuses the other roles).
+ * TODO(backend): LedgerHistoryResponse does not send the ledger's `paymentReference` yet. Once it does, paymentId fills
+ * in and the operator gets the "View in Stripe" link; nothing else here changes.
+ * ponytail: the operator's /history is every order, fine at demo size; a per-order ledger endpoint if it ever grows.
+ */
+export async function getPaymentTrail(orderId: string): Promise<PaymentTrail> {
+  const [summary, history] = await Promise.all([getOrderSummary(orderId), getHistory()]);
+  const rows = history.filter((r): r is LedgerRow => 'entryType' in r && r.orderId === orderId);
+  return { summary, refund: rows.find((r) => r.entryType === 'refund'), paymentId: rows.find((r) => r.paymentId)?.paymentId };
 }

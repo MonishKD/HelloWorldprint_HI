@@ -242,5 +242,6 @@ export function toHistoryRow(j: Raw): HistoryRow {
     fare: toFare(j),
     placedAt: time(j.placedAt) ?? '',
     finishedAt: time(j.finishedAt) ?? '',
+    paymentId: optionalText(j.paymentReference),
   };
 }
