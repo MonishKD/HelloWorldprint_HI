@@ -11,6 +11,16 @@
 .summary-lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.35rem; font-size: 0.92rem; }
 .summary-lines li { display: flex; justify-content: space-between; gap: 1rem; }
 
+/* The payment as Stripe saw it: held, charged, refunded. */
+.pay-trail { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; font-size: 0.92rem; }
+.pay-trail li { display: grid; grid-template-columns: auto 1fr auto; gap: 0.65rem; align-items: baseline; }
+.pay-trail li::before { content: ''; width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--ok-fg); }
+.pay-trail li.is-refund { color: var(--bad-fg); }
+.pay-trail li.is-refund::before { background: var(--bad-fg); }
+.pay-trail .num { font-variant-numeric: tabular-nums; }
+.pay-trail code, .summary-panel a code { font-size: 0.8em; }
+.table tr.row-detail td { background: var(--surface-2); }
+
 .table tr.is-refund td { color: var(--bad-fg); }
 .table tr.is-refund td:first-child { padding-left: 1.75rem; }
 
