@@ -1,12 +1,14 @@
 import { useState, type CSSProperties } from 'react';
 import type { RestaurantStatus } from '../../domain';
 import { useUser } from '../../session';
-import { LoadError, Loading, money, Monogram, restaurantHue, Segmented, Stat, TERMINAL, useLoad } from '../common';
+import { LoadError, Loading, money, Monogram, restaurantHue, Segmented, Stat, TERMINAL, useLoad, usePolling } from '../common';
+import CityMapPanel from '../map/CityMapPanel';
+import HistoryTable from '../prc/HistoryTable';
 import IncomingOrdersList from '../ord/IncomingOrdersList';
 import MenuPage from '../ord/MenuPage';
 import { getRestaurantMenu, setRestaurantStatus } from '../ord/ordApi';
 import { errorMessage, getDashboardOrders, getPreparationQueue, send } from './dashboardApi';
-import { DashboardLayout } from './DashboardRouter';
+import { DashboardLayout, useDashboardTab } from './DashboardRouter';
 
 export default function RestaurantDashboardPage() {
   return (
@@ -23,6 +25,8 @@ function RestaurantDashboard() {
     () => Promise.all([getRestaurantMenu(restaurantId), getDashboardOrders(), getPreparationQueue(restaurantId)]),
     [restaurantId],
   );
+  usePolling(reload);
+  const tab = useDashboardTab();
   const [actionError, setActionError] = useState('');
 
   async function run(action: string, call: () => Promise<unknown>) {
@@ -37,7 +41,7 @@ function RestaurantDashboard() {
 
   const changeStoreStatus = (status: RestaurantStatus) => run(`Set store status to ${status}`, () => setRestaurantStatus(restaurantId, status));
 
-  if (error) return <LoadError what="your restaurant" message={error} onRetry={reload} />;
+  if (error && !data) return <LoadError what="your restaurant" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your restaurant" />;
 
   const [[restaurant, menu], orders, queue] = data;
@@ -55,6 +59,21 @@ function RestaurantDashboard() {
   const history = byArrival.filter((o) => o.status === 'picked_up' || TERMINAL.includes(o.status)).reverse();
   const earning = orders.filter((o) => !['rejected', 'cancelled', 'refunded'].includes(o.status));
   const available = menu.filter((m) => m.status === 'available').length;
+
+  if (tab === 'map') return <CityMapPanel />;
+  if (tab === 'history') {
+    return (
+      <>
+        <details className="history" open>
+          <summary>
+            Order history <span className="count">{history.length}</span>
+          </summary>
+          <IncomingOrdersList orders={history} emptyIcon="inbox" emptyText="No finished orders yet" onChanged={reload} />
+        </details>
+        <HistoryTable open />
+      </>
+    );
+  }
 
   return (
     <>
@@ -134,13 +153,6 @@ function RestaurantDashboard() {
       </div>
 
       <MenuPage onChanged={reload} />
-
-      <details className="history">
-        <summary>
-          Order history <span className="count">{history.length}</span>
-        </summary>
-        <IncomingOrdersList orders={history} emptyIcon="inbox" emptyText="No finished orders yet" onChanged={reload} />
-      </details>
     </>
   );
 }

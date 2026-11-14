@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -55,10 +56,10 @@ public class RegControllerRoutesTest {
 
     @Test
     void customerRegistersWithoutBeingSignedIn() throws Exception {
-        when(authenticationService.registerCustomer("alice", "alice@example.com", "secret1")).thenReturn(alice());
+        when(authenticationService.registerCustomer(eq("alice"), eq("alice@example.com"), eq("secret1"), any())).thenReturn(alice());
 
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"secret1\",\"role\":\"customer\"}"))
+                .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"secret1\",\"role\":\"customer\",\"latitude\":45.5,\"longitude\":-73.6,\"name\":\"Alice\",\"deliveryAddress\":\"1 Main St\"}"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.userId").value("5"))
         .andExpect(jsonPath("$.username").value("alice"))
@@ -73,7 +74,7 @@ public class RegControllerRoutesTest {
 
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"bistro\",\"email\":\"bistro@example.com\",\"password\":\"secret1\",\"role\":\"restaurant\","
-                        + "\"restaurantName\":\"Bistro\",\"address\":\"1 Main St\"}"))
+                        + "\"restaurantName\":\"Bistro\",\"address\":\"1 Main St\",\"latitude\":45.5,\"longitude\":-73.6}"))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.role").value("RESTAURANT"));
     }
@@ -83,7 +84,7 @@ public class RegControllerRoutesTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"username\":\"op\",\"email\":\"op@example.com\",\"password\":\"secret1\",\"role\":\"operator\"}"))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.code").value("INVALID"))
+        .andExpect(jsonPath("$.code").value("INVALID_INPUT"))
         .andExpect(jsonPath("$.message").value("Operator accounts cannot be registered"));
 
         verifyNoInteractions(authenticationService);
@@ -91,13 +92,13 @@ public class RegControllerRoutesTest {
 
     @Test
     void takenUsernameOrEmailIsAConflict() throws Exception {
-        when(authenticationService.registerCustomer("alice", "alice@example.com", "secret1"))
+        when(authenticationService.registerCustomer(eq("alice"), eq("alice@example.com"), eq("secret1"), any()))
         .thenThrow(new DuplicateKeyException("users_username_key"));
 
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"secret1\",\"role\":\"customer\"}"))
+                .content("{\"username\":\"alice\",\"email\":\"alice@example.com\",\"password\":\"secret1\",\"role\":\"customer\",\"latitude\":45.5,\"longitude\":-73.6,\"name\":\"Alice\",\"deliveryAddress\":\"1 Main St\"}"))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.code").value("CONFLICT"));
+        .andExpect(jsonPath("$.code").value("ACCOUNT_TAKEN"));
     }
 
     // ---------- POST /api/auth/login and /logout (#62, #65) ----------

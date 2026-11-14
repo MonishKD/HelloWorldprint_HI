@@ -18,7 +18,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.dlv.DispatchService;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
@@ -49,7 +52,7 @@ public class OrderServiceTest {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(restaurants, orders, events, mock(UserRepository.class), preparationQueue);
+        service = new OrderService(restaurants, orders, events, mock(UserRepository.class), preparationQueue, mock(ApplicationEventPublisher.class), mock(DispatchService.class));
 
         givenRestaurant(RestaurantStatus.OPEN, MenuItemStatus.AVAILABLE);
     }

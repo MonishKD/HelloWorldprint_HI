@@ -3,6 +3,7 @@ package com.fortunategoods.technical.security;
 import org.springframework.stereotype.Component;
 
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.SignUpLocation;
 import com.fortunategoods.domain.user.User;
 import com.fortunategoods.technical.persistence.UserRepository;
 import com.fortunategoods.technical.security.registration.CourierRegistration;
@@ -51,12 +52,12 @@ public class AuthenticationService {
     // Each sign-up returns the new account with its id.
     // A taken username or email throws DuplicateKeyException (#60 makes it a 409).
 
-    public User registerCustomer(String username, String email, String password) {
-        return customerRegistration.register(username, email, password);
+    public User registerCustomer(String username, String email, String password, SignUpLocation location) {
+        return customerRegistration.register(username, email, password, location);
     }
 
-    public User registerCourier(String username, String email, String password) {
-        return courierRegistration.register(username, email, password);
+    public User registerCourier(String username, String email, String password, SignUpLocation location) {
+        return courierRegistration.register(username, email, password, location);
     }
 
     // Account, restaurant and owner link, all saved or none. Returns the owner's account.

@@ -40,15 +40,21 @@ public class RestaurantService {
     // Runs the status operation within a database transaction.
     @Transactional
     public Restaurant setRestaurantStatus(String staffId, UserRole role, String restaurantId, RestaurantStatus status) {
-        OrdModulePermissions.requireRole(role, OrdModulePermissions.setRestaurantStatusRoles(), "Only Restaurant Staffs are allowed to change Restaurant Status");
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.setRestaurantStatusRoles(), "Only Restaurant Staffs and the Operator are allowed to change Restaurant Status");
         // Verify the validity of the IDs
         OrderVerify.requireId(staffId, "Staff ID");
         OrderVerify.requireId(restaurantId, "Restaurant ID");
 
-        // Find the restaurantID using the staff's user id
-        String ownRestaurantId = userRepository.findRestaurantIdByUserId(staffId);
-        // Compare user's restaurantId to the restaurantId status we are trying to change
-        OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only change your own restaurant's status");
+        // Restaurant staff can only change their own restaurant. The operator can change any restaurant (#274),
+        // so the own-restaurant check is skipped for them.
+        boolean isOperator = role == UserRole.OPERATOR;
+        String ownRestaurantId = null;
+        if (!isOperator) {
+            // Find the restaurantID using the staff's user id
+            ownRestaurantId = userRepository.findRestaurantIdByUserId(staffId);
+            // Compare user's restaurantId to the restaurantId status we are trying to change
+            OrdModulePermissions.requireOwnRestaurant(ownRestaurantId, restaurantId, "You can only change your own restaurant's status");
+        }
         // Get restaurant
         Restaurant restaurant = restaurantRepository.findById(restaurantId);
 
@@ -56,8 +62,12 @@ public class RestaurantService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND,"Restaurant not found");
         }
 
+        // Restaurant.changeStatus also checks the restaurant id. For the operator we pass the restaurant's own id,
+        // so that check passes and only the other rules (status given, menu not empty when opening) apply.
+        String allowedRestaurantId = isOperator ? restaurant.getId() : ownRestaurantId;
+
         // Validate before saving.
-        restaurant.changeStatus(ownRestaurantId, status);
+        restaurant.changeStatus(allowedRestaurantId, status);
         restaurantRepository.updateStatus(restaurantId, restaurant.getStatus());
 
         return restaurant;

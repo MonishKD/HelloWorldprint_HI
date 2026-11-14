@@ -2,9 +2,10 @@ import type { ReactNode } from 'react';
 import { Navigate, NavLink, useLocation } from 'react-router-dom';
 import type { Role } from '../../domain';
 import { dashboardPath, useSession, useUser } from '../../session';
-import { Empty, initials, Logo, ThemeToggle } from '../common';
+import { initials, Logo, ThemeToggle } from '../common';
 import { logout as logoutApi } from '../reg/regApi';
 import { send } from './dashboardApi';
+import InformationArea, { DashboardInfoProvider } from './InformationArea';
 import OutputConsolePanel from './OutputConsolePanel';
 
 /** Catch-all route: send users to their own dashboard, or to login when signed out. */
@@ -21,18 +22,6 @@ export function RequireRole({ role, children }: { role: Role; children: ReactNod
   return <>{children}</>;
 }
 
-/** Couriers and operators can sign in, but their dashboards aren't part of Phase II (a2: ui.dashboard). */
-export function NotInThisPhase() {
-  const { role } = useUser();
-  return (
-    <DashboardLayout>
-      <Empty icon="hourglass" title={`The ${role} dashboard isn't part of Phase II`}>
-        You're signed in. Couriers and operators get their dashboards in a later phase.
-      </Empty>
-    </DashboardLayout>
-  );
-}
-
 export interface NavItem {
   to: string;
   label: string;
@@ -40,10 +29,32 @@ export interface NavItem {
   activeFor?: (pathname: string) => boolean;
 }
 
-export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; children: ReactNode }) {
+const mapTab = (role: Role): NavItem => ({ to: `/${role}/map`, label: 'Map' });
+const historyTab = (role: Role): NavItem => ({ to: `/${role}/history`, label: 'Pricing & History' });
+
+/** Each role only gets the tabs it can use (R-DASH-01). */
+const TABS: Record<Role, NavItem[]> = {
+  customer: [
+    mapTab('customer'),
+    { to: '/customer', label: 'Orders', activeFor: (path) => !['/customer/orders', '/customer/map', '/customer/history'].some((p) => path.startsWith(p)) },
+    { to: '/customer/orders', label: 'Delivery' },
+    historyTab('customer'),
+  ],
+  restaurant: [mapTab('restaurant'), { to: '/restaurant', label: 'Orders' }, historyTab('restaurant')],
+  courier: [mapTab('courier'), { to: '/courier', label: 'Delivery' }, historyTab('courier')],
+  operator: [mapTab('operator'), { to: '/operator', label: 'Orders' }, { to: '/operator/delivery', label: 'Delivery' }, historyTab('operator')],
+};
+
+/** The open tab: the part of the path after the dashboard, empty on the dashboard's first tab. */
+export function useDashboardTab(): string {
+  return useLocation().pathname.split('/')[2] ?? '';
+}
+
+export function DashboardLayout({ children }: { children: ReactNode }) {
   const { setUser } = useSession();
   const user = useUser();
   const { pathname } = useLocation();
+  const nav = TABS[user.role];
 
   async function logout() {
     // Goes through send() like every other action; the session ends even if the backend call fails.
@@ -56,24 +67,24 @@ export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; child
   }
 
   return (
+    <DashboardInfoProvider>
     <div className="app">
       <header className="topbar">
         <NavLink to={dashboardPath(user.role)} className="topbar-logo" aria-label="Home">
           <Logo />
         </NavLink>
-        {nav.length > 0 && (
-          <nav className="tabs" aria-label="Sections">
-            {nav.map((n) => (
-              <NavLink
-                key={n.to}
-                to={n.to}
-                className={({ isActive }) => ((n.activeFor ? n.activeFor(pathname) : isActive) ? 'tab active' : 'tab')}
-              >
-                {n.label}
-              </NavLink>
-            ))}
-          </nav>
-        )}
+        <nav className="tabs" aria-label="Sections">
+          {nav.map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end
+              className={({ isActive }) => ((n.activeFor ? n.activeFor(pathname) : isActive) ? 'tab active' : 'tab')}
+            >
+              {n.label}
+            </NavLink>
+          ))}
+        </nav>
         <div className="who">
           <ThemeToggle />
           <span className="avatar" aria-hidden="true">
@@ -89,9 +100,13 @@ export function DashboardLayout({ nav = [], children }: { nav?: NavItem[]; child
         </div>
       </header>
       <div className="dash">
-        <main className="dash-main">{children}</main>
+        <main className="dash-main">
+          <InformationArea />
+          {children}
+        </main>
         <OutputConsolePanel />
       </div>
     </div>
+    </DashboardInfoProvider>
   );
 }

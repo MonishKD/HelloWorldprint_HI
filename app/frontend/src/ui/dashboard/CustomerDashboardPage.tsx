@@ -2,32 +2,39 @@ import { useState } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import type { Order, Restaurant } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, useLoad } from '../common';
+import { ConfirmButton, Empty, LoadError, Loading, OrderCard, restaurantHue, stagger, StatusBadge, TERMINAL, timeOf, useLoad, usePolling } from '../common';
 import MenuPage from '../ord/MenuPage';
+import CityMapPanel from '../map/CityMapPanel';
 import MapView from '../map/MapView';
 import { deliveryProgress, etaMinutes, point, useNow } from '../map/geo';
 import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
+import HistoryTable from '../prc/HistoryTable';
+import OrderSummaryPanel from '../prc/OrderSummaryPanel';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
-import { DashboardLayout, type NavItem } from './DashboardRouter';
+import { DashboardLayout } from './DashboardRouter';
 
-const NAV: NavItem[] = [
-  { to: '/customer', label: 'Discover', activeFor: (path) => !path.startsWith('/customer/orders') },
-  { to: '/customer/orders', label: 'My orders' },
-];
+/** A summary exists once the order was charged, i.e. delivered (a refund keeps it). */
+const HAS_SUMMARY: Order['status'][] = ['delivered', 'refunded'];
 
 export default function CustomerDashboardPage() {
   return (
-    <DashboardLayout nav={NAV}>
+    <DashboardLayout>
       <Routes>
         <Route index element={<RestaurantListPage />} />
         <Route path="r/:restaurantId" element={<MenuPage />} />
+        <Route path="map" element={<CustomerCityMap />} />
         <Route path="orders" element={<MyOrders />} />
+        <Route path="history" element={<HistoryTable open />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>
   );
+}
+
+function CustomerCityMap() {
+  return <CityMapPanel />;
 }
 
 function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) {
@@ -57,10 +64,20 @@ function courierLine(o: Order, restaurant: Restaurant | undefined, now: number) 
   );
 }
 
+function handoffTimes(o: Order) {
+  return [
+    o.pickedUpAt && `Picked up ${timeOf(o.pickedUpAt)}${o.courierName ? ` by ${o.courierName}` : ''}`,
+    o.deliveredAt && `Delivered ${timeOf(o.deliveredAt)}`,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
 function MyOrders() {
   const user = useUser();
   const placed = (useLocation().state as { placed?: { id: string; status: string } } | null)?.placed;
   const { data, error, reload } = useLoad(() => Promise.all([getDashboardOrders(), listRestaurants()]), [user.id]);
+  usePolling(reload);
   const [actionError, setActionError] = useState('');
   const [cancelled, setCancelled] = useState('');
   const now = useNow(data?.[0].some((o) => o.status === 'picked_up') ? 1000 : null);
@@ -77,7 +94,7 @@ function MyOrders() {
     reload();
   }
 
-  if (error) return <LoadError what="your orders" message={error} onRetry={reload} />;
+  if (error && !data) return <LoadError what="your orders" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your orders" />;
 
   const [orders, restaurants] = data;
@@ -96,9 +113,10 @@ function MyOrders() {
       title={restaurantOf(o)?.name ?? o.restaurantName}
       subtitle={courierLine(o, restaurantOf(o), now)}
       tracker
-      media={showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
+      media={HAS_SUMMARY.includes(o.status) ? <OrderSummaryPanel orderId={o.id} refunded={o.status === 'refunded'} /> : showMap(o) && <OrderMap order={o} restaurant={restaurantOf(o)} />}
       style={stagger(i)}
     >
+      {handoffTimes(o) && <small className="muted">{handoffTimes(o)}</small>}
       {o.status === 'placed' && (
         <ConfirmButton label="Cancel order" question={`Cancel order #${o.id}?`} variant="danger" onConfirm={() => cancel(o)} />
       )}

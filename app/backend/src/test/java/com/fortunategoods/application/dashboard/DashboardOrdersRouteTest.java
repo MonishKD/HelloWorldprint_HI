@@ -109,7 +109,7 @@ public class DashboardOrdersRouteTest {
 
     private DashboardOrder order(String id, String status) {
         return new DashboardOrder(id, "1", "7", status, "No onions", "1 Main St", null,
-                List.of(new DashboardOrder.Line("10", "Quiche", 3.0, 7.0, 2)), 6.0);
+                List.of(new DashboardOrder.Line("10", "Quiche", 3.0, 7.0, 2)), 6.0, null, null, null, null, null);
     }
 
     private RequestPostProcessor loggedIn(UserRole role) {

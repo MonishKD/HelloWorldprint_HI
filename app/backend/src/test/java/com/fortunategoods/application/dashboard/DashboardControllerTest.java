@@ -1,46 +1,46 @@
 package com.fortunategoods.application.dashboard;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fortunategoods.application.ord.orders.RestaurantOrderService;
 import com.fortunategoods.application.ord.orders.preparation.GetPreparationQueueResponse;
+import com.fortunategoods.domain.courier.CourierStatus;
+import com.fortunategoods.domain.courier.OnDutyCourier;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.user.UserRole;
-import com.fortunategoods.technical.persistence.CommandLogRepository;
-import com.fortunategoods.technical.persistence.OrderRepository;
-import com.fortunategoods.technical.persistence.RestaurantRepository;
-import com.fortunategoods.technical.persistence.UserRepository;
+import com.fortunategoods.technical.persistence.*;
 import com.fortunategoods.testsupport.SecuredControllerTest;
 import static com.fortunategoods.testsupport.TestData.loggedIn;
 import static com.fortunategoods.testsupport.TestData.order;
 
 // The dashboard routes, through the real security, CommandInvoker and DashboardService. Only the repositories are mocked.
 @SecuredControllerTest(DashboardController.class)
-@Import({DashboardService.class, OutputConsoleFeed.class})
+@Import({DashboardService.class, OutputConsoleFeed.class, OrderDeliveryReader.class})
 class DashboardControllerTest {
 
     @Autowired private MockMvc mvc;
     @MockitoBean private OrderRepository orders;
+    @MockitoBean private CourierRepository couriers;
     @MockitoBean private UserRepository users;
     @MockitoBean private RestaurantRepository restaurants;
     @MockitoBean private RestaurantOrderService restaurantOrders;
     @MockitoBean private CommandLogRepository logs;
+    @MockitoBean private AssignmentRepository assignments;
+    @MockitoBean private OrderEventRepository orderEvents;
+    @MockitoBean private LedgerRepository ledger;
 
     // Used by GET /api/dashboard/orders, which DashboardOrdersRouteTest covers.
     @MockitoBean
@@ -114,5 +114,29 @@ class DashboardControllerTest {
         mvc.perform(get("/api/dashboard/restaurant").with(loggedIn(9, UserRole.RESTAURANT)))
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.message").value("Your account is not linked to a restaurant"));
+    }
+
+    @Test
+    void everyRoleGetsTheCityWithItsCounts() throws Exception {
+        when(restaurants.findAll()).thenReturn(List.of(new Restaurant("1", "Cafe", RestaurantStatus.OPEN, 45.5, -73.6, List.of())));
+        when(orders.orderCount()).thenReturn(Map.of("1", Map.of(OrderStatus.ACCEPTED, 2, OrderStatus.READY, 1)));
+        when(restaurants.findSoldOutItemNames()).thenReturn(Map.of("1", List.of("Quiche")));
+        when(couriers.findOnDuty()).thenReturn(List.of(new OnDutyCourier("5", "Carl", 45.49, -73.57, CourierStatus.IDLE)));
+
+        for (UserRole role : UserRole.values()) {
+            mvc.perform(get("/api/dashboard/city").with(loggedIn(7, role)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.restaurants[0].queued").value(2))
+                .andExpect(jsonPath("$.data.restaurants[0].inPreparation").value(0))
+                .andExpect(jsonPath("$.data.restaurants[0].ready").value(1))
+                .andExpect(jsonPath("$.data.restaurants[0].soldOutItems[0]").value("Quiche"))
+                .andExpect(jsonPath("$.data.couriers[0].name").value("Carl"))
+                .andExpect(jsonPath("$.data.couriers[0].status").value("IDLE"));
+        }
+    }
+
+    @Test
+    void guestsCannotReadTheCity() throws Exception {
+        mvc.perform(get("/api/dashboard/city")).andExpect(status().isUnauthorized());
     }
 }

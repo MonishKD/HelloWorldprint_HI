@@ -4,8 +4,8 @@ import { useSyncExternalStore } from 'react';
 // (customer order statuses, the restaurant's preparation queue).
 // The console shows the backend's command log (GET /dashboard/console, a2 OutputConsoleFeed) next to this browser-side log,
 // which only keeps what the backend never records: what was just sent, sign-in/out, and errors that never reached a command.
-import type { Order, OrderStatus } from '../../domain';
-import { toOrder } from '../adapters';
+import type { CityView, Order, OrderStatus } from '../../domain';
+import { toCityView, toOrder } from '../adapters';
 import { ApiError, request, takeResponseNote } from '../http';
 
 export interface LogEntry {
@@ -134,6 +134,11 @@ export async function getConsoleFeed(before?: number): Promise<LogEntry[]> {
  */
 export async function getDashboardOrders(): Promise<Order[]> {
   return (await request<unknown[]>('/dashboard/orders')).map(toOrder);
+}
+
+/** GET /dashboard/city: restaurants with their order counts, and on-duty couriers. Every role can read it. */
+export async function getCityView(): Promise<CityView> {
+  return toCityView(await request('/dashboard/city'));
 }
 
 /** One row of the preparation queue (a2: PreparationQueueView): position 1 is next. Order details are not part of it. */

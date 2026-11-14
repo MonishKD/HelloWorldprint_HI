@@ -2,7 +2,10 @@ package com.fortunategoods.technical.persistence;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -63,6 +66,22 @@ public class RestaurantRepository {
     }
 
     // Changes the restaurant's status to OPEN, PAUSED or CLOSED.
+    // The names of each restaurant's sold-out items, by restaurant id. A restaurant with none is left out.
+    public Map<String, List<String>> findSoldOutItemNames() {
+        String sql = """
+            SELECT menus.restaurant_id, menu_items.name
+            FROM menu_items
+            JOIN menus ON menus.id = menu_items.menu_id
+            WHERE menu_items.status = 'SOLD_OUT' AND menu_items.removed = FALSE
+            ORDER BY menu_items.id
+            """;
+        Map<String, List<String>> names = new HashMap<>();
+        jdbc.query(sql, row -> {
+            names.computeIfAbsent(row.getString("restaurant_id"), id -> new ArrayList<>()).add(row.getString("name"));
+        });
+        return names;
+    }
+
     public void updateStatus(String id, RestaurantStatus status) {
         String sql = "UPDATE restaurants SET status = ? WHERE id = ?";
         jdbc.update(sql, status.name(), Integer.parseInt(id));

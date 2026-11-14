@@ -6,8 +6,10 @@
 //   - coordinates are `latitude` / `longitude` (and `deliveryLatitude` / `deliveryLongitude`), `lat` / `lng` here
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
+//   - times come without a zone (`2026-11-07T22:04:35`) and are UTC: read through `time()`
+//   - money from the pricing routes (checkout, summary, history) is in cents (`totalCents`), dollars here
 // Adjust here, and only here, when a response changes.
-import type { CourierState, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, Restaurant, RestaurantStatus, Role } from '../domain';
+import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -18,6 +20,14 @@ const text = (value: unknown, fallback = ''): string => (value === null || value
 const optionalText = (value: unknown): string | undefined => (value === null || value === undefined || value === '' ? undefined : String(value));
 /** DECIMAL columns may arrive as numbers or strings; empty stays undefined. */
 const optionalNumber = (value: unknown): number | undefined => (value === null || value === undefined || value === '' ? undefined : Number(value));
+/**
+ * The backend's times are LocalDateTime: no zone, and its clock is UTC (Docker), so they are read as UTC, like the
+ * console does (toLogEntry). Without this the browser reads them as local time and they land hours in the future.
+ */
+const time = (value: unknown): string | undefined => {
+  const t = optionalText(value);
+  return t && !/(Z|[+-]\d\d:\d\d)$/.test(t) ? `${t}Z` : t;
+};
 
 /** Frontend enum value -> what the backend expects (`'picked_up'` -> `'PICKED_UP'`), for request bodies. */
 export const toBackendEnum = (value: string): string => value.toUpperCase();
@@ -87,12 +97,13 @@ export function toOrder(j: Raw): Order {
     lines,
     specialInstructions: text(j.instructions ?? j.specialInstructions),
     status: lower<OrderStatus>(j.status),
-    total: optionalNumber(j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
-    createdAt: text(j.createdAt),
+    total: optionalNumber(j.chargedTotal ?? j.total ?? j.totalCharges) ?? lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
+    createdAt: time(j.createdAt) ?? '',
     rejectReason: optionalText(j.rejectReason),
     courierId: optionalText(j.courierId),
     courierName: optionalText(j.courierName),
-    pickedUpAt: optionalText(j.pickedUpAt),
+    pickedUpAt: time(j.pickedUpAt),
+    deliveredAt: time(j.deliveredAt),
   };
 }
 
@@ -110,5 +121,127 @@ export function toSessionUser(j: Raw): SessionUser {
     lat: optionalNumber(j.latitude ?? j.lat),
     lng: optionalNumber(j.longitude ?? j.lng),
     courierState: optionalText(j.courierState ?? j.status) ? lower<CourierState>(j.courierState ?? j.status) : undefined,
+  };
+}
+
+function toCourierJob(j: Raw): CourierJob {
+  return {
+    orderId: text(j.orderId),
+    status: lower<OrderStatus>(j.status),
+    restaurantName: text(j.restaurantName),
+    pickupAddress: text(j.pickupAddress),
+    pickupLat: optionalNumber(j.pickupLatitude),
+    pickupLng: optionalNumber(j.pickupLongitude),
+    destinationName: text(j.destinationName),
+    destinationAddress: text(j.deliveryAddress),
+    destinationLat: optionalNumber(j.deliveryLatitude),
+    destinationLng: optionalNumber(j.deliveryLongitude),
+    donation: Boolean(j.shelterId),
+    lines: (j.lines ?? []).map((l: Raw) => ({ name: text(l.name), quantity: Number(l.quantity) })),
+    specialInstructions: text(j.instructions),
+    pickedUpAt: time(j.pickedUpAt),
+  };
+}
+
+export function toCourierDashboard(j: Raw): CourierDashboard {
+  return {
+    state: lower<CourierState>(j.status),
+    offer: j.offer ? toCourierJob(j.offer) : null,
+    order: j.currentOrder ? toCourierJob(j.currentOrder) : null,
+  };
+}
+
+export function toReadyOrder(j: Raw): ReadyOrder {
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName),
+    pickupAddress: text(j.pickupAddress),
+    itemCount: Number(j.itemCount),
+    readyAt: time(j.readyAt) ?? '',
+  };
+}
+
+export function toCourierDelivery(j: Raw): CourierDelivery {
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName),
+    destinationName: text(j.destinationName),
+    deliveredAt: time(j.deliveredAt) ?? '',
+  };
+}
+
+export function toCityView(j: Raw): CityView {
+  return {
+    restaurants: (j.restaurants ?? []).map((r: Raw) => ({
+      ...toRestaurant(r),
+      queued: Number(r.queued),
+      inPreparation: Number(r.inPreparation),
+      ready: Number(r.ready),
+      soldOutItems: (r.soldOutItems ?? []).map(String),
+    })),
+    couriers: (j.couriers ?? []).map((c: Raw) => ({
+      id: text(c.id),
+      name: text(c.name),
+      lat: Number(c.latitude),
+      lng: Number(c.longitude),
+      courierState: lower<CourierState>(c.status),
+    })),
+  };
+}
+
+export function toWaitingOrder(j: Raw): WaitingOrder {
+  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), waitingSince: time(j.waitingSince) ?? '' };
+}
+
+export function toStalledOrder(j: Raw): StalledOrder {
+  return { orderId: text(j.orderId), restaurantName: text(j.restaurantName), courierName: text(j.courierName) };
+}
+
+// ---------- Pricing (PRC): money comes in cents ----------
+
+const dollars = (cents: unknown): number => Number(cents ?? 0) / 100;
+
+/** The fare parts every pricing response carries. History rows call the total `amountCents`. */
+function toFare(j: Raw): Fare {
+  return {
+    subtotal: dollars(j.subtotalCents),
+    deliveryFee: dollars(j.deliveryFeeCents),
+    serviceFee: dollars(j.serviceFeeCents),
+    surcharge: dollars(j.surchargeCents),
+    total: dollars(j.totalCents ?? j.amountCents),
+  };
+}
+
+export function toCheckout(j: Raw): Checkout {
+  return { paymentId: text(j.paymentId), clientSecret: text(j.clientSecret), fare: toFare(j) };
+}
+
+export function toOrderSummary(j: Raw): OrderSummary {
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName, 'Restaurant'),
+    courierName: optionalText(j.courierName),
+    deliveryAddress: text(j.deliveryAddress),
+    lines: (j.lines ?? []).map((l: Raw) => ({ name: text(l.name), quantity: Number(l.quantity), price: dollars(l.priceCents) })),
+    fare: toFare(j),
+    placedAt: time(j.placedAt) ?? '',
+    deliveredAt: time(j.deliveredAt) ?? '',
+    cardBrand: optionalText(j.cardBrand),
+    cardLast4: optionalText(j.cardLast4),
+  };
+}
+
+/** A courier's row has no money keys at all (`entryType` included), so that is what tells the two apart. */
+export function toHistoryRow(j: Raw): HistoryRow {
+  if (j.entryType === undefined || j.entryType === null) return toCourierDelivery(j);
+  return {
+    orderId: text(j.orderId),
+    restaurantName: text(j.restaurantName, 'Restaurant'),
+    entryType: lower<LedgerEntryType>(j.entryType),
+    finalStatus: lower<OrderStatus>(j.finalStatus),
+    fare: toFare(j),
+    placedAt: time(j.placedAt) ?? '',
+    finishedAt: time(j.finishedAt) ?? '',
+    paymentId: optionalText(j.paymentReference),
   };
 }

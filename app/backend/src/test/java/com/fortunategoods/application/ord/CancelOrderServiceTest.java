@@ -14,7 +14,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.dlv.DispatchService;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
@@ -40,7 +43,7 @@ public class CancelOrderServiceTest {
         orders = mock(OrderRepository.class);
         events = mock(OrderEventRepository.class);
 
-        service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class), preparationQueue);
+        service = new OrderService(mock(RestaurantRepository.class), orders, events, mock(UserRepository.class), preparationQueue, mock(ApplicationEventPublisher.class), mock(DispatchService.class));
 
         order = order("100", OrderStatus.PLACED);
         when(orders.findById("100")).thenReturn(order);

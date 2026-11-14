@@ -2,15 +2,19 @@ package com.fortunategoods.application.ord.orders;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
+import com.fortunategoods.application.dlv.DispatchService;
+import com.fortunategoods.domain.courier.Assignment;
 import com.fortunategoods.domain.handlers.ItemAvailabilityHandler;
 import com.fortunategoods.domain.handlers.RestaurantStatusHandler;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderEvent;
+import com.fortunategoods.domain.order.OrderFinished;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 import com.fortunategoods.domain.order.PreparationQueue;
@@ -18,6 +22,7 @@ import com.fortunategoods.domain.order.validation.OrderRequest;
 import com.fortunategoods.domain.order.validation.OrderVerify;
 import com.fortunategoods.domain.order.validation.RequestedOrderLineItem;
 import com.fortunategoods.domain.restaurant.Restaurant;
+import com.fortunategoods.domain.user.CustomerLocation;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
@@ -36,14 +41,17 @@ public class OrderService {
     private final OrderEventRepository orderEventRepo;
     private final UserRepository userRepo;
     private final RegisterPreparationQueue preparationQueueRegistry;
+    private final ApplicationEventPublisher eventPublisher;
+    private final DispatchService dispatchService;
 
-    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry) {
+    public OrderService(RestaurantRepository restaurantRepo, OrderRepository orderRepo, OrderEventRepository orderEventRepo, UserRepository userRepo, RegisterPreparationQueue preparationQueueRegistry, ApplicationEventPublisher eventPublisher, DispatchService dispatchService) {
         this.restaurantRepo = restaurantRepo;
         this.orderRepo = orderRepo;
         this.orderEventRepo = orderEventRepo;
         this.userRepo = userRepo;
         this.preparationQueueRegistry = preparationQueueRegistry;
-
+        this.eventPublisher = eventPublisher;
+        this.dispatchService = dispatchService;
     }
     
     @Transactional 
@@ -64,8 +72,20 @@ public class OrderService {
         OrderRequest validationRequest = new OrderRequest(restaurant, customerId, null, lines);
         OrderVerify.validate(validationRequest, chain);
 
+        // The order goes to the customer's saved address and coordinates, so the courier's map has a destination (#233).
+        // Both POST /api/orders and the paid placement (PaymentService) come through here, so both get it.
+        // A customer with no saved location (signed up in the app) keeps the address typed at checkout, with no coordinates.
+        Double deliveryLatitude = null;
+        Double deliveryLongitude = null;
+        CustomerLocation savedLocation = userRepo.findCustomerLocation(customerId);
+        if (savedLocation != null) {
+            deliveryAddress = savedLocation.getAddress();
+            deliveryLatitude = savedLocation.getLatitude();
+            deliveryLongitude = savedLocation.getLongitude();
+        }
+
         // After performing chain of responsibility, create an order with state PLACED
-        Order order = OrderVerify.createPlacedOrder(customerId, restaurantId, instructions, deliveryAddress, lines);
+        Order order = OrderVerify.createPlacedOrder(customerId, restaurantId, instructions, deliveryAddress, deliveryLatitude, deliveryLongitude, lines);
 
         String orderId = orderRepo.place(order); // registers an OrderEvent in the orderEventRepo
 
@@ -171,7 +191,11 @@ public class OrderService {
 
         order.rejectIncoming(reason);
 
-        return saveTransition(orderId,order,previous);
+        OrderServiceResult result = saveTransition(orderId,order,previous);
+
+        // Let PRC know the order is finished: the ledger records it and the card hold is released (#261, #259)
+        eventPublisher.publishEvent(new OrderFinished(orderId, result.getStatus()));
+        return result;
     }
 
     @Transactional
@@ -208,8 +232,11 @@ public class OrderService {
 
         order.markReadyFromPreparation();
 
-        return saveTransition(orderId, order, previous);
+        OrderServiceResult result = saveTransition(orderId, order, previous);
+        Assignment offer = dispatchService.offerReadyOrder(orderId); // Assign a READY order to an idle courier
+        return new OrderServiceResult(result.getOrderId(), result.getStatus(), result.getEventId(), result.getRejectReason(), offer == null ? null : offer.getCourierId());
     }
+    
     @Transactional
     public OrderServiceResult cancelOrder(String customerId, String orderId){
         // check validity of IDs provided
@@ -228,7 +255,44 @@ public class OrderService {
         // Save only if the database order is still PLACED.
         String eventId = saveTransitionEvent(orderId, order, OrderStatus.PLACED, "Order is no longer placed", "Order changed before it could be cancelled");
 
+        // Let PRC know the order is finished: the ledger records it and the card hold is released (#261, #259)
+        eventPublisher.publishEvent(new OrderFinished(orderId, order.getStatus()));
         return new OrderServiceResult(orderId, order.getStatus(), Long.parseLong(eventId));
+    }
+
+    @Transactional 
+    public OrderServiceResult operatorCancelOrder(String operatorId, UserRole role, String orderId){
+        // Verify if user executing this method has valid role
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.operatorCancelOrderRoles(), "Only operators are allowed to cancel orders after accepting");
+        // Verify ID validity
+        OrderVerify.requireId(operatorId, "Operator ID");
+
+        Order order = findOrder(orderId); // Find order from repo
+        orderRepo.lockRestaurantQueue(order.getRestaurantId()); // Locks the queue using order's restaurant id
+        orderRepo.lockOrder(orderId);
+        order = findOrder(orderId);
+
+        // Current order status
+        OrderStatus prev = order.getStatus();
+        order.cancelOperator(); // accepted, preparing or ready otherwise it will throw domainRuleViolation
+        OrderServiceResult result = saveTransition(orderId, order, prev);
+        dispatchService.cancelOrderAssignment(order);
+        
+        // Use eventPublisher to let LedgerService know about the Order being cancelled, so it doesn't charge money
+        eventPublisher.publishEvent(new OrderFinished(orderId, result.getStatus()));
+        return result;
+
+    }
+
+    // Only the status change: PaymentService adds the ledger entry and the Stripe refund in the same transaction.
+    @Transactional
+    public OrderServiceResult refundOrder(UserRole role, String orderId) {
+        OrdModulePermissions.requireRole(role, OrdModulePermissions.refundOrderRoles(), "Only operators can refund orders");
+
+        Order order = findOrder(orderId);
+        OrderStatus previous = order.getStatus();
+        order.refundFromDelivered();
+        return saveTransition(orderId, order, previous);
     }
 
     private Order findStaffOrder(String staffId, UserRole role, String orderId, Set<UserRole> allowedRoles) {

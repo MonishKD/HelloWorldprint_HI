@@ -15,6 +15,8 @@ public class PlaceOrderReqJSON {
     private List<PlaceOrderLinesReqJSON> ol;
     private String instructions;
     private String deliveryAddress;
+    // Only for POST /api/payments/place-order (#259): the card payment started at checkout. Empty otherwise.
+    private String paymentId;
 
     public PlaceOrderReqJSON(){}
 
@@ -55,6 +57,14 @@ public class PlaceOrderReqJSON {
 
     public void setDeliveryAddress(String deliveryAddress) {
         this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
     }
 
     // Method to convert each PlaceOrderLinesReqJSON into RequestedOrderLineItem

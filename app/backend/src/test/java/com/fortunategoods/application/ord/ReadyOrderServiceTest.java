@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InOrder;
+import static org.mockito.Mockito.inOrder;
+import com.fortunategoods.domain.courier.Assignment;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -16,7 +19,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import org.springframework.context.ApplicationEventPublisher;
+
 import com.fortunategoods.application.ord.orders.OrderService;
+import com.fortunategoods.application.dlv.DispatchService;
 import com.fortunategoods.application.ord.orders.preparation.RegisterPreparationQueue;
 import com.fortunategoods.domain.order.DomainRuleViolation;
 import com.fortunategoods.domain.order.Order;
@@ -33,7 +39,8 @@ class ReadyOrderServiceTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final OrderEventRepository events = mock(OrderEventRepository.class);
     private final UserRepository users = mock(UserRepository.class);
-    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users, mock(RegisterPreparationQueue.class));
+    private final DispatchService dispatch = mock(DispatchService.class);
+    private final OrderService service = new OrderService(mock(RestaurantRepository.class), orders, events, users, mock(RegisterPreparationQueue.class), mock(ApplicationEventPublisher.class), dispatch);
     private Order order;
 
     @BeforeEach
@@ -46,6 +53,8 @@ class ReadyOrderServiceTest {
 
     @Test
     void marksReadyOnlyOnce() {
+        when(dispatch.offerReadyOrder("100")).thenReturn(
+            new Assignment("900", "100", "15", Assignment.Status.OFFERED, false, false));
         when(orders.updateStatusIfUnchanged("100", "700", OrderStatus.PREPARING, OrderStatus.READY)).thenReturn("701");
 
         var result = service.markAsReadyOrder("8", UserRole.RESTAURANT, "100");
@@ -55,16 +64,22 @@ class ReadyOrderServiceTest {
         assertEquals(OrderStatus.READY, order.getStatus());
         assertNull(order.getCourierId());
         assertEquals(701L, result.getEventId());
+        assertEquals("15", result.getOfferedCourierId());
+
+        InOrder sequence = inOrder(orders, dispatch);
+        sequence.verify(orders).updateStatusIfUnchanged("100", "700", OrderStatus.PREPARING, OrderStatus.READY);
+        sequence.verify(dispatch).offerReadyOrder("100");
         fails(DomainRuleViolation.Reason.CONFLICT);
 
         verify(orders).updateStatusIfUnchanged("100", "700", OrderStatus.PREPARING, OrderStatus.READY);
+        verify(dispatch).offerReadyOrder("100");
     }
 
     @Test
     void customerIsForbidden() {
         var error = assertThrows(DomainRuleViolation.class, () -> service.markAsReadyOrder("7", UserRole.CUSTOMER, "100"));
         assertEquals(DomainRuleViolation.Reason.FORBIDDEN, error.getReason());
-        verifyNoInteractions(orders, events, users);
+        verifyNoInteractions(orders, events, users, dispatch);
     }
 
     @Test
@@ -100,7 +115,19 @@ class ReadyOrderServiceTest {
     void concurrentChangeIsRejected() {
         // Mocked database update returns null.
         fails(DomainRuleViolation.Reason.CONFLICT);
+        verifyNoInteractions(dispatch);
         verify(orders).updateStatusIfUnchanged("100", "700", OrderStatus.PREPARING, OrderStatus.READY);
+    }
+
+    @Test
+    void orderWaitsWhenNoCourierIsAvailable() {
+        when(orders.updateStatusIfUnchanged("100", "700", OrderStatus.PREPARING, OrderStatus.READY)).thenReturn("701");
+
+        var result = service.markAsReadyOrder("8", UserRole.RESTAURANT, "100");
+
+        assertEquals(OrderStatus.READY, result.getStatus());
+        assertNull(result.getOfferedCourierId());
+        verify(dispatch).offerReadyOrder("100");
     }
 
     private void fails(DomainRuleViolation.Reason reason) {
@@ -110,6 +137,6 @@ class ReadyOrderServiceTest {
 
     private void nothingSaved() {
         verify(orders, never()).updateStatusIfUnchanged(anyString(), anyString(), any(), any());
-        verifyNoInteractions(events);
+        verifyNoInteractions(events, dispatch);
     }
 }

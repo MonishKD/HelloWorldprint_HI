@@ -2,7 +2,7 @@ import { useState, type CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { MenuItem } from '../../domain';
 import { useUser } from '../../session';
-import { ConfirmButton, ConfirmChange, DiscountTile, Empty, LoadError, Loading, money, restaurantHue, stagger, StatusBadge, Switch, useLoad } from '../common';
+import { ConfirmButton, ConfirmChange, DiscountTile, Empty, LoadError, Loading, money, restaurantHue, stagger, StatusBadge, Switch, useLoad, usePolling } from '../common';
 import { errorMessage, send } from '../dashboard/dashboardApi';
 import { Icon } from '../icons';
 import OrderCart, { type Cart } from './OrderCart';
@@ -25,6 +25,7 @@ export default function MenuPage({ onChanged }: { onChanged?: () => void }) {
 function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
   const restaurantId = useUser().restaurantId ?? '';
   const { data, error, reload } = useLoad(() => getRestaurantMenu(restaurantId), [restaurantId]);
+  usePolling(reload);
   const [actionError, setActionError] = useState('');
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -49,7 +50,7 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
     return run(`Mark "${item.name}" ${status.replace('_', ' ')}`, () => setMenuItemStatus(restaurantId, item.id, status));
   };
 
-  if (error) return <LoadError what="your menu" message={error} onRetry={reload} />;
+  if (error && !data) return <LoadError what="your menu" message={error} onRetry={reload} />;
   if (!data) return <Loading what="your menu" />;
   const [restaurant, menu] = data;
 
@@ -135,6 +136,7 @@ function RestaurantMenu({ onChanged }: { onChanged?: () => void }) {
 function CustomerMenu() {
   const { restaurantId = '' } = useParams();
   const { data, error, reload } = useLoad(() => getRestaurantMenu(restaurantId), [restaurantId]);
+  usePolling(reload);
   const [cart, setCart] = useState<Cart>({});
 
   const back = (
@@ -142,7 +144,7 @@ function CustomerMenu() {
       ← All restaurants
     </Link>
   );
-  if (error) {
+  if (error && !data) {
     return (
       <section>
         {back}

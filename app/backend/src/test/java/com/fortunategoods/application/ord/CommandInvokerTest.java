@@ -101,6 +101,19 @@ class CommandInvokerTest {
     }
 
     @Test
+    void polledReadsDoNotFillTheLog() {
+        Command<String> polledRead = new Command<>() {
+            public Set<UserRole> validRoles() { return Set.of(UserRole.OPERATOR); }
+            public CommandSuccess<String> execute() { return CommandSuccess.success("data", "read"); }
+            @Override public boolean logsSuccess() { return false; }
+        };
+
+        invoker.process(polledRead, new Session(3, UserRole.OPERATOR));
+
+        assertEquals(0, savedLogs.size());
+    }
+
+    @Test
     void guestCannotBrowseMenu() {
         // Return null for null session
         doThrow(new AuthenticationCredentialsNotFoundException("Please sign in.")).when(validator).requireValid(null);

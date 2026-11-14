@@ -1,5 +1,6 @@
 package com.fortunategoods.application.ord.orders.cancellation;
 
+import com.fortunategoods.application.ord.orders.OrderStatusResponse;
 import com.fortunategoods.application.ord.execution.Command;
 import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.ord.orders.OrderService;
@@ -10,7 +11,7 @@ import com.fortunategoods.domain.order.OrdModulePermissions;
 import com.fortunategoods.application.ord.orders.OrderServiceResult;
 import com.fortunategoods.domain.user.UserRole;
 
-public class CancelOrderCommand implements Command<CancelOrderResponse> {
+public class CancelOrderCommand implements Command<OrderStatusResponse> {
     private final OrderService service;
     private final Session session;
     private final String orderId;
@@ -28,12 +29,12 @@ public class CancelOrderCommand implements Command<CancelOrderResponse> {
     }
 
     @Override
-    public CommandSuccess<CancelOrderResponse> execute(){
+    public CommandSuccess<OrderStatusResponse> execute(){
         // call the cancelOrder() method in OrderService
         OrderServiceResult result = service.cancelOrder(String.valueOf(session.getUserID()), orderId);
 
         // create the response to send back to frontend
-        CancelOrderResponse response = new CancelOrderResponse(result.getOrderId(), result.getStatus());
+        OrderStatusResponse response = new OrderStatusResponse(result.getOrderId(), result.getStatus());
 
         // send response
         return new CommandSuccess<>(response, "Order cancelled.", result.getEventId());

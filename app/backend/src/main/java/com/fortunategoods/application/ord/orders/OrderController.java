@@ -14,7 +14,7 @@ import com.fortunategoods.application.ord.execution.CommandSuccess;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderCommand;
 import com.fortunategoods.application.ord.orders.acceptance.AcceptOrderResponse;
 import com.fortunategoods.application.ord.orders.cancellation.CancelOrderCommand;
-import com.fortunategoods.application.ord.orders.cancellation.CancelOrderResponse;
+import com.fortunategoods.application.ord.orders.cancellation.OperatorCancelOrderCommand;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderCommand;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderReqJSON;
 import com.fortunategoods.application.ord.orders.placement.PlaceOrderResponse;
@@ -65,7 +65,7 @@ public class OrderController {
 
     // API Endpoint for cancelling an order
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<CommandSuccess<CancelOrderResponse>> cancelOrder(@PathVariable("orderId") String orderId){
+    public ResponseEntity<CommandSuccess<OrderStatusResponse>> cancelOrder(@PathVariable("orderId") String orderId){
         // Get current session
         Session session = sessionValidator.currentSession();
 
@@ -73,9 +73,25 @@ public class OrderController {
         CancelOrderCommand command = new CancelOrderCommand(orderService, session, orderId);
 
         // Process the command and store success result
-        CommandSuccess<CancelOrderResponse> result = invoker.process(command, session);
+        CommandSuccess<OrderStatusResponse> result = invoker.process(command, session);
 
         // Confirm the cancellation request to frontend
+        return ResponseEntity.ok(result);
+    }
+
+    // API Endpoint for cancelling an order as operator
+    @PostMapping("/{orderId}/operator-cancel")
+    public ResponseEntity<CommandSuccess<OrderStatusResponse>> operatorCancelOrder(@PathVariable("orderId") String orderId){
+        // Get current session
+        Session session = sessionValidator.currentSession();
+
+        // Create new command
+        OperatorCancelOrderCommand command = new OperatorCancelOrderCommand(orderService, session, orderId);
+
+        // Process the command and store success result
+        CommandSuccess<OrderStatusResponse> result = invoker.process(command, session);
+
+        // Confirm cancellation request to frontend
         return ResponseEntity.ok(result);
     }
 

@@ -1,0 +1,122 @@
+@startuml ssdPhase2
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 14
+skinparam monochrome true
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+hide footbox
+
+title SOEN 343 Phase II SSD (slightly modified)
+
+participant Customer
+participant System
+participant Restaurant
+
+'Customer places the order ====================
+Customer -> System : SendOrder(restaurantId, listOfItems, card)
+activate System
+alt restaurant open and\nall items available
+  System -> System : ComputeFare(listOfItems)
+  System -> System : HoldPayment(card, fare)
+  System -> System : CreateOrder(restaurantId, listOfItems)
+  System --> Customer : order placed
+else restaurant paused/closed or item sold out
+  System --> Customer : order refused, with the reason
+end
+deactivate System
+
+'Restaurant gets the order ====================
+Restaurant -> System : GetIncomingOrders(restaurantId)
+activate System
+System --> Restaurant : incoming orders
+deactivate System
+
+'Restaurant accepts and prepares, or rejects ====================
+alt order is accepted
+  Restaurant -> System : AcceptOrder(orderId)
+  activate System
+  System --> Restaurant : order accepted
+  deactivate System
+
+  Restaurant -> System : StartPreparing(orderId)
+  activate System
+  System --> Restaurant : order preparing
+  deactivate System
+
+  Restaurant -> System : ReadyOrder(orderId)
+  activate System
+  System --> Restaurant : order ready
+  deactivate System
+else order isn't accepted
+  Restaurant -> System : RejectOrder(orderId, reason)
+  activate System
+  System --> Restaurant : order rejected
+  deactivate System
+end
+@enduml
+
+@startuml ssdPhase3
+skinparam DefaultFontName Arial
+skinparam DefaultFontSize 14
+skinparam monochrome true
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+hide footbox
+
+title SOEN 343 Phase III SSD
+
+participant Customer
+participant System
+participant Restaurant
+participant Courier
+
+'Continues from the end of the Phase II diagram ====================
+Restaurant -> System : ReadyOrder(orderId)
+activate System
+alt an idle courier is on duty
+  System -> System : OfferToNearestCourier(orderId)
+  System --> Restaurant : order ready, courier found
+  deactivate System
+else no courier is idle
+  System -> System : AddToDispatchQueue(orderId)
+  activate System
+  System --> Restaurant : order ready, waiting for a courier
+  deactivate System
+  Courier -> System : GoOnDuty()
+  activate System
+  System -> System : OfferToNearestCourier(orderId)
+  System --> Courier : courier on duty
+  deactivate System
+end
+
+'Courier takes the order ====================
+Courier -> System : GetOffer()
+activate System
+System --> Courier : offered order
+deactivate System
+
+Courier -> System : AcceptOffer()
+activate System
+System --> Courier : offer accepted
+deactivate System
+
+'Pickup and delivery ====================
+Courier -> System : ConfirmPickup()
+activate System
+System --> Courier : order picked up
+deactivate System
+
+Courier -> System : ConfirmDelivery()
+activate System
+System -> System : ComputeFare(orderId)
+System -> System : ChargeHeldPayment(orderId)
+System -> System : RecordLedgerEntry(orderId, fare)
+System --> Courier : order delivered
+deactivate System
+
+'Customer gets the summary ====================
+Customer -> System : GetOrderSummary(orderId)
+activate System
+System --> Customer : order summary (items, fees, total)
+deactivate System
+@enduml

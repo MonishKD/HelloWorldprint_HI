@@ -1,0 +1,139 @@
+package com.fortunategoods.technical.persistence;
+import java.util.List;
+
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.fortunategoods.domain.courier.Assignment;
+
+/*
+    Assignment Repository which will act as a junction table between Orders and Couriers
+*/
+@Repository
+public class AssignmentRepository {
+    private final JdbcTemplate jdbc;
+
+    public AssignmentRepository(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
+
+    // Method to check if an order has been offered or accepted and not delivered
+    public Assignment findActiveByOrder(String orderId) {
+        // Find assignment for an order_id that has ben offered/accepted but not delivered
+        String sql = """
+        SELECT * FROM assignments
+        WHERE order_id = ?
+        AND status IN ('OFFERED', 'ACCEPTED')
+        AND is_delivered = FALSE
+        """;
+
+        List<Assignment> found = jdbc.query(sql, (row, number) -> new Assignment(
+            row.getString("id"),
+            row.getString("order_id"),
+            row.getString("courier_id"),
+            Assignment.Status.valueOf(row.getString("status")),
+            row.getBoolean("is_picked_up"),
+            row.getBoolean("is_delivered")
+        ), Integer.parseInt(orderId));
+
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // Method to create an assignment in the DB and return it in the backend
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Assignment add(Assignment offer) {
+        String sql = """
+        INSERT INTO assignments (order_id, courier_id, status, is_picked_up, is_delivered)
+        VALUES (?, ?, ?, ?, ?)
+        RETURNING id
+        """;
+
+        Integer id = jdbc.queryForObject(
+            sql,
+            Integer.class,
+            Integer.parseInt(offer.getOrderId()),
+            Integer.parseInt(offer.getCourierId()),
+            offer.getStatus().name(),
+            offer.isPickedUp(),
+            offer.isDelivered()
+        );
+
+        return new Assignment(String.valueOf(id), offer.getOrderId(), offer.getCourierId(), offer.getStatus(), offer.isPickedUp(), offer.isDelivered());
+    }
+
+    // Method that changes the status of a given assignment directly to the database with JDBC
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean setStatus(Assignment.Status newStatus, Assignment.Status currentStatus, String assignmentID)
+    {
+        //? represents the parameters that are passed to this method, as shown at the bottom of this method, with the first ? being the first parameter, the second ? being the second parameter, etc.
+        return jdbc.update("""
+        UPDATE assignments SET status = ?
+        WHERE status = ? AND id = ?
+        """, newStatus.name(), currentStatus.name(), Integer.parseInt(assignmentID)) == 1;
+
+    }
+
+
+    // Method to find active assignments by courier_id
+    public Assignment findActiveByCourier(String courierId) {
+        String sql = """
+        SELECT * FROM assignments
+        WHERE courier_id = ?
+        AND status IN ('OFFERED', 'ACCEPTED')
+        AND is_delivered = FALSE
+        """;
+
+        List<Assignment> found = jdbc.query(sql, (row, number) -> new Assignment(
+            row.getString("id"),
+            row.getString("order_id"),
+            row.getString("courier_id"),
+            Assignment.Status.valueOf(row.getString("status")),
+            row.getBoolean("is_picked_up"),
+            row.getBoolean("is_delivered")
+        ), Integer.parseInt(courierId));
+
+        return found.isEmpty() ? null : found.get(0);
+    }
+
+    // Method to change assignment pickedUp boolean to True
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markPickedUp(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET is_picked_up = TRUE
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
+
+    // Method to change assignment isDelivered boolean to True
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markDelivered(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET is_delivered = TRUE
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = TRUE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
+    
+    // Thread-lock method to set status of an order to reassign
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markReassigned(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET status = 'REASSIGNED'
+        WHERE id = ? AND status = 'ACCEPTED'
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
+
+    // Thread-lock method to mark status of an assignment to cancel
+    @Transactional(propagation = Propagation.MANDATORY)
+    public boolean markCancelled(String assignmentId) {
+        return jdbc.update("""
+        UPDATE assignments SET status = 'CANCELLED'
+        WHERE id = ? AND status IN ('OFFERED', 'ACCEPTED')
+        AND is_picked_up = FALSE AND is_delivered = FALSE
+        """, Integer.parseInt(assignmentId)) == 1;
+    }
+}

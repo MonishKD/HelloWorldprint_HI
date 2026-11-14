@@ -100,3 +100,8 @@
 .stat-brand .stat-label, .stat-brand .stat-hint { color: inherit; opacity: 0.75; }
 .stat-accent { border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
 .stat-accent .stat-value { color: var(--accent-text); }
+
+.info-area { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1.5rem; padding: 0.6rem 0.9rem; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); font-size: 0.9rem; }
+.info-role { text-transform: capitalize; }
+.info-selected { flex: 1 1 16rem; min-width: 0; }
+.info-labels { display: inline-flex; align-items: center; gap: 0.5rem; }

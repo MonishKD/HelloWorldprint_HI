@@ -1,6 +1,7 @@
 package com.fortunategoods.domain.order.state;
 
 import com.fortunategoods.domain.order.OrderStatus;
+import com.fortunategoods.domain.order.Order;
 
 public class ReadyState extends BaseOrderState {
 
@@ -9,6 +10,14 @@ public class ReadyState extends BaseOrderState {
         return OrderStatus.READY;
     }
 
-    //wont go anywhere from here
+    @Override
+    public void cancel(Order order){
+        order.transitionTo(new CanceledState());
+    }
+
+    @Override
+    public void pickUp(Order order){
+        order.transitionTo(new PickedUpState());
+    }
     
 }

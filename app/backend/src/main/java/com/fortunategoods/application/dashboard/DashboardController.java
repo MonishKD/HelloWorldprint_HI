@@ -60,6 +60,13 @@ public class DashboardController {
         return ResponseEntity.ok(invoker.process(command, session));
     }
 
+    // Every signed-in role.
+    @GetMapping("/city")
+    public ResponseEntity<CommandSuccess<CityView>> getCity() {
+        Session session = sessionValidator.currentSession();
+        return ResponseEntity.ok(invoker.process(new GetCityViewCommand(dashboardService, session), session));
+    }
+
     // GET /api/dashboard/console              -> the newest 100 entries of the signed-in user, oldest first
     // GET /api/dashboard/console?before={id}  -> "load more": the 100 entries just older than that id
     // An empty list [] means nothing (more) to show. Not signed in: 401 (Spring Security).

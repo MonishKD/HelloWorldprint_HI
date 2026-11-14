@@ -22,19 +22,37 @@ export async function login(usernameOrEmail: string, password: string): Promise<
 /**
  * POST /auth/register, then log in: registering doesn't start a session. A restaurant account comes with its own
  * closed restaurant, so only that role sends a restaurant name and address. The backend refuses operator and taken names.
+ * Every role sends where it is (`latitude`, `longitude`, #244); a customer also sends their `name` and `deliveryAddress`
+ * (not `address`: the backend keeps that key for restaurants and refuses it on a customer).
  */
 export async function register(input: {
   username: string;
   email: string;
   password: string;
   role: RegisterRole;
+  latitude: number;
+  longitude: number;
   restaurantName?: string;
+  name?: string;
   address?: string;
 }): Promise<SessionUser> {
-  const restaurant = input.role === 'restaurant' ? { restaurantName: input.restaurantName, address: input.address } : {};
+  const byRole =
+    input.role === 'restaurant'
+      ? { restaurantName: input.restaurantName, address: input.address }
+      : input.role === 'customer'
+        ? { name: input.name?.trim(), deliveryAddress: input.address?.trim() }
+        : {};
   await request('/auth/register', {
     method: 'POST',
-    body: { username: input.username.trim(), email: input.email.trim(), password: input.password, role: input.role, ...restaurant },
+    body: {
+      username: input.username.trim(),
+      email: input.email.trim(),
+      password: input.password,
+      role: input.role,
+      latitude: input.latitude,
+      longitude: input.longitude,
+      ...byRole,
+    },
   });
   return login(input.username, input.password);
 }
