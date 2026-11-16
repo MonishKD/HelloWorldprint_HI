@@ -1,0 +1,4964 @@
+{
+  "paging": {
+    "pageIndex": 1,
+    "pageSize": 262,
+    "total": 262
+  },
+  "baseComponent": {
+    "key": "fortunategoods-phase3",
+    "name": "fortunategoods-phase3",
+    "qualifier": "TRK",
+    "measures": []
+  },
+  "components": [
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/AcceptedState.java",
+      "name": "AcceptedState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/AcceptedState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/AcceptOfferCommand.java",
+      "name": "AcceptOfferCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/AcceptOfferCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/acceptance/AcceptOrderCommand.java",
+      "name": "AcceptOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/acceptance/AcceptOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/acceptance/AcceptOrderResponse.java",
+      "name": "AcceptOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/acceptance/AcceptOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/adapters.ts",
+      "name": "adapters.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/adapters.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "14",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "85"
+        },
+        {
+          "metric": "ncloc",
+          "value": "196"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/AddMenuItemCommand.java",
+      "name": "AddMenuItemCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/AddMenuItemCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/App.tsx",
+      "name": "App.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/App.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "52"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/Assignment.java",
+      "name": "Assignment.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/Assignment.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "22",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "48"
+        },
+        {
+          "metric": "ncloc",
+          "value": "91"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/AssignmentRepository.java",
+      "name": "AssignmentRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/AssignmentRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "13"
+        },
+        {
+          "metric": "ncloc",
+          "value": "81"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/auth.css",
+      "name": "auth.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/auth.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "95"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/AuthenticationService.java",
+      "name": "AuthenticationService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/AuthenticationService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "55"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/reg/AuthShell.tsx",
+      "name": "AuthShell.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/reg/AuthShell.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/base.css",
+      "name": "base.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/base.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "38"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/BaseFare.java",
+      "name": "BaseFare.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/BaseFare.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "7"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/handlers/BaseOrderHandler.java",
+      "name": "BaseOrderHandler.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/handlers/BaseOrderHandler.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/BaseOrderState.java",
+      "name": "BaseOrderState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/BaseOrderState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/browsing/BrowseMenuCommand.java",
+      "name": "BrowseMenuCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/browsing/BrowseMenuCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/browsing/BrowseRestaurantsCommand.java",
+      "name": "BrowseRestaurantsCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/browsing/BrowseRestaurantsCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "27"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/CanceledState.java",
+      "name": "CanceledState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/CanceledState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/cancellation/CancelOrderCommand.java",
+      "name": "CancelOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/cancellation/CancelOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/CardPayment.tsx",
+      "name": "CardPayment.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/CardPayment.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "5",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "14"
+        },
+        {
+          "metric": "ncloc",
+          "value": "43"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/checkout/CheckoutCommand.java",
+      "name": "CheckoutCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/checkout/CheckoutCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/checkout/CheckoutResponse.java",
+      "name": "CheckoutResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/checkout/CheckoutResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "41"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/CityMap.tsx",
+      "name": "CityMap.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/CityMap.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "16",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "29"
+        },
+        {
+          "metric": "ncloc",
+          "value": "114"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/CityMapPanel.tsx",
+      "name": "CityMapPanel.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/CityMapPanel.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/CityView.java",
+      "name": "CityView.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/CityView.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "12"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/Command.java",
+      "name": "Command.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/Command.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandError.java",
+      "name": "CommandError.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandError.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "22"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandExecutionException.java",
+      "name": "CommandExecutionException.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandExecutionException.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "16"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandInvoker.java",
+      "name": "CommandInvoker.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandInvoker.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "62"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandLog.java",
+      "name": "CommandLog.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandLog.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "11"
+        },
+        {
+          "metric": "ncloc",
+          "value": "60"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/CommandLogRepository.java",
+      "name": "CommandLogRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/CommandLogRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "4",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "12"
+        },
+        {
+          "metric": "ncloc",
+          "value": "64"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandSuccess.java",
+      "name": "CommandSuccess.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/execution/CommandSuccess.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/common.tsx",
+      "name": "common.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/common.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "code_smells",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "cognitive_complexity",
+          "value": "30",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "83"
+        },
+        {
+          "metric": "ncloc",
+          "value": "365"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/components.css",
+      "name": "components.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/components.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "180"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/handoff/ConfirmDeliveryCommand.java",
+      "name": "ConfirmDeliveryCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/handoff/ConfirmDeliveryCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/handoff/ConfirmPickupCommand.java",
+      "name": "ConfirmPickupCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/handoff/ConfirmPickupCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/console.css",
+      "name": "console.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/console.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "64"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/ConsoleEntry.java",
+      "name": "ConsoleEntry.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/ConsoleEntry.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "46"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/courier.css",
+      "name": "courier.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/courier.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "64"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/Courier.java",
+      "name": "Courier.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/Courier.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "5",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "13"
+        },
+        {
+          "metric": "ncloc",
+          "value": "49"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/CourierController.java",
+      "name": "CourierController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/CourierController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "59"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/CourierDashboardPage.tsx",
+      "name": "CourierDashboardPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/CourierDashboardPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "28",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "47"
+        },
+        {
+          "metric": "ncloc",
+          "value": "171"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/CourierDashboardView.java",
+      "name": "CourierDashboardView.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/CourierDashboardView.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/CourierDutyService.java",
+      "name": "CourierDutyService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/CourierDutyService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "15",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "18"
+        },
+        {
+          "metric": "ncloc",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/history/CourierHistoryResponse.java",
+      "name": "CourierHistoryResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/history/CourierHistoryResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/CourierJob.java",
+      "name": "CourierJob.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/CourierJob.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dlv/CourierJobCards.tsx",
+      "name": "CourierJobCards.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dlv/CourierJobCards.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "97"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/CourierOfferService.java",
+      "name": "CourierOfferService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/CourierOfferService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "13"
+        },
+        {
+          "metric": "ncloc",
+          "value": "75"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/registration/CourierRegistration.java",
+      "name": "CourierRegistration.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/registration/CourierRegistration.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/CourierRepository.java",
+      "name": "CourierRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/CourierRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "9",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "17"
+        },
+        {
+          "metric": "ncloc",
+          "value": "74"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/CourierStatus.java",
+      "name": "CourierStatus.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/CourierStatus.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/session/CurrentAccount.java",
+      "name": "CurrentAccount.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/session/CurrentAccount.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/customer.css",
+      "name": "customer.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/customer.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "260"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/CustomerDashboardPage.tsx",
+      "name": "CustomerDashboardPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/CustomerDashboardPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "27",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "51"
+        },
+        {
+          "metric": "ncloc",
+          "value": "187"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/user/CustomerLocation.java",
+      "name": "CustomerLocation.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/user/CustomerLocation.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/CustomerOrderList.java",
+      "name": "CustomerOrderList.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/CustomerOrderList.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "18"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/CustomerOrderStatusView.java",
+      "name": "CustomerOrderStatusView.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/CustomerOrderStatusView.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/registration/CustomerRegistration.java",
+      "name": "CustomerRegistration.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/registration/CustomerRegistration.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/dashboardApi.ts",
+      "name": "dashboardApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/dashboardApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "16",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "36"
+        },
+        {
+          "metric": "ncloc",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardController.java",
+      "name": "DashboardController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "65"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardOrder.java",
+      "name": "DashboardOrder.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardOrder.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "26"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/DashboardRouter.tsx",
+      "name": "DashboardRouter.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/DashboardRouter.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "17"
+        },
+        {
+          "metric": "ncloc",
+          "value": "96"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardService.java",
+      "name": "DashboardService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/DashboardService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "107"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/DeclineOfferCommand.java",
+      "name": "DeclineOfferCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/DeclineOfferCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/DeliveredState.java",
+      "name": "DeliveredState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/DeliveredState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "13"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/DeliveryFeeRule.java",
+      "name": "DeliveryFeeRule.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/DeliveryFeeRule.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/DeliveryService.java",
+      "name": "DeliveryService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/DeliveryService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "15",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "23"
+        },
+        {
+          "metric": "ncloc",
+          "value": "141"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/DispatchQueue.java",
+      "name": "DispatchQueue.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/DispatchQueue.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "9",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "12"
+        },
+        {
+          "metric": "ncloc",
+          "value": "38"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/queue/DispatchQueueEntry.java",
+      "name": "DispatchQueueEntry.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/queue/DispatchQueueEntry.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/DispatchService.java",
+      "name": "DispatchService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/DispatchService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "23",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "27"
+        },
+        {
+          "metric": "ncloc",
+          "value": "135"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dlv/dlvApi.ts",
+      "name": "dlvApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dlv/dlvApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/DlvController.java",
+      "name": "DlvController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/DlvController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "60"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/DlvModulePermissions.java",
+      "name": "DlvModulePermissions.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/DlvModulePermissions.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "12"
+        },
+        {
+          "metric": "ncloc",
+          "value": "41"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/domain.ts",
+      "name": "domain.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/domain.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "169"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/DomainRuleViolation.java",
+      "name": "DomainRuleViolation.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/DomainRuleViolation.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/EditMenuItemCommand.java",
+      "name": "EditMenuItemCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/EditMenuItemCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "31"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/Fare.java",
+      "name": "Fare.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/Fare.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "14"
+        },
+        {
+          "metric": "ncloc",
+          "value": "43"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/FareCalculator.java",
+      "name": "FareCalculator.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/FareCalculator.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "34"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/FareLines.tsx",
+      "name": "FareLines.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/FareLines.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/FortunateGoodsApplication.java",
+      "name": "FortunateGoodsApplication.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/FortunateGoodsApplication.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/geo.ts",
+      "name": "geo.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/geo.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "27"
+        },
+        {
+          "metric": "ncloc",
+          "value": "58"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/GetAllOrdersCommand.java",
+      "name": "GetAllOrdersCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/GetAllOrdersCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/GetCityViewCommand.java",
+      "name": "GetCityViewCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/GetCityViewCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/GetCourierDashboardCommand.java",
+      "name": "GetCourierDashboardCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/GetCourierDashboardCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/GetCustomerDashboardCommand.java",
+      "name": "GetCustomerDashboardCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/GetCustomerDashboardCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/queue/GetDispatchQueueCommand.java",
+      "name": "GetDispatchQueueCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/queue/GetDispatchQueueCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/history/GetHistoryCommand.java",
+      "name": "GetHistoryCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/history/GetHistoryCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "26"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/summary/GetOrderSummaryCommand.java",
+      "name": "GetOrderSummaryCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/summary/GetOrderSummaryCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/GetPendingOrdersCommand.java",
+      "name": "GetPendingOrdersCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/GetPendingOrdersCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "40"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/GetPreparationQueueCommand.java",
+      "name": "GetPreparationQueueCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/GetPreparationQueueCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/GetPreparationQueueResponse.java",
+      "name": "GetPreparationQueueResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/GetPreparationQueueResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "22"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/GetReadyOrdersCommand.java",
+      "name": "GetReadyOrdersCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/GetReadyOrdersCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/GetRestaurantDashboardCommand.java",
+      "name": "GetRestaurantDashboardCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/GetRestaurantDashboardCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/GetStalledOrdersCommand.java",
+      "name": "GetStalledOrdersCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/GetStalledOrdersCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/GoOffDutyCommand.java",
+      "name": "GoOffDutyCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/GoOffDutyCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "26"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/GoOnDutyCommand.java",
+      "name": "GoOnDutyCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/GoOnDutyCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "26"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/HistoryController.java",
+      "name": "HistoryController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/HistoryController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/history/HistoryResponse.java",
+      "name": "HistoryResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/history/HistoryResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/HistoryTable.tsx",
+      "name": "HistoryTable.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/HistoryTable.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "22"
+        },
+        {
+          "metric": "ncloc",
+          "value": "108"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/http.ts",
+      "name": "http.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/http.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "24"
+        },
+        {
+          "metric": "ncloc",
+          "value": "55"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/icons.tsx",
+      "name": "icons.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/icons.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "46"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/IllegalTransitionException.java",
+      "name": "IllegalTransitionException.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/IllegalTransitionException.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/IncomingOrdersList.tsx",
+      "name": "IncomingOrdersList.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/IncomingOrdersList.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "code_smells",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "cognitive_complexity",
+          "value": "18",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "36"
+        },
+        {
+          "metric": "ncloc",
+          "value": "143"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/index.css",
+      "name": "index.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/index.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "14"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/InformationArea.tsx",
+      "name": "InformationArea.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/InformationArea.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "11"
+        },
+        {
+          "metric": "ncloc",
+          "value": "52"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/handlers/ItemAvailabilityHandler.java",
+      "name": "ItemAvailabilityHandler.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/handlers/ItemAvailabilityHandler.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "6",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/layout.css",
+      "name": "layout.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/layout.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "100"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/LedgerEntry.java",
+      "name": "LedgerEntry.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/LedgerEntry.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "76"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/history/LedgerHistoryResponse.java",
+      "name": "LedgerHistoryResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/history/LedgerHistoryResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "10"
+        },
+        {
+          "metric": "ncloc",
+          "value": "53"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/LedgerRepository.java",
+      "name": "LedgerRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/LedgerRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "16"
+        },
+        {
+          "metric": "ncloc",
+          "value": "75"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/LedgerService.java",
+      "name": "LedgerService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/LedgerService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "21",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "29"
+        },
+        {
+          "metric": "ncloc",
+          "value": "152"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/reg/LocationPicker.tsx",
+      "name": "LocationPicker.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/reg/LocationPicker.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/session/LoggedInUser.java",
+      "name": "LoggedInUser.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/session/LoggedInUser.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/session/Login.java",
+      "name": "Login.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/session/Login.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "65"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/reg/LoginPage.tsx",
+      "name": "LoginPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/reg/LoginPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "10"
+        },
+        {
+          "metric": "ncloc",
+          "value": "63"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/session/Logout.java",
+      "name": "Logout.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/session/Logout.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/main.tsx",
+      "name": "main.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/main.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "12"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/map.css",
+      "name": "map.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/map.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "140"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/mapStyle.ts",
+      "name": "mapStyle.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/mapStyle.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "51"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/MapView.tsx",
+      "name": "MapView.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/MapView.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "34",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "59"
+        },
+        {
+          "metric": "ncloc",
+          "value": "212"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/browsing/MenuCommands.java",
+      "name": "MenuCommands.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/browsing/MenuCommands.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/MenuController.java",
+      "name": "MenuController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/MenuController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "83"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/MenuItem.java",
+      "name": "MenuItem.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/MenuItem.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "23"
+        },
+        {
+          "metric": "ncloc",
+          "value": "77"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/MenuItemForm.tsx",
+      "name": "MenuItemForm.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/MenuItemForm.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "code_smells",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "19"
+        },
+        {
+          "metric": "ncloc",
+          "value": "60"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemInput.java",
+      "name": "MenuItemInput.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemInput.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/MenuItemRepository.java",
+      "name": "MenuItemRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/MenuItemRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "4",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "72"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemReqJSON.java",
+      "name": "MenuItemReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "14"
+        },
+        {
+          "metric": "ncloc",
+          "value": "31"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemResponse.java",
+      "name": "MenuItemResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/MenuItemResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/MenuItemRules.java",
+      "name": "MenuItemRules.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/MenuItemRules.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "15",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "25"
+        },
+        {
+          "metric": "ncloc",
+          "value": "63"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/MenuItemStatus.java",
+      "name": "MenuItemStatus.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/MenuItemStatus.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/MenuPage.tsx",
+      "name": "MenuPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/MenuPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "27",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "63"
+        },
+        {
+          "metric": "ncloc",
+          "value": "226"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/MenuService.java",
+      "name": "MenuService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/MenuService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "21"
+        },
+        {
+          "metric": "ncloc",
+          "value": "93"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/NearestCourierRule.java",
+      "name": "NearestCourierRule.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/NearestCourierRule.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "19"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/OnDutyCourier.java",
+      "name": "OnDutyCourier.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/OnDutyCourier.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/operator.css",
+      "name": "operator.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/operator.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/operatorApi.ts",
+      "name": "operatorApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/operatorApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/cancellation/OperatorCancelOrderCommand.java",
+      "name": "OperatorCancelOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/cancellation/OperatorCancelOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/OperatorController.java",
+      "name": "OperatorController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/OperatorController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/OperatorDashboardPage.tsx",
+      "name": "OperatorDashboardPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/OperatorDashboardPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "21",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "69"
+        },
+        {
+          "metric": "ncloc",
+          "value": "298"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/OperatorOrderResponse.java",
+      "name": "OperatorOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/OperatorOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/ordApi.ts",
+      "name": "ordApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/ordApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "46"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/Order.java",
+      "name": "Order.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/Order.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "26",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "70"
+        },
+        {
+          "metric": "ncloc",
+          "value": "217"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/OrderCart.tsx",
+      "name": "OrderCart.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/OrderCart.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "23",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "52"
+        },
+        {
+          "metric": "ncloc",
+          "value": "177"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderController.java",
+      "name": "OrderController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "9"
+        },
+        {
+          "metric": "ncloc",
+          "value": "89"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/OrderDelivery.java",
+      "name": "OrderDelivery.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/OrderDelivery.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/OrderDeliveryReader.java",
+      "name": "OrderDeliveryReader.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/OrderDeliveryReader.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "5",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "33"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/OrderEvent.java",
+      "name": "OrderEvent.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/OrderEvent.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "37"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/OrderEventRepository.java",
+      "name": "OrderEventRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/OrderEventRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "43"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/OrderExceptionHandler.java",
+      "name": "OrderExceptionHandler.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/OrderExceptionHandler.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "38"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/OrderFinished.java",
+      "name": "OrderFinished.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/OrderFinished.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/handlers/OrderHandler.java",
+      "name": "OrderHandler.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/handlers/OrderHandler.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "6"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/OrderLifecycle.tsx",
+      "name": "OrderLifecycle.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/OrderLifecycle.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "15",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "26"
+        },
+        {
+          "metric": "ncloc",
+          "value": "65"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/OrderLine.java",
+      "name": "OrderLine.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/OrderLine.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "21"
+        },
+        {
+          "metric": "ncloc",
+          "value": "65"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/OrderRepository.java",
+      "name": "OrderRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/OrderRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "13",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "58"
+        },
+        {
+          "metric": "ncloc",
+          "value": "249"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/validation/OrderRequest.java",
+      "name": "OrderRequest.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/validation/OrderRequest.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/orders.css",
+      "name": "orders.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/orders.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "55"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderService.java",
+      "name": "OrderService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "13",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "25"
+        },
+        {
+          "metric": "ncloc",
+          "value": "204"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderServiceResult.java",
+      "name": "OrderServiceResult.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderServiceResult.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "37"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/OrderState.java",
+      "name": "OrderState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/OrderState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "14"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/OrderStatus.java",
+      "name": "OrderStatus.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/OrderStatus.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderStatusResponse.java",
+      "name": "OrderStatusResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/OrderStatusResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/summary/OrderSummaryLineResponse.java",
+      "name": "OrderSummaryLineResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/summary/OrderSummaryLineResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/OrderSummaryPanel.tsx",
+      "name": "OrderSummaryPanel.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/OrderSummaryPanel.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "6",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "12"
+        },
+        {
+          "metric": "ncloc",
+          "value": "48"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/summary/OrderSummaryResponse.java",
+      "name": "OrderSummaryResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/summary/OrderSummaryResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "79"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/validation/OrderVerify.java",
+      "name": "OrderVerify.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/validation/OrderVerify.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "33",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "32"
+        },
+        {
+          "metric": "ncloc",
+          "value": "119"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/OrdModulePermissions.java",
+      "name": "OrdModulePermissions.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/OrdModulePermissions.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "4",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "30"
+        },
+        {
+          "metric": "ncloc",
+          "value": "85"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/OutputConsoleFeed.java",
+      "name": "OutputConsoleFeed.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/OutputConsoleFeed.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "34"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/OutputConsolePanel.tsx",
+      "name": "OutputConsolePanel.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/OutputConsolePanel.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "33"
+        },
+        {
+          "metric": "ncloc",
+          "value": "99"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/payment/Payment.java",
+      "name": "Payment.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/payment/Payment.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "35"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/PaymentController.java",
+      "name": "PaymentController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/PaymentController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "43"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/payment/PaymentGateway.java",
+      "name": "PaymentGateway.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/payment/PaymentGateway.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/PaymentService.java",
+      "name": "PaymentService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/PaymentService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "17"
+        },
+        {
+          "metric": "ncloc",
+          "value": "111"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/PaymentTimeline.tsx",
+      "name": "PaymentTimeline.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/PaymentTimeline.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "5",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "13"
+        },
+        {
+          "metric": "ncloc",
+          "value": "49"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/PendingOrderLineResponse.java",
+      "name": "PendingOrderLineResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/PendingOrderLineResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/PendingOrderResponse.java",
+      "name": "PendingOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/pending/PendingOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "34"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/PickedUpState.java",
+      "name": "PickedUpState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/PickedUpState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "13"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/PlacedState.java",
+      "name": "PlacedState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/PlacedState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderCommand.java",
+      "name": "PlaceOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderLinesReqJSON.java",
+      "name": "PlaceOrderLinesReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderLinesReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "24"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderReqJSON.java",
+      "name": "PlaceOrderReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "6",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "17"
+        },
+        {
+          "metric": "ncloc",
+          "value": "62"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderResponse.java",
+      "name": "PlaceOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/placement/PlaceOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/checkout/PlacePaidOrderCommand.java",
+      "name": "PlacePaidOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/checkout/PlacePaidOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "44"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/PotentialCourier.java",
+      "name": "PotentialCourier.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/PotentialCourier.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/prc.css",
+      "name": "prc.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/prc.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/prc/prcApi.ts",
+      "name": "prcApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/prc/prcApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "10"
+        },
+        {
+          "metric": "ncloc",
+          "value": "36"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/PrcOrderController.java",
+      "name": "PrcOrderController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/PrcOrderController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "40"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/PreparationQueue.java",
+      "name": "PreparationQueue.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/PreparationQueue.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "18",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "29"
+        },
+        {
+          "metric": "ncloc",
+          "value": "82"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/PreparationQueueView.java",
+      "name": "PreparationQueueView.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/PreparationQueueView.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/PrepareOrderResponse.java",
+      "name": "PrepareOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/PrepareOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/PreparingOrderCommand.java",
+      "name": "PreparingOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/PreparingOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/PreparingState.java",
+      "name": "PreparingState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/PreparingState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/configuration/PricingConfig.java",
+      "name": "PricingConfig.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/configuration/PricingConfig.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "6",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "10"
+        },
+        {
+          "metric": "ncloc",
+          "value": "64"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/PricingRule.java",
+      "name": "PricingRule.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/PricingRule.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/PricingRuleDecorator.java",
+      "name": "PricingRuleDecorator.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/PricingRuleDecorator.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "11"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/PricingRules.java",
+      "name": "PricingRules.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/PricingRules.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/ready/ReadyOrderCommand.java",
+      "name": "ReadyOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/ready/ReadyOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/ready/ReadyOrderResponse.java",
+      "name": "ReadyOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/ready/ReadyOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/courier/ReadyOrderSummary.java",
+      "name": "ReadyOrderSummary.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/courier/ReadyOrderSummary.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/ReadyState.java",
+      "name": "ReadyState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/ReadyState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "17"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/ReassignmentService.java",
+      "name": "ReassignmentService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/ReassignmentService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "13",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "15"
+        },
+        {
+          "metric": "ncloc",
+          "value": "102"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/ReassignOrderCommand.java",
+      "name": "ReassignOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/ReassignOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "28"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/ReassignOrderResponse.java",
+      "name": "ReassignOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/ReassignOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "18"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/RefundedState.java",
+      "name": "RefundedState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/RefundedState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/prc/refund/RefundOrderCommand.java",
+      "name": "RefundOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/prc/refund/RefundOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "30"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/reg/regApi.ts",
+      "name": "regApi.ts",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/reg/regApi.ts",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "46"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/reg/RegController.java",
+      "name": "RegController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/reg/RegController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "12",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "35"
+        },
+        {
+          "metric": "ncloc",
+          "value": "152"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/reg/RegisterPage.tsx",
+      "name": "RegisterPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/reg/RegisterPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "7",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "21"
+        },
+        {
+          "metric": "ncloc",
+          "value": "131"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/RegisterPreparationQueue.java",
+      "name": "RegisterPreparationQueue.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/preparation/RegisterPreparationQueue.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/reg/RegisterReqJSON.java",
+      "name": "RegisterReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/reg/RegisterReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "21"
+        },
+        {
+          "metric": "ncloc",
+          "value": "78"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/reg/RegisterResponse.java",
+      "name": "RegisterResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/reg/RegisterResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "34"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/registration/Registration.java",
+      "name": "Registration.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/registration/Registration.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "26"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/reg/RegistrationResult.java",
+      "name": "RegistrationResult.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/reg/RegistrationResult.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/state/RejectedState.java",
+      "name": "RejectedState.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/state/RejectedState.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "8"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderCommand.java",
+      "name": "RejectOrderCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "31"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderReqJSON.java",
+      "name": "RejectOrderReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "13"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderResponse.java",
+      "name": "RejectOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/rejection/RejectOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "22"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/RemoveMenuItemCommand.java",
+      "name": "RemoveMenuItemCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/management/RemoveMenuItemCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "29"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/order/validation/RequestedOrderLineItem.java",
+      "name": "RequestedOrderLineItem.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/order/validation/RequestedOrderLineItem.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "16"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/ResetCommand.java",
+      "name": "ResetCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/ResetCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "22"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/responsive.css",
+      "name": "responsive.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/responsive.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "62"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/restaurant.css",
+      "name": "restaurant.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/restaurant.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "94"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/Restaurant.java",
+      "name": "Restaurant.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/Restaurant.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "7",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "17"
+        },
+        {
+          "metric": "ncloc",
+          "value": "66"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/browsing/RestaurantCommands.java",
+      "name": "RestaurantCommands.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/browsing/RestaurantCommands.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/RestaurantController.java",
+      "name": "RestaurantController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/RestaurantController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "44"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/dashboard/RestaurantDashboardPage.tsx",
+      "name": "RestaurantDashboardPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/dashboard/RestaurantDashboardPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "11",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "34"
+        },
+        {
+          "metric": "ncloc",
+          "value": "148"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/map/RestaurantDetailsPanel.tsx",
+      "name": "RestaurantDetailsPanel.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/map/RestaurantDetailsPanel.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "8",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "25"
+        },
+        {
+          "metric": "ncloc",
+          "value": "96"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/ui/ord/RestaurantListPage.tsx",
+      "name": "RestaurantListPage.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/ui/ord/RestaurantListPage.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "23",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "40"
+        },
+        {
+          "metric": "ncloc",
+          "value": "145"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/RestaurantMenu.java",
+      "name": "RestaurantMenu.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/menu/RestaurantMenu.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "13"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/RestaurantOrderController.java",
+      "name": "RestaurantOrderController.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/RestaurantOrderController.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dashboard/RestaurantOrderList.java",
+      "name": "RestaurantOrderList.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dashboard/RestaurantOrderList.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "22"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/orders/RestaurantOrderService.java",
+      "name": "RestaurantOrderService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/orders/RestaurantOrderService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "49"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/registration/RestaurantRegistration.java",
+      "name": "RestaurantRegistration.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/registration/RestaurantRegistration.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "2"
+        },
+        {
+          "metric": "ncloc",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/RestaurantRepository.java",
+      "name": "RestaurantRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/RestaurantRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "12"
+        },
+        {
+          "metric": "ncloc",
+          "value": "66"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/RestaurantService.java",
+      "name": "RestaurantService.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/RestaurantService.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "47"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/RestaurantStatus.java",
+      "name": "RestaurantStatus.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/RestaurantStatus.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/handlers/RestaurantStatusHandler.java",
+      "name": "RestaurantStatusHandler.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/handlers/RestaurantStatusHandler.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "5",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/restaurant/RestaurantSummary.java",
+      "name": "RestaurantSummary.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/restaurant/RestaurantSummary.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "1"
+        },
+        {
+          "metric": "ncloc",
+          "value": "7"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/role/RoleCheck.java",
+      "name": "RoleCheck.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/role/RoleCheck.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "33"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/SecurityConfig.java",
+      "name": "SecurityConfig.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/SecurityConfig.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "6"
+        },
+        {
+          "metric": "ncloc",
+          "value": "50"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/SecurityErrorResponses.java",
+      "name": "SecurityErrorResponses.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/SecurityErrorResponses.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "49"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/configuration/SeedLoader.java",
+      "name": "SeedLoader.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/configuration/SeedLoader.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "28",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "24"
+        },
+        {
+          "metric": "ncloc",
+          "value": "172"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/ServiceFeeRule.java",
+      "name": "ServiceFeeRule.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/ServiceFeeRule.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/reg/Session.java",
+      "name": "Session.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/reg/Session.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "32"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/session.tsx",
+      "name": "session.tsx",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/session.tsx",
+      "language": "ts",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "4",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "14"
+        },
+        {
+          "metric": "ncloc",
+          "value": "42"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/SessionValidator.java",
+      "name": "SessionValidator.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/SessionValidator.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "9"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusCommand.java",
+      "name": "SetRestaurantStatusCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "45"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusReqJSON.java",
+      "name": "SetRestaurantStatusReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "15"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusResponse.java",
+      "name": "SetRestaurantStatusResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/restaurants/status/SetRestaurantStatusResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "18"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/user/SignUpLocation.java",
+      "name": "SignUpLocation.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/user/SignUpLocation.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "3"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/user/SignUpRules.java",
+      "name": "SignUpRules.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/user/SignUpRules.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "21",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "28"
+        },
+        {
+          "metric": "ncloc",
+          "value": "61"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/SmallOrderSurchargeRule.java",
+      "name": "SmallOrderSurchargeRule.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/pricing/decorator/SmallOrderSurchargeRule.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/security/session/SpringSecuritySessionValidator.java",
+      "name": "SpringSecuritySessionValidator.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/security/session/SpringSecuritySessionValidator.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "3",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "7"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/StalledOrderResponse.java",
+      "name": "StalledOrderResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/dlv/reassignment/StalledOrderResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/payment/StripePaymentGateway.java",
+      "name": "StripePaymentGateway.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/payment/StripePaymentGateway.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "10",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "13"
+        },
+        {
+          "metric": "ncloc",
+          "value": "97"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/frontend/src/styles/tokens.css",
+      "name": "tokens.css",
+      "qualifier": "FIL",
+      "path": "app/frontend/src/styles/tokens.css",
+      "language": "css",
+      "measures": [
+        {
+          "metric": "ncloc",
+          "value": "144"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityCommand.java",
+      "name": "UpdateItemAvailabilityCommand.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityCommand.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "3"
+        },
+        {
+          "metric": "ncloc",
+          "value": "34"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityReqJSON.java",
+      "name": "UpdateItemAvailabilityReqJSON.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityReqJSON.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "2",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "5"
+        },
+        {
+          "metric": "ncloc",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityResponse.java",
+      "name": "UpdateItemAvailabilityResponse.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/application/ord/menu/availability/UpdateItemAvailabilityResponse.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "4"
+        },
+        {
+          "metric": "ncloc",
+          "value": "21"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/user/User.java",
+      "name": "User.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/user/User.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "1",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "8"
+        },
+        {
+          "metric": "ncloc",
+          "value": "39"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/technical/persistence/UserRepository.java",
+      "name": "UserRepository.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/technical/persistence/UserRepository.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "cognitive_complexity",
+          "value": "11",
+          "bestValue": false
+        },
+        {
+          "metric": "complexity",
+          "value": "29"
+        },
+        {
+          "metric": "ncloc",
+          "value": "128"
+        }
+      ]
+    },
+    {
+      "key": "fortunategoods-phase3:app/backend/src/main/java/com/fortunategoods/domain/user/UserRole.java",
+      "name": "UserRole.java",
+      "qualifier": "FIL",
+      "path": "app/backend/src/main/java/com/fortunategoods/domain/user/UserRole.java",
+      "language": "java",
+      "measures": [
+        {
+          "metric": "complexity",
+          "value": "0"
+        },
+        {
+          "metric": "ncloc",
+          "value": "4"
+        }
+      ]
+    }
+  ]
+}
