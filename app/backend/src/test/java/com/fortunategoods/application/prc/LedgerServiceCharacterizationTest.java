@@ -42,8 +42,10 @@ class LedgerServiceCharacterizationTest {
     private final OrderRepository orders = mock(OrderRepository.class);
     private final RestaurantRepository restaurants = mock(RestaurantRepository.class);
     private final UserRepository users = mock(UserRepository.class);
+    private final OrderHistoryService orderHistoryService =
+            new OrderHistoryService(ledger, orders, restaurants, users);
     private final LedgerService service = new LedgerService(ledger, orders, mock(OrderEventRepository.class),
-            mock(FareCalculator.class), restaurants, users);
+            mock(FareCalculator.class), orderHistoryService);
     private final LedgerEntry charge = new LedgerEntry("100", LedgerEntry.Type.CHARGE, OrderStatus.DELIVERED,
             6027, 299, 603, 200, 7129, PLACED, DELIVERED, "pi_1");
 
