@@ -7,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import com.fortunategoods.application.ord.orders.RestaurantOrderService;
@@ -50,8 +52,11 @@ class DashboardServiceTest {
                 new GetPreparationQueueResponse(1, "102", OrderStatus.ACCEPTED),
                 new GetPreparationQueueResponse(2, "103", OrderStatus.ACCEPTED)));
 
-        dashboardService = new DashboardService(orders, users, restaurants, restaurantOrders, assignments, mock(CourierRepository.class),
-                new OrderDeliveryReader(users, mock(OrderEventRepository.class)), ledger);
+                dashboardService = new DashboardService(
+                new CustomerDashboardQueryService(orders, restaurants, new OrderDeliveryReader(users, mock(OrderEventRepository.class))),
+                new RestaurantDashboardQueryService(users, restaurants, restaurantOrders),
+                new OperatorOrdersQueryService(orders, users, restaurants, assignments, ledger),
+                new CityViewQueryService(orders, restaurants, mock(CourierRepository.class)));
     }
 
     @Test
