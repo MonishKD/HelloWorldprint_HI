@@ -1,12 +1,6 @@
 package com.fortunategoods.technical.persistence;
 
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -20,24 +14,26 @@ import com.fortunategoods.domain.order.Order;
 import com.fortunategoods.domain.order.OrderLine;
 import com.fortunategoods.domain.order.OrderStatus;
 
-import java.sql.Timestamp;
+import java.util.Map;
 
-
-// Places, finds and changes the status of orders in the database (#23).
-// Every status change also saves an event (R-ORD-05).
-// This only saves the status. Which status can follow which is in the Domain (R-ORD-04).
+/* Places, finds and changes the status of orders in the database (#23).
+Every status change also saves an event (R-ORD-05).
+This only saves the status. Which status can follow which is in the Domain (R-ORD-04). 
+*/
 @Repository
 public class OrderRepository {
 
     private final JdbcTemplate jdbc;
     private final OrderEventRepository orderEventRepository;
-    private final MenuItemRepository menuItemRepository;
+    private final OrderQueryRepository orderQueryRepository;
+    private final OrderHydrator hydrator;
 
-    // Spring gives us these. We use menuItemRepository to give each order line its MenuItem.
-    public OrderRepository(JdbcTemplate jdbc, OrderEventRepository orderEventRepository, MenuItemRepository menuItemRepository) {
+    //Updated constructor, where hydrator is added instead.
+    public OrderRepository(JdbcTemplate jdbc, OrderEventRepository orderEventRepository, OrderQueryRepository orderQueryRepository, OrderHydrator hydrator) {
         this.jdbc = jdbc;
         this.orderEventRepository = orderEventRepository;
-        this.menuItemRepository = menuItemRepository;
+        this.orderQueryRepository = orderQueryRepository;
+        this.hydrator = hydrator;
     }
 
     // Saves the order as PLACED, its lines, and its first event. Returns the new order id.
@@ -60,100 +56,40 @@ public class OrderRepository {
         return orderId;
     }
 
-    // Returns the order with this id, or null if there is none.
-    public Order findById(String id) {
-        String sql = "SELECT * FROM orders WHERE id = ?";
-        List<Order> found = jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(id));
-        if (found.isEmpty()) {
-            return null;
-        }
-        return found.get(0);
-    }
+        // Reads moved to OrderQueryRepository (R1). Kept here so existing callers keep working.
+    public Order findById(String id) { return orderQueryRepository.findById(id); }
+
+    public List<Order> findByRestaurantAndStatus(String restaurantId, OrderStatus status) { return orderQueryRepository.findByRestaurantAndStatus(restaurantId, status); }
+
+    public List<Order> findByCustomer(String customerId) { return orderQueryRepository.findByCustomer(customerId); }
+
+    public List<Order> findByRestaurant(String restaurantId) { return orderQueryRepository.findByRestaurant(restaurantId); }
+
+    public List<Order> findAll() { return orderQueryRepository.findAll(); }
+
+    public List<Order> findByCustomerId(String customerId) { return orderQueryRepository.findByCustomerId(customerId); }
+
+    public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() { return orderQueryRepository.findWaitingForDispatch(); }
+
+    public List<ReadyOrderSummary> findReadyOrdersForCourier() { return orderQueryRepository.findReadyOrdersForCourier(); }
+
+    public CourierJob findCourierJob(String orderId) { return orderQueryRepository.findCourierJob(orderId); }
+
+    public List<Order> findStalledOrders() { return orderQueryRepository.findStalledOrders(); }
+
+    public Map<String, Map<OrderStatus, Integer>> orderCount() { return orderQueryRepository.orderCount(); }
+
 
     // Changes the status and saves the event for it. Returns the new event id, or null if the order does not exist.
     // @Transactional means: the status and the event are saved together, or neither is.
     @Transactional
     public String updateStatus(String orderId, String previousEventId, OrderStatus newStatus) {
-        Order order = findById(orderId);
+        Order order = orderQueryRepository.findById(orderId);
         if (order == null) {
             return null;
         }
         jdbc.update("UPDATE orders SET status = ? WHERE id = ?", newStatus.name(), Integer.parseInt(orderId));
         return orderEventRepository.add(orderId, previousEventId, order.getStatus(), newStatus);
-    }
-
-    // Returns a restaurant's orders in this status, in the order they got to it (R-ORD-03).
-    // That time comes from the event that moved each order to this status.
-    public List<Order> findByRestaurantAndStatus(String restaurantId, OrderStatus status) {
-        String sql = "SELECT orders.* FROM orders "
-                + "JOIN order_events ON order_events.order_id = orders.id AND order_events.new_status = orders.status "
-                + "WHERE orders.restaurant_id = ? AND orders.status = ? "
-                + "ORDER BY order_events.created_at, order_events.id";
-        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId), status.name());
-    }
-
-    // A customer's orders, oldest first, whatever their status (dashboard read, #132).
-    public List<Order> findByCustomer(String customerId) {
-        String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id";
-        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(customerId));
-    }
-
-    // A restaurant's orders, oldest first, whatever their status (dashboard read, #132).
-    public List<Order> findByRestaurant(String restaurantId) {
-        String sql = "SELECT * FROM orders WHERE restaurant_id = ? ORDER BY id";
-        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(restaurantId));
-    }
-
-    // Every order, oldest first, whatever its status (operator all-orders read, #274).
-    public List<Order> findAll() {
-        String sql = "SELECT * FROM orders ORDER BY id";
-        return jdbc.query(sql, (row, rowNumber) -> toOrder(row));
-    }
-
-    // Returns a customer's orders, newest first.
-    public List<Order> findByCustomerId(String customerId) {
-        String sql = "SELECT * FROM orders WHERE customer_id = ? ORDER BY id DESC";
-        return jdbc.query(sql, (row, rowNumber) -> toOrder(row), Integer.parseInt(customerId));
-    }
-
-    private List<OrderLine> findLines(String orderId) {
-        String sql = "SELECT * FROM order_lines WHERE order_id = ? ORDER BY id";
-        return jdbc.query(sql, (row, rowNumber) -> toOrderLine(row), Integer.parseInt(orderId));
-    }
-
-    // Turns one row of the orders table into an Order, with its lines.
-    private Order toOrder(ResultSet row) throws SQLException {
-        String id = row.getString("id");
-        return new Order(
-                id,
-                row.getString("customer_id"),
-                row.getString("restaurant_id"),
-                row.getString("courier_id"),
-                OrderStatus.valueOf(row.getString("status")),
-                row.getString("special_instructions"),
-                row.getString("delivery_address"),
-                row.getObject("delivery_latitude", Double.class),
-                row.getObject("delivery_longitude", Double.class),
-                row.getString("reject_reason"),
-                findLines(id));
-    }
-
-    // Turns one row of the order_lines table into an OrderLine, with the MenuItem it points to (#97).
-    // name, price and original_price stay the copy saved when the order was placed.
-    // original_price is empty when the item was not on discount, so it must stay null (getDouble would give 0.0).
-    // It is a numeric column, and the Postgres driver cannot read numeric straight into a Double,
-    // so it is read as a BigDecimal first.
-    private OrderLine toOrderLine(ResultSet row) throws SQLException {
-        String menuItemId = row.getString("menu_item_id");
-        BigDecimal originalPrice = row.getBigDecimal("original_price");
-        return new OrderLine(
-                row.getString("id"),
-                menuItemId,
-                row.getInt("quantity"),
-                row.getString("name"),
-                row.getDouble("price"),
-                originalPrice == null ? null : originalPrice.doubleValue(),
-                menuItemRepository.findById(menuItemId));
     }
 
     /*
@@ -217,8 +153,8 @@ public class OrderRepository {
         return found.isEmpty() ? null : found.get(0);
     }
 
-    // Thread-locks preparation queue so multiple requests cannot modify the queue while a
-    // transaction to that queue is still ongoing
+    /* Thread-locks preparation queue so multiple requests cannot modify the queue while a
+    transaction to that queue is still ongoing */
     @Transactional(propagation = Propagation.MANDATORY)
     public void lockRestaurantQueue(String restaurantId) {
         jdbc.queryForObject("SELECT id FROM restaurants WHERE id = ? FOR UPDATE", Integer.class, Integer.parseInt(restaurantId));
@@ -234,134 +170,13 @@ public class OrderRepository {
         );
     }
 
-    // Ready orders with no live offer, oldest ready first, each with its READY event's time and id (R-DLV-04)
-    private static final String WAITING_FOR_DISPATCH_SQL = """
-            SELECT o.*, e.created_at AS ready_since, e.id AS ready_event_id
-            FROM orders o
-            JOIN order_events e
-            ON e.order_id = o.id AND e.new_status = 'READY'
-            WHERE o.status = 'READY'
-            AND NOT EXISTS (
-                SELECT 1 FROM assignments a
-                WHERE a.order_id = o.id
-                AND a.status IN ('OFFERED', 'ACCEPTED')
-                AND a.is_delivered = FALSE
-            )
-            ORDER BY e.created_at, e.id
-            """;
 
-    // Read only, for the operator's view of the queue
-    public List<DispatchQueue.WaitingOrder> findWaitingForDispatch() {
-        return jdbc.query(WAITING_FOR_DISPATCH_SQL, (row, number) -> toWaitingOrder(row));
-    }
-
-
-
-    public List<ReadyOrderSummary> findReadyOrdersForCourier() {
-        String sql = """
-        SELECT o.id,
-               r.name AS restaurant_name,
-               r.address AS pickup_address,
-               (SELECT COALESCE(SUM(quantity), 0) FROM order_lines WHERE order_id = o.id) AS item_count,
-               e.created_at AS ready_since
-        FROM orders o
-        JOIN restaurants r ON r.id = o.restaurant_id
-        JOIN order_events e ON e.order_id = o.id AND e.new_status = 'READY'
-        WHERE o.status = 'READY'
-        ORDER BY e.created_at, e.id
-        """;
-
-        return jdbc.query(sql, (row, number) -> new ReadyOrderSummary(
-            row.getString("id"),
-            row.getString("restaurant_name"),
-            row.getString("pickup_address"),
-            row.getInt("item_count"),
-            row.getTimestamp("ready_since").toLocalDateTime()
-        ));
-    }
-
-    public CourierJob findCourierJob(String orderId) {
-        String sql = """
-        SELECT o.id,
-               o.status,
-               o.special_instructions,
-               o.delivery_address,
-                o.delivery_latitude,
-                o.delivery_longitude,
-                r.name AS restaurant_name,
-                r.address AS pickup_address,
-                r.latitude AS pickup_latitude,
-                r.longitude AS pickup_longitude,
-                c.name AS customer_name,
-                p.created_at AS picked_up_at
-            FROM orders o
-            JOIN restaurants r ON r.id = o.restaurant_id
-            LEFT JOIN customers c ON c.user_id = o.customer_id
-            LEFT JOIN order_events p ON p.order_id = o.id AND p.new_status = 'PICKED_UP'
-            WHERE o.id = ? AND o.status IN ('READY', 'PICKED_UP')   
-               """;
-
-        List<CourierJob.Line> lines = jdbc.query(
-       "SELECT name, quantity FROM order_lines WHERE order_id = ? ORDER BY id",
-       (row, number) -> new CourierJob.Line(row.getString("name"), row.getInt("quantity")),
-       Integer.parseInt(orderId));
-
-       List<CourierJob> found = jdbc.query(sql, (row, number) -> {
-        Timestamp pickedUp = row.getTimestamp("picked_up_at");
-        return new CourierJob(
-            row.getString("id"),
-            row.getString("status"),
-            row.getString("restaurant_name"),
-            row.getString("pickup_address"),
-            row.getObject("pickup_latitude", Double.class),
-            row.getObject("pickup_longitude", Double.class),
-            row.getString("customer_name"),
-            row.getString("delivery_address"),
-            row.getObject("delivery_latitude", Double.class),
-            row.getObject("delivery_longitude", Double.class),
-            lines,
-            row.getString("special_instructions"),
-            pickedUp == null ? null : pickedUp.toLocalDateTime()
-        );
-       }, Integer.parseInt(orderId));
-
-       return found.isEmpty() ? null : found.get(0);
-    }
-
-
-
-
-    // Same orders, but thread-locks them until the dispatch transaction ends, so a cancel can't change one
-    // while it is being offered. If a cancel got there first, Postgres waits for it, sees the order is no
-    // longer READY and leaves it out.
+    /* Same orders, but thread-locks them until the dispatch transaction ends, so a cancel can't change one
+    while it is being offered. If a cancel got there first, Postgres waits for it, sees the order is no
+    longer READY and leaves it out. */
     @Transactional(propagation = Propagation.MANDATORY)
     public List<DispatchQueue.WaitingOrder> lockWaitingForDispatch() {
-        return jdbc.query(WAITING_FOR_DISPATCH_SQL + " FOR UPDATE OF o", (row, number) -> toWaitingOrder(row));
-    }
-
-    private DispatchQueue.WaitingOrder toWaitingOrder(ResultSet row) throws SQLException {
-        return new DispatchQueue.WaitingOrder(
-            toOrder(row),
-            row.getTimestamp("ready_since").toLocalDateTime(),
-            row.getLong("ready_event_id"));
-    }
-
-    // Method used to find orders that are assigned to offline couriers (stalled)
-    public List<Order> findStalledOrders() {
-        String sql = """
-        SELECT o.*
-        FROM orders o
-        JOIN assignments a
-            ON a.order_id = o.id AND a.courier_id = o.courier_id
-        JOIN couriers c ON c.user_id = a.courier_id
-        WHERE o.status = 'READY'
-        AND a.status = 'ACCEPTED'
-        AND a.is_picked_up = FALSE
-        AND a.is_delivered = FALSE
-        AND c.status = 'OFFLINE'
-        ORDER BY o.id
-        """;
-        return jdbc.query(sql, (row, number) -> toOrder(row));
+        return jdbc.query(OrderQueryRepository.WAITING_FOR_DISPATCH_SQL + " FOR UPDATE OF o", (row, number) -> hydrator.toWaitingOrder(row));
     }
 
     // Thread-lock method to remove courier from order after assignment is done
@@ -381,26 +196,6 @@ public class OrderRepository {
         UPDATE orders SET courier_id = ?
         WHERE id = ? AND courier_id IS NULL AND status = 'READY'
         """, Integer.parseInt(courierId), Integer.parseInt(orderId)) == 1;
-    }
-
-
-
-    // How many orders each restaurant has in the accepted, preparing and ready statuses, by restaurant id.
-    // A restaurant with none of these orders is left out of the result.
-    public Map<String, Map<OrderStatus, Integer>> orderCount() {
-        String sql = """
-            SELECT restaurant_id, status, COUNT(*) AS total
-            FROM orders
-            WHERE status IN ('ACCEPTED', 'PREPARING', 'READY')
-            GROUP BY restaurant_id, status
-            """;
-
-        Map<String, Map<OrderStatus, Integer>> counts = new HashMap<>();
-        jdbc.query(sql, row -> {
-            counts.computeIfAbsent(row.getString("restaurant_id"), id -> new EnumMap<>(OrderStatus.class))
-                .put(OrderStatus.valueOf(row.getString("status")), row.getInt("total"));
-        });
-        return counts;
     }
 
     // Thread-lock method to remove courier from order after assignment is cancelled
