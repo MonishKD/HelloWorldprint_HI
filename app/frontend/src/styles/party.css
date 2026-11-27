@@ -1,0 +1,327 @@
+/* Party mode (ui/party): a night-out look on top of the app's tokens. Colours come from tokens.css (--party-*). */
+
+.party { display: grid; gap: 1rem; }
+
+/* ---------- Header: dark stage, drifting lights, code tiles, the crowd ---------- */
+.party-hero {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1.25rem 2rem;
+  align-items: center;
+  padding: 1.75rem;
+  border-radius: calc(var(--radius) + 6px);
+  color: var(--party-ink);
+  background: linear-gradient(135deg, var(--party-bg), var(--party-bg-2));
+  box-shadow: var(--shadow-lg);
+}
+.party-hero h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 0.2rem 0 0.4rem; }
+.party-hero p { max-width: 52ch; margin: 0; opacity: 0.85; }
+.party-hero .eyebrow { color: var(--party-3); }
+
+.party-lights { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.party-lights i {
+  position: absolute;
+  width: 46%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: party-drift 14s ease-in-out infinite alternate;
+}
+.party-lights i:nth-child(1) { background: var(--party-1); left: -10%; top: -40%; }
+.party-lights i:nth-child(2) { background: var(--party-2); right: -12%; top: -10%; animation-delay: -5s; animation-duration: 17s; }
+.party-lights i:nth-child(3) { background: var(--party-3); left: 30%; bottom: -70%; opacity: 0.3; animation-delay: -9s; }
+@keyframes party-drift {
+  33% { transform: translate(12%, 10%) scale(1.1); }
+  66% { transform: translate(-8%, 16%) scale(0.95); }
+  100% { transform: translate(6%, -8%) scale(1.05); }
+}
+
+.party-steps { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0; padding: 0; list-style: none; font-size: 0.8rem; font-weight: 650; }
+.party-steps li { padding: 0.25rem 0.7rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--party-ink) 25%, transparent); opacity: 0.6; }
+.party-steps li.is-done { opacity: 0.85; }
+.party-steps li.is-now { opacity: 1; background: var(--party-3); color: var(--on-lime); border-color: transparent; }
+
+.party-code { display: grid; justify-items: end; gap: 0.5rem; font-size: 0.8rem; font-weight: 650; }
+.party-code > span:first-child { opacity: 0.7; text-transform: uppercase; letter-spacing: 0.08em; }
+.party-code-tiles { display: flex; align-items: center; gap: 0.3rem; }
+.party-code-tiles b {
+  display: grid;
+  place-items: center;
+  width: 2.3rem;
+  height: 2.9rem;
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 1.45rem;
+  color: var(--party-bg);
+  background: var(--party-ink);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--party-1) 70%, black);
+  animation: party-flip 0.6s var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 70ms + 150ms);
+}
+.party-code-dash { width: 0.6rem; height: 3px; border-radius: 2px; background: var(--party-ink); opacity: 0.6; }
+@keyframes party-flip { from { transform: rotateX(90deg) translateY(-6px); opacity: 0; } }
+.party-copy { background: color-mix(in srgb, var(--party-ink) 14%, transparent); color: var(--party-ink); border-color: color-mix(in srgb, var(--party-ink) 25%, transparent); }
+.party-copy:hover { background: color-mix(in srgb, var(--party-ink) 22%, transparent); }
+
+.party-crowd { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.9rem; margin: 0; padding: 0; list-style: none; }
+.party-guest {
+  display: grid;
+  justify-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  animation: rise 0.5s var(--ease) both, bob 3s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 80ms), calc(var(--i, 0) * -0.7s);
+}
+.party-guest .monogram { box-shadow: 0 0 0 3px var(--party-bg), 0 0 0 5px color-mix(in srgb, var(--party-ink) 30%, transparent); }
+
+/* ---------- Lobby ---------- */
+.party-resume { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; border-color: var(--party-1); }
+.party-resume > div { display: grid; }
+.party-lobby-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 1rem; align-items: start; }
+.party-join { display: grid; gap: 0.9rem; }
+.party-code-input { font-family: var(--mono); font-size: 1.6rem; letter-spacing: 0.3em; text-transform: uppercase; text-align: center; padding: 0.7rem; }
+.party-how ol { display: grid; gap: 0.75rem; margin: 0 0 1rem; padding: 0; list-style: none; counter-reset: step; }
+.party-how li { position: relative; padding-left: 2.6rem; counter-increment: step; }
+.party-how li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: -0.1rem;
+  display: grid;
+  place-items: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  font-weight: 800;
+  color: var(--party-ink);
+  background: linear-gradient(135deg, var(--party-1), var(--party-2));
+}
+
+/* ---------- Cart entry point ---------- */
+.party-start {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  margin-top: 0.5rem;
+  color: var(--party-ink);
+  background: linear-gradient(120deg, var(--party-1), var(--party-2), var(--party-1));
+  background-size: 200% 100%;
+  animation: party-shimmer 6s linear infinite;
+}
+.party-start > span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.party-start small { font-weight: 500; opacity: 0.85; font-size: 0.75rem; }
+.party-start:hover:not(:disabled) { box-shadow: 0 6px 20px color-mix(in srgb, var(--party-2) 45%, transparent); }
+@keyframes party-shimmer { to { background-position: -200% 0; } }
+
+/* ---------- Room ---------- */
+.party-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr); gap: 1rem; align-items: start; }
+.party-lines { display: grid; gap: 0.6rem; margin: 0.9rem 0 1rem; padding: 0; list-style: none; }
+.party-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s var(--ease);
+}
+.party-line.is-mine { border-color: var(--party-1); box-shadow: 0 0 0 3px color-mix(in srgb, var(--party-1) 20%, transparent); }
+.party-line-what { display: grid; min-width: 0; }
+.party-line-cost { font-weight: 700; font-variant-numeric: tabular-nums; }
+.party-eaters { display: flex; }
+.party-eaters .monogram { margin-left: -8px; box-shadow: 0 0 0 2px var(--surface-2); animation: party-pop 0.35s var(--ease) both; }
+.party-eaters .monogram:first-child { margin-left: 0; }
+@keyframes party-pop { from { transform: scale(0.3); opacity: 0; } }
+.party-claim { min-width: 8.5rem; }
+
+/* Items with several pieces: a stepper for how many, and one tile per piece to share it */
+.party-stepper { justify-self: end; background: var(--surface); }
+.party-stepper > span { min-width: 3.2rem; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
+.party-pieces { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.party-piece {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 40px;
+  padding: 0.3rem 0.65rem 0.3rem 0.45rem;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s var(--ease);
+}
+.party-piece:hover:not(:disabled) { border-color: var(--party-1); transform: translateY(-1px); }
+.party-piece:active:not(:disabled) { transform: scale(0.97); }
+.party-piece:disabled { cursor: default; }
+.party-piece.is-free { border-style: dashed; }
+.party-piece.is-mine { border-color: var(--party-1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--party-1) 30%, transparent); }
+.party-piece-label { font-family: var(--mono); font-weight: 700; color: var(--muted); }
+.party-piece .party-eaters .monogram { width: 24px; height: 24px; border-radius: 8px; font-size: 0.65rem; box-shadow: 0 0 0 2px var(--surface); }
+
+.party-share { display: grid; gap: 0.5rem; position: sticky; top: 1rem; }
+.party-share-amount {
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(120deg, var(--party-1), var(--party-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.party-share-amount.is-paid { background: none; color: var(--ok-fg); }
+.party-members { display: grid; gap: 0.5rem; margin: 0.6rem 0; padding: 0.75rem 0; list-style: none; border-block: 1px solid var(--line); }
+.party-members li { display: flex; align-items: center; gap: 0.6rem; }
+.party-member-name { flex: 1; display: flex; align-items: center; gap: 0.4rem; min-width: 0; font-weight: 600; }
+.party-member-share { font-variant-numeric: tabular-nums; }
+.party-chip { padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; background: var(--neutral-bg); color: var(--neutral-fg); }
+.party-chip.is-ok { background: var(--ok-bg); color: var(--ok-fg); }
+.party-actions, .party-pay { display: grid; gap: 0.5rem; }
+.party-fineprint { display: flex; gap: 0.35rem; align-items: flex-start; margin-top: 0.4rem; }
+.party-fineprint .icon { flex: none; margin-top: 0.15rem; }
+
+.party-waiting { display: flex; align-items: center; justify-content: center; gap: 0.6rem; margin: 0.4rem 0; color: var(--muted); font-size: 0.9rem; }
+.party-dots { display: inline-flex; gap: 4px; }
+.party-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--party-1); animation: party-bounce 1.2s ease-in-out infinite; }
+.party-dots i:nth-child(2) { background: var(--party-2); animation-delay: 0.15s; }
+.party-dots i:nth-child(3) { background: var(--party-3); animation-delay: 0.3s; }
+@keyframes party-bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+.party-invite { display: grid; justify-items: start; gap: 0.6rem; }
+
+/* ---------- Card roulette ---------- */
+.party-roulette {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  text-align: center;
+  color: var(--party-ink);
+  background: radial-gradient(circle at 50% 30%, var(--party-bg-2), var(--party-bg) 70%);
+  border-color: transparent;
+}
+.party-roulette header { display: grid; gap: 0.2rem; }
+.party-roulette header p { color: var(--party-ink); opacity: 0.75; margin: 0; }
+.party-roulette .eyebrow { color: var(--party-3); }
+
+.roulette { display: grid; justify-items: center; gap: 0.5rem; width: 100%; }
+.roulette-stage { position: relative; width: 100%; height: 210px; perspective: 1100px; display: grid; place-items: center; overflow: hidden; }
+.roulette-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  border: 11px solid transparent;
+  border-top: 16px solid var(--party-3);
+  filter: drop-shadow(0 2px 6px color-mix(in srgb, var(--party-3) 60%, transparent));
+}
+.roulette-ring { position: relative; width: 220px; height: 138px; transform-style: preserve-3d; transition: transform 6.5s cubic-bezier(0.12, 0.62, 0.06, 1); }
+/* Waiting for votes: the ring turns slowly so every card shows (a new ring mounts for the real spin). */
+.roulette.is-idle .roulette-ring { animation: roulette-idle 12s linear infinite; }
+@keyframes roulette-idle {
+  from { transform: translateZ(calc(-1 * var(--radius))) rotateY(0deg); }
+  to { transform: translateZ(calc(-1 * var(--radius))) rotateY(-360deg); }
+}
+.roulette-slot { position: absolute; inset: 0; backface-visibility: hidden; }
+
+.party-card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  padding: 0.8rem 0.95rem;
+  border-radius: 14px;
+  text-align: left;
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 15%, hsl(var(--hue) 90% 75% / 0.55), transparent 45%),
+    linear-gradient(135deg, hsl(var(--hue) 75% 45%), hsl(calc(var(--hue) + 50) 70% 30%));
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.25);
+  transition: opacity 0.6s, filter 0.6s, transform 0.6s var(--ease), box-shadow 0.6s;
+}
+.party-card-brand { font-family: var(--display); font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.85; }
+.party-card-chip {
+  align-self: center;
+  width: 34px;
+  height: 25px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--party-gold), color-mix(in srgb, var(--party-gold) 55%, black));
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.15);
+}
+.party-card-number { font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.08em; opacity: 0.9; }
+.party-card-name { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.party-card.is-dim { opacity: 0.25; filter: grayscale(0.8); }
+.party-card.is-picked {
+  transform: scale(1.12);
+  box-shadow: 0 0 0 3px var(--party-3), 0 0 40px color-mix(in srgb, var(--party-3) 55%, transparent), 0 14px 34px rgb(0 0 0 / 0.4);
+  animation: party-winner 1.2s ease-in-out 0.3s 2;
+}
+@keyframes party-winner { 50% { transform: scale(1.18) rotate(-2deg); } }
+
+.roulette-verdict { margin: 0; font-size: 1.05rem; min-height: 1.6em; }
+.roulette.is-spinning .roulette-verdict { animation: blink 0.9s ease-in-out infinite; }
+.roulette.is-landed .roulette-verdict { font-family: var(--display); font-size: clamp(1.3rem, 3vw, 1.8rem); animation: rise 0.5s var(--ease) both; }
+.roulette.is-landed .roulette-verdict strong { color: var(--party-3); }
+
+.roulette-votes { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
+.roulette-votes li { display: flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.6rem 0.3rem 0.3rem; border-radius: 999px; background: color-mix(in srgb, var(--party-ink) 10%, transparent); font-weight: 600; font-size: 0.85rem; }
+.roulette-votes li.is-in { box-shadow: 0 0 0 2px var(--party-3); }
+.roulette-choice { display: flex; gap: 0.6rem; flex-wrap: wrap; justify-content: center; }
+.roulette-choice .btn-ghost { color: var(--party-ink); border-color: color-mix(in srgb, var(--party-ink) 30%, transparent); }
+.roulette-choice .btn-ghost:hover { background: color-mix(in srgb, var(--party-ink) 12%, transparent); }
+.party-roulette .party-waiting { color: var(--party-ink); opacity: 0.8; }
+
+/* ---------- Placed ---------- */
+.party-done { position: relative; overflow: hidden; display: grid; justify-items: center; gap: 0.6rem; padding: 2.5rem 1.5rem; text-align: center; }
+.party-done p { max-width: 46ch; margin: 0; }
+.party-done-icon {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: var(--party-ink);
+  background: linear-gradient(135deg, var(--party-1), var(--party-2));
+  animation: party-pop 0.6s var(--ease) both;
+}
+.confetti { position: absolute; inset: 0; pointer-events: none; }
+.confetti i {
+  position: absolute;
+  top: -12px;
+  left: var(--x);
+  width: 8px;
+  height: 14px;
+  border-radius: 2px;
+  background: hsl(var(--h) 85% 60%);
+  transform: rotate(var(--r));
+  animation: party-fall 3.2s cubic-bezier(0.3, 0.4, 0.6, 1) var(--d) both;
+}
+@keyframes party-fall { to { transform: translateY(460px) rotate(calc(var(--r) + 540deg)); opacity: 0; } }
+
+/* ---------- Small screens ---------- */
+@media (max-width: 860px) {
+  .party-hero { grid-template-columns: 1fr; padding: 1.25rem; }
+  .party-code { justify-items: start; }
+  .party-grid, .party-lobby-grid { grid-template-columns: 1fr; }
+  .party-share { position: static; }
+}
+@media (max-width: 520px) {
+  .party-line { grid-template-columns: minmax(0, 1fr) auto; }
+  .party-eaters { grid-column: 1; }
+  .party-claim { grid-column: 1 / -1; width: 100%; }
+  .party-code-tiles b { width: 1.9rem; height: 2.5rem; font-size: 1.2rem; }
+}

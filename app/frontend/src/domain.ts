@@ -100,7 +100,15 @@ export interface Restaurant {
 }
 
 /** A restaurant in the city read (#268), with its order counts by stage. */
-export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number; soldOutItems: string[] };
+export type CityRestaurant = Restaurant & {
+  queued: number;
+  inPreparation: number;
+  ready: number;
+  soldOutItems: string[];
+  /** Average restaurant stars, one decimal (R-RVW-02); undefined when nobody rated it yet. */
+  averageRating?: number;
+  ratingCount: number;
+};
 
 /** The state of the city (#268): no customer or payment data, so every role can read it. Only on-duty couriers are in it. */
 export interface CityView {
@@ -163,6 +171,22 @@ export interface Order {
   deliveredAt?: string;
   /** When the restaurant accepted the order; the preparation queue is ordered by this (first accepted, first prepared). */
   acceptedAt?: string;
+  /** The stars the customer gave once delivered (R-RVW-01); undefined until rated. */
+  rating?: Rating;
+}
+
+// ---------- Reviews (RVW) ----------
+
+/** What a customer gave a delivered order (R-RVW-01, #324). */
+export interface Rating {
+  restaurantStars: number;
+  courierStars: number;
+}
+
+/** The allowed star range, read from the backend's config (GET /ratings/scale), never written in the UI. */
+export interface RatingScale {
+  minStars: number;
+  maxStars: number;
 }
 
 // ---------- Pricing (PRC) ----------
@@ -214,3 +238,61 @@ export interface LedgerRow {
 
 /** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */
 export type HistoryRow = LedgerRow | CourierDelivery;
+
+// ---------- Party mode (phase4-party) ----------
+
+/** gathering: friends join and pick what they eat · roulette: everyone has to accept the card roulette · paying · placed. */
+export type PartyStatus = 'gathering' | 'roulette' | 'paying' | 'placed' | 'cancelled';
+
+export interface PartyMember {
+  id: string;
+  name: string;
+  host: boolean;
+  /** What this member pays, set by the backend once the host locks the split or the roulette picks a payer. */
+  share: number;
+  paid: boolean;
+  acceptedRoulette: boolean;
+}
+
+/**
+ * One cart line. Each of its `quantity` pieces is split evenly between the members who claimed that piece, like
+ * splitting a bill: in a party of n, a piece goes down to 1/n of its price. Nobody on a piece: the host pays it.
+ */
+export interface PartyLine {
+  itemId: string;
+  name: string;
+  /** Price of one piece. */
+  price: number;
+  quantity: number;
+  /** Per piece (`quantity` of them), the ids of the members sharing it. */
+  pieces: string[][];
+}
+
+/** items: each pays for the pieces they picked · even: everyone pays the same. */
+export type PartySplit = 'items' | 'even';
+
+/** A shared order: placed under the host's name once every share is paid. */
+export interface Party {
+  code: string;
+  restaurantId: string;
+  restaurantName: string;
+  hostId: string;
+  deliveryAddress: string;
+  status: PartyStatus;
+  members: PartyMember[];
+  lines: PartyLine[];
+  fare: Fare;
+  /** How the host locked the split; unset before the lock and for the roulette. */
+  split?: PartySplit;
+  /** Set when the roulette picked who pays everything. */
+  roulettePayerId?: string;
+  /** The order the backend placed once everyone paid. */
+  orderId?: string;
+}
+
+/** The card step for one member's share. */
+export interface PartyCheckout {
+  amount: number;
+  /** Stripe client secret for the share; the stub has none. */
+  clientSecret?: string;
+}

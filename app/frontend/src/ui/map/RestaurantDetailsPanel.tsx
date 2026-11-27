@@ -6,6 +6,8 @@ import { Segmented, StatusBadge, useLoad, usePolling } from '../common';
 import { errorMessage, getPreparationQueue, send } from '../dashboard/dashboardApi';
 import { setRestaurantStatus } from '../ord/ordApi';
 import { useDashboardInfo } from '../dashboard/InformationArea';
+import { StaticStars } from '../rvw/RateOrder';
+import { restaurantRating } from '../rvw/rvwApi';
 import CityMap from './CityMap';
 
 /** The city map, opening a restaurant's details when its marker is clicked. */
@@ -50,6 +52,8 @@ function RestaurantDetailsPanel({ restaurant: r, onClose }: { restaurant: CityRe
         {r.queued} queued · {r.inPreparation} in preparation · {r.ready} ready
       </p>
 
+      <RatingLine restaurant={r} />
+
       <p>
         <strong>Sold out:</strong> {r.soldOutItems.length === 0 ? <span className="muted">nothing</span> : r.soldOutItems.join(', ')}
       </p>
@@ -82,6 +86,26 @@ function RestaurantDetailsPanel({ restaurant: r, onClose }: { restaurant: CityRe
         </button>
       )}
     </section>
+  );
+}
+
+/** R-RVW-02: "★ 4.3 (12 ratings)", or "No ratings yet". Follows the map's polling like the counts above. */
+function RatingLine({ restaurant }: { restaurant: CityRestaurant }) {
+  const { average, count } = restaurantRating(restaurant);
+  return (
+    <p>
+      <strong>Rating:</strong>{' '}
+      {count > 0 && average !== undefined ? (
+        <span className="rating-summary">
+          <StaticStars n={average} /> <strong>{average.toFixed(1)}</strong>{' '}
+          <span className="muted">
+            ({count} {count === 1 ? 'rating' : 'ratings'})
+          </span>
+        </span>
+      ) : (
+        <span className="muted">No ratings yet</span>
+      )}
+    </p>
   );
 }
 

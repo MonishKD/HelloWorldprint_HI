@@ -11,6 +11,8 @@ import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
 import HistoryTable from '../prc/HistoryTable';
 import OrderSummaryPanel from '../prc/OrderSummaryPanel';
+import PartyPage from '../party/PartyPage';
+import { RateOrder } from '../rvw/RateOrder';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
 import { DashboardLayout } from './DashboardRouter';
@@ -27,6 +29,7 @@ export default function CustomerDashboardPage() {
         <Route path="map" element={<CustomerCityMap />} />
         <Route path="orders" element={<MyOrders />} />
         <Route path="history" element={<HistoryTable open />} />
+        <Route path="party/*" element={<PartyPage />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>
@@ -120,6 +123,7 @@ function MyOrders() {
       {o.status === 'placed' && (
         <ConfirmButton label="Cancel order" question={`Cancel order #${o.id}?`} variant="danger" onConfirm={() => cancel(o)} />
       )}
+      {o.status === 'delivered' && <RateOrder order={o} restaurantName={restaurantOf(o)?.name ?? o.restaurantName} onRated={reload} />}
     </OrderCard>
   );
 

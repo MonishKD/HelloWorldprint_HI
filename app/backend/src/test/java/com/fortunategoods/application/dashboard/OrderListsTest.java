@@ -23,6 +23,7 @@ import com.fortunategoods.domain.restaurant.MenuItemStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
+import com.fortunategoods.technical.persistence.RatingRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
@@ -39,7 +40,7 @@ public class OrderListsTest {
     void setup() {
         orders = mock(OrderRepository.class);
         users = mock(UserRepository.class);
-        customerView = new CustomerOrderList(orders, new OrderDeliveryReader(users, mock(OrderEventRepository.class)));
+        customerView = new CustomerOrderList(orders, new OrderDeliveryReader(users, mock(OrderEventRepository.class)), mock(RatingRepository.class));
         restaurantView = new RestaurantOrderList(orders, users);
     }
 

@@ -16,7 +16,8 @@ import com.fortunategoods.domain.order.state.IllegalTransitionException;
     "com.fortunategoods.application.ord", 
     "com.fortunategoods.application.dashboard", 
     "com.fortunategoods.application.prc",
-    "com.fortunategoods.application.dlv"    
+    "com.fortunategoods.application.dlv",
+    "com.fortunategoods.application.rvw"
 })
 public final class OrderExceptionHandler {
     /*

@@ -18,5 +18,7 @@ public record CityView(List<CityRestaurant> restaurants, List<OnDutyCourier> cou
 
     // queued is the same number as the preparation queue: accepted orders not being prepared yet.
     public record CityRestaurant(String id, String name, RestaurantStatus status, double latitude, double longitude,
-            int queued, int inPreparation, int ready, List<String> soldOutItems) {}
+            int queued, int inPreparation, int ready, List<String> soldOutItems,
+            // R-RVW-02: null when the restaurant has no rating yet.
+            Double averageRating, int ratingCount) {}
 }

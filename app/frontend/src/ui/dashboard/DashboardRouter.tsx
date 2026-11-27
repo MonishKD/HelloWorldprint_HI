@@ -36,8 +36,9 @@ const historyTab = (role: Role): NavItem => ({ to: `/${role}/history`, label: 'P
 const TABS: Record<Role, NavItem[]> = {
   customer: [
     mapTab('customer'),
-    { to: '/customer', label: 'Orders', activeFor: (path) => !['/customer/orders', '/customer/map', '/customer/history'].some((p) => path.startsWith(p)) },
+    { to: '/customer', label: 'Orders', activeFor: (path) => !['/customer/orders', '/customer/map', '/customer/history', '/customer/party'].some((p) => path.startsWith(p)) },
     { to: '/customer/orders', label: 'Delivery' },
+    { to: '/customer/party', label: 'Party' },
     historyTab('customer'),
   ],
   restaurant: [mapTab('restaurant'), { to: '/restaurant', label: 'Orders' }, historyTab('restaurant')],

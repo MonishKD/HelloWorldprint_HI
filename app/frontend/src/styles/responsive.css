@@ -42,9 +42,14 @@
 @media (max-width: 640px) {
   :root { font-size: 15px; }
   .topbar { padding: 0.6rem 1rem; gap: 0.6rem; }
-  .tabs { order: 3; flex-basis: 100%; }
-  .tab { flex: 1; text-align: center; }
+  /* One row that scrolls sideways: five tabs don't fit 360px, and wrapping stretched the active pill. */
+  .tabs { order: 3; flex-basis: calc(100% + 2rem); margin: 0 -1rem; padding: 0 1rem; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex: none; white-space: nowrap; padding: 0.45rem 0.85rem; }
   .who-text { display: none; }
+  /* The info area already names who is signed in; without the avatar, logo and buttons fit on one row. */
+  .who .avatar { display: none; }
+  .who { gap: 0.5rem; }
   .dash { padding: 1rem; gap: 1.25rem; }
   .hero, .courier-hero { padding: 1.4rem; border-radius: 22px; }
   .impact dd { font-size: 1.1rem; }
@@ -58,7 +63,9 @@
   .store-cover { height: 110px; }
   .store-letter { font-size: 8rem; right: 1rem; }
   .store-banner-actions { margin-left: 0; width: 100%; justify-content: space-between; }
-  .menu-admin li { grid-template-columns: auto 1fr auto; }
+  .menu-admin li { grid-template-columns: auto 1fr; }
+  /* Actions drop under the name, so the name keeps the row's width. */
+  .menu-admin-actions { grid-column: 2; justify-content: flex-start; }
   .menu-admin li .badge { display: none; }
   .card { padding: 1rem; }
   .table-wrap { margin: 0 -1rem; padding: 0 1rem; }

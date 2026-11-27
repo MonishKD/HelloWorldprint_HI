@@ -9,7 +9,7 @@
 //   - times come without a zone (`2026-11-07T22:04:35`) and are UTC: read through `time()`
 //   - money from the pricing routes (checkout, summary, history) is in cents (`totalCents`), dollars here
 // Adjust here, and only here, when a response changes.
-import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
+import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, Rating, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -104,7 +104,13 @@ export function toOrder(j: Raw): Order {
     courierName: optionalText(j.courierName),
     pickedUpAt: time(j.pickedUpAt),
     deliveredAt: time(j.deliveredAt),
+    rating: toRating(j.rating),
   };
+}
+
+/** `{ restaurantStars, courierStars }`, or null when the order isn't rated (#324). */
+export function toRating(j: Raw): Rating | undefined {
+  return j ? { restaurantStars: Number(j.restaurantStars), courierStars: Number(j.courierStars) } : undefined;
 }
 
 /** The signed-in user (`GET /auth/session`). The username doubles as the display name. */
@@ -178,6 +184,8 @@ export function toCityView(j: Raw): CityView {
       inPreparation: Number(r.inPreparation),
       ready: Number(r.ready),
       soldOutItems: (r.soldOutItems ?? []).map(String),
+      averageRating: optionalNumber(r.averageRating),
+      ratingCount: Number(r.ratingCount ?? 0),
     })),
     couriers: (j.couriers ?? []).map((c: Raw) => ({
       id: text(c.id),

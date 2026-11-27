@@ -56,7 +56,7 @@ class DashboardServiceTest {
                 new CustomerDashboardQueryService(orders, restaurants, new OrderDeliveryReader(users, mock(OrderEventRepository.class))),
                 new RestaurantDashboardQueryService(users, restaurants, restaurantOrders),
                 new OperatorOrdersQueryService(orders, users, restaurants, assignments, ledger),
-                new CityViewQueryService(orders, restaurants, mock(CourierRepository.class)));
+                new CityViewQueryService(orders, restaurants, mock(CourierRepository.class), mock(RatingRepository.class)));
     }
 
     @Test
