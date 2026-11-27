@@ -100,7 +100,15 @@ export interface Restaurant {
 }
 
 /** A restaurant in the city read (#268), with its order counts by stage. */
-export type CityRestaurant = Restaurant & { queued: number; inPreparation: number; ready: number; soldOutItems: string[] };
+export type CityRestaurant = Restaurant & {
+  queued: number;
+  inPreparation: number;
+  ready: number;
+  soldOutItems: string[];
+  /** Average restaurant stars, one decimal (R-RVW-02); undefined when nobody rated it yet. */
+  averageRating?: number;
+  ratingCount: number;
+};
 
 /** The state of the city (#268): no customer or payment data, so every role can read it. Only on-duty couriers are in it. */
 export interface CityView {
@@ -163,6 +171,22 @@ export interface Order {
   deliveredAt?: string;
   /** When the restaurant accepted the order; the preparation queue is ordered by this (first accepted, first prepared). */
   acceptedAt?: string;
+  /** The stars the customer gave once delivered (R-RVW-01); undefined until rated. */
+  rating?: Rating;
+}
+
+// ---------- Reviews (RVW) ----------
+
+/** What a customer gave a delivered order (R-RVW-01, #324). */
+export interface Rating {
+  restaurantStars: number;
+  courierStars: number;
+}
+
+/** The allowed star range, read from the backend's config (GET /ratings/scale), never written in the UI. */
+export interface RatingScale {
+  minStars: number;
+  maxStars: number;
 }
 
 // ---------- Pricing (PRC) ----------

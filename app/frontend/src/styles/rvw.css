@@ -1,0 +1,38 @@
+/* Ratings (RVW, #325): the rate section on a delivered order, and stars on the restaurant panel. */
+:root { --star: #b87400; }
+:root[data-theme='dark'] { --star: #ffc83d; }
+
+.rate-order { flex-basis: 100%; display: grid; gap: 0.75rem; border-top: 1px dashed var(--line); padding-top: 0.85rem; }
+.rate-prompt strong, .rate-prompt small { display: block; }
+.rate-actions { display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+.rate-form { display: grid; gap: 1rem; padding: 1rem 1.1rem; border-radius: 16px; background: var(--surface-2); border: 1px solid var(--line); }
+.rate-form-head { display: grid; gap: 0.1rem; }
+.rate-form-head strong { font-size: 1.02rem; }
+.rate-form textarea { background: var(--surface); }
+
+.rate-done { display: grid; gap: 0.35rem; }
+.rate-row { display: flex; align-items: center; justify-content: space-between; gap: 0.4rem 1rem; flex-wrap: wrap; }
+.rate-who { display: grid; font-weight: 700; }
+.rate-who small { font-weight: 500; color: var(--muted); }
+
+.star-field { display: inline-flex; align-items: center; gap: 0.6rem; }
+.star-picker { display: inline-flex; }
+.star-btn {
+  display: inline-grid; place-items: center; padding: 0.2rem; border: 0; border-radius: 10px; background: none;
+  color: var(--line-strong); cursor: pointer; transition: transform 0.12s ease, color 0.12s ease;
+}
+.star-btn.is-on { color: var(--star); }
+.star-btn:hover { transform: scale(1.15); }
+.star-btn:active { transform: scale(0.92); }
+.star-word { min-width: 5.5rem; font-size: 0.85rem; font-weight: 750; color: var(--ink-2); }
+
+
+.stars-static { display: inline-flex; gap: 0.1rem; color: var(--star); vertical-align: -3px; }
+.stars-static .off { color: var(--line-strong); }
+.rating-summary { display: inline-flex; align-items: center; gap: 0.35rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .star-btn { transition: none; }
+  .star-btn:hover, .star-btn:active { transform: none; }
+}
