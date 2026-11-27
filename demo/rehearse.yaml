@@ -1,0 +1,7 @@
+# Laptop only, never submitted: publishes the public service so you can open http://localhost:8088.
+#   docker compose -f demo/compose.yaml -f demo/rehearse.yaml up
+#   docker compose -f demo/compose.yaml -f demo/rehearse.yaml down -v   (empty volume for the next try)
+services:
+  frontend:
+    ports:
+      - "8088:80"
