@@ -55,7 +55,7 @@
   align-items: start;
 }
 .dash:has(.console.is-closed) { grid-template-columns: minmax(0, 1fr) 240px; }
-.dash-main { display: grid; gap: 1.5rem; min-width: 0; align-content: start; }
+.dash-main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.5rem; min-width: 0; align-content: start; }
 .card {
   background: var(--surface);
   border: 1px solid var(--line);
