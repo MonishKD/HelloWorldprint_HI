@@ -1,0 +1,251 @@
+{
+  "total": 4,
+  "p": 1,
+  "ps": 500,
+  "paging": {
+    "pageIndex": 1,
+    "pageSize": 4,
+    "total": 4
+  },
+  "effortTotal": 20,
+  "issues": [
+    {
+      "key": "1d8e5f39-9452-4ecb-9c85-6b66a2347069",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "fortunategoods-phase4:app/frontend/src/ui/common.tsx",
+      "project": "fortunategoods-phase4",
+      "line": 193,
+      "hash": "9eb477f434f5f1444e3d4587c57d9e14",
+      "textRange": {
+        "startLine": 193,
+        "endLine": 193,
+        "startOffset": 70,
+        "endOffset": 79
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-27T20:25:19+0000",
+      "updateDate": "2026-11-27T20:25:19+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "07942610-8263-4d69-8d2e-3a32317aae9d",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "fortunategoods-phase4:app/frontend/src/ui/ord/IncomingOrdersList.tsx",
+      "project": "fortunategoods-phase4",
+      "line": 108,
+      "hash": "00bff60b62300c6dfdf2b4fa594864cd",
+      "textRange": {
+        "startLine": 108,
+        "endLine": 108,
+        "startOffset": 26,
+        "endOffset": 35
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-27T20:25:19+0000",
+      "updateDate": "2026-11-27T20:25:19+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "793fa78a-6307-4f94-8a46-cd06fe9a97dc",
+      "rule": "typescript:S9379",
+      "severity": "MAJOR",
+      "component": "fortunategoods-phase4:app/frontend/src/ui/ord/MenuItemForm.tsx",
+      "project": "fortunategoods-phase4",
+      "line": 38,
+      "hash": "ec3fd2941a623170c97b0ac6a90114de",
+      "textRange": {
+        "startLine": 38,
+        "endLine": 38,
+        "startOffset": 24,
+        "endOffset": 33
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Remove this \"autoFocus\" attribute, as it can reduce usability and accessibility for users.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-27T20:25:19+0000",
+      "updateDate": "2026-11-27T20:25:19+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    },
+    {
+      "key": "7d651849-b1e2-4008-a981-e54f91f8ed97",
+      "rule": "typescript:S6852",
+      "severity": "MAJOR",
+      "component": "fortunategoods-phase4:app/frontend/src/ui/rvw/RateOrder.tsx",
+      "project": "fortunategoods-phase4",
+      "line": 165,
+      "hash": "ed967e4ed18161ba9b36074c47aeef41",
+      "textRange": {
+        "startLine": 165,
+        "endLine": 165,
+        "startOffset": 6,
+        "endOffset": 123
+      },
+      "flows": [],
+      "status": "OPEN",
+      "message": "Elements with the 'radiogroup' interactive role must be focusable.",
+      "effort": "5min",
+      "debt": "5min",
+      "author": "",
+      "tags": [
+        "accessibility",
+        "react"
+      ],
+      "creationDate": "2026-11-27T20:25:19+0000",
+      "updateDate": "2026-11-27T20:25:19+0000",
+      "type": "CODE_SMELL",
+      "scope": "MAIN",
+      "quickFixAvailable": false,
+      "messageFormattings": [],
+      "codeVariants": [],
+      "cleanCodeAttribute": "CONVENTIONAL",
+      "cleanCodeAttributeCategory": "CONSISTENT",
+      "impacts": [
+        {
+          "softwareQuality": "RELIABILITY",
+          "severity": "MEDIUM"
+        },
+        {
+          "softwareQuality": "MAINTAINABILITY",
+          "severity": "LOW"
+        }
+      ],
+      "issueStatus": "OPEN",
+      "prioritizedRule": false,
+      "fromSonarQubeUpdate": false,
+      "internalTags": [],
+      "linkedTicketStatus": "NOT_LINKED"
+    }
+  ],
+  "components": [
+    {
+      "key": "fortunategoods-phase4:app/frontend/src/ui/ord/MenuItemForm.tsx",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "MenuItemForm.tsx",
+      "longName": "app/frontend/src/ui/ord/MenuItemForm.tsx",
+      "path": "app/frontend/src/ui/ord/MenuItemForm.tsx"
+    },
+    {
+      "key": "fortunategoods-phase4:app/frontend/src/ui/common.tsx",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "common.tsx",
+      "longName": "app/frontend/src/ui/common.tsx",
+      "path": "app/frontend/src/ui/common.tsx"
+    },
+    {
+      "key": "fortunategoods-phase4:app/frontend/src/ui/ord/IncomingOrdersList.tsx",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "IncomingOrdersList.tsx",
+      "longName": "app/frontend/src/ui/ord/IncomingOrdersList.tsx",
+      "path": "app/frontend/src/ui/ord/IncomingOrdersList.tsx"
+    },
+    {
+      "key": "fortunategoods-phase4",
+      "enabled": true,
+      "qualifier": "TRK",
+      "name": "fortunategoods-phase4",
+      "longName": "fortunategoods-phase4"
+    },
+    {
+      "key": "fortunategoods-phase4:app/frontend/src/ui/rvw/RateOrder.tsx",
+      "enabled": true,
+      "qualifier": "FIL",
+      "name": "RateOrder.tsx",
+      "longName": "app/frontend/src/ui/rvw/RateOrder.tsx",
+      "path": "app/frontend/src/ui/rvw/RateOrder.tsx"
+    }
+  ],
+  "facets": []
+}

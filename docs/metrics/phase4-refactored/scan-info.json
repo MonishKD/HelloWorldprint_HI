@@ -1,0 +1,28 @@
+{
+  "ref": "tags/phase4-refactored",
+  "commit": "87b7ed4fbde4acc0570c5ace915c43c6cf3e1b6d",
+  "project": "fortunategoods-phase4-refactored",
+  "sonarqube": "26.11.0.134175",
+  "sonarqubeImage": "sonarqube:26.11.0.134175-community",
+  "scanner": "8.4.0.16527",
+  "scannerImage": "sonarsource/sonar-scanner-cli@sha256:6e6eca4d552695a98fb7dab84f0c1bd0885ebbfe272654d1552e24bd7f452d51",
+  "qualityProfiles": [
+    {
+      "language": "CSS",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    },
+    {
+      "language": "Java",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    },
+    {
+      "language": "TypeScript",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    }
+  ],
+  "command": "scripts/sonar-scan.sh tags/phase4-refactored docs/metrics/phase4-refactored",
+  "scannedAt": "2026-11-27T19:52:15Z"
+}

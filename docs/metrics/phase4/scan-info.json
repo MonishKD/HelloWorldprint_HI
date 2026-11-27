@@ -1,0 +1,28 @@
+{
+  "ref": "tags/phase4",
+  "commit": "f45c119c5069c85049647fe575384ff1b93b31b4",
+  "project": "fortunategoods-phase4",
+  "sonarqube": "26.11.0.134175",
+  "sonarqubeImage": "sonarqube:26.11.0.134175-community",
+  "scanner": "8.4.0.16527",
+  "scannerImage": "sonarsource/sonar-scanner-cli@sha256:6e6eca4d552695a98fb7dab84f0c1bd0885ebbfe272654d1552e24bd7f452d51",
+  "qualityProfiles": [
+    {
+      "language": "CSS",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    },
+    {
+      "language": "Java",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    },
+    {
+      "language": "TypeScript",
+      "name": "Sonar way core",
+      "isBuiltIn": true
+    }
+  ],
+  "command": "scripts/sonar-scan.sh tags/phase4 docs/metrics/phase4",
+  "scannedAt": "2026-11-27T20:26:00Z"
+}
