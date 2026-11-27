@@ -214,3 +214,61 @@ export interface LedgerRow {
 
 /** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */
 export type HistoryRow = LedgerRow | CourierDelivery;
+
+// ---------- Party mode (phase4-party) ----------
+
+/** gathering: friends join and pick what they eat · roulette: everyone has to accept the card roulette · paying · placed. */
+export type PartyStatus = 'gathering' | 'roulette' | 'paying' | 'placed' | 'cancelled';
+
+export interface PartyMember {
+  id: string;
+  name: string;
+  host: boolean;
+  /** What this member pays, set by the backend once the host locks the split or the roulette picks a payer. */
+  share: number;
+  paid: boolean;
+  acceptedRoulette: boolean;
+}
+
+/**
+ * One cart line. Each of its `quantity` pieces is split evenly between the members who claimed that piece, like
+ * splitting a bill: in a party of n, a piece goes down to 1/n of its price. Nobody on a piece: the host pays it.
+ */
+export interface PartyLine {
+  itemId: string;
+  name: string;
+  /** Price of one piece. */
+  price: number;
+  quantity: number;
+  /** Per piece (`quantity` of them), the ids of the members sharing it. */
+  pieces: string[][];
+}
+
+/** items: each pays for the pieces they picked · even: everyone pays the same. */
+export type PartySplit = 'items' | 'even';
+
+/** A shared order: placed under the host's name once every share is paid. */
+export interface Party {
+  code: string;
+  restaurantId: string;
+  restaurantName: string;
+  hostId: string;
+  deliveryAddress: string;
+  status: PartyStatus;
+  members: PartyMember[];
+  lines: PartyLine[];
+  fare: Fare;
+  /** How the host locked the split; unset before the lock and for the roulette. */
+  split?: PartySplit;
+  /** Set when the roulette picked who pays everything. */
+  roulettePayerId?: string;
+  /** The order the backend placed once everyone paid. */
+  orderId?: string;
+}
+
+/** The card step for one member's share. */
+export interface PartyCheckout {
+  amount: number;
+  /** Stripe client secret for the share; the stub has none. */
+  clientSecret?: string;
+}

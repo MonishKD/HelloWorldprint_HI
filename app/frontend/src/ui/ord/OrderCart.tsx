@@ -8,6 +8,7 @@ import { Icon } from '../icons';
 import CardPayment, { type ConfirmCard } from '../prc/CardPayment';
 import FareLines from '../prc/FareLines';
 import { checkout, placePaidOrder, type CartOrder } from '../prc/prcApi';
+import { startParty } from '../party/partyApi';
 
 /** Menu item id → quantity. */
 export type Cart = Record<string, number>;
@@ -86,6 +87,19 @@ export default function OrderCart({
         return placePaidOrder(order, held.paymentId);
       });
       navigate('/customer/orders', { state: { placed: { id: placed.id, status: placed.status } } });
+    } catch (e) {
+      setError(errorMessage(e));
+      setBusy(false);
+    }
+  }
+
+  /** Party mode: instead of paying, the cart becomes a party friends join with a code. */
+  async function makeParty() {
+    setBusy(true);
+    setError('');
+    try {
+      const party = await send(`Start a party at ${restaurant.name}`, () => startParty(order));
+      navigate(`/customer/party/${party.code}`);
     } catch (e) {
       setError(errorMessage(e));
       setBusy(false);
@@ -175,9 +189,17 @@ export default function OrderCart({
             onPay={pay}
           />
         ) : (
-          <button type="button" className="btn btn-dark btn-block" disabled={cannotOrder} onClick={startCheckout}>
-            {busy ? 'Checking out…' : 'Continue to payment'}
-          </button>
+          <>
+            <button type="button" className="btn btn-dark btn-block" disabled={cannotOrder} onClick={startCheckout}>
+              {busy ? 'Checking out…' : 'Continue to payment'}
+            </button>
+            <button type="button" className="btn btn-block party-start" disabled={cannotOrder} onClick={makeParty}>
+              <span>
+                <Icon name="users" size={16} /> Make it a party
+              </span>
+              <small>Friends join with a code and pay their part</small>
+            </button>
+          </>
         )}
         {lines.length > 0 && !deliveryAddress.trim() && !addressLoading && <p className="muted small center">Add a delivery address to continue.</p>}
       </aside>

@@ -11,6 +11,7 @@ import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
 import HistoryTable from '../prc/HistoryTable';
 import OrderSummaryPanel from '../prc/OrderSummaryPanel';
+import PartyPage from '../party/PartyPage';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
 import { DashboardLayout } from './DashboardRouter';
@@ -27,6 +28,7 @@ export default function CustomerDashboardPage() {
         <Route path="map" element={<CustomerCityMap />} />
         <Route path="orders" element={<MyOrders />} />
         <Route path="history" element={<HistoryTable open />} />
+        <Route path="party/*" element={<PartyPage />} />
         <Route path="*" element={<Navigate to="/customer" replace />} />
       </Routes>
     </DashboardLayout>

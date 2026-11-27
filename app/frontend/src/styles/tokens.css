@@ -36,6 +36,13 @@
   --cream: #f4f1e6; /* text on dark teal surfaces (hero, courier banner, auth panel) */
   --on-lime: #10201b; /* text on --lime-400 */
 
+  /* party mode only: a night-out palette on top of the brand */
+  --violet-500: #7b5cff;
+  --pink-500: #ff4f9a;
+  --gold-300: #ffd76a;
+  --night-950: #140c2b;
+  --night-800: #2a1a57;
+
   --ink-900: #0f1f1c;
   --forest-950: #0a1210;
   --forest-900: #111b18;
@@ -67,6 +74,15 @@
   --hl: #c9ee74; /* highlighter under <em> */
   --dark: #111a17; /* inverted button / active tab */
   --dark-ink: #ffffff;
+
+  /* party mode (styles/party.css) */
+  --party-bg: var(--night-950);
+  --party-bg-2: var(--night-800);
+  --party-ink: var(--cream);
+  --party-1: var(--violet-500);
+  --party-2: var(--pink-500);
+  --party-3: var(--lime-400);
+  --party-gold: var(--gold-300);
 
   /* status chips: -bg / -fg pairs */
   --ok-bg: var(--teal-100);      --ok-fg: #00534f;
