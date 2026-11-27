@@ -55,7 +55,8 @@ services:
             # The frontend's port, used to build the address the backend accepts requests from (CORS, see
             # app.cors.allowed-origin in application.properties). Must match the port the frontend is opened on.
             FRONTEND_PORT: ${FRONTEND_PORT:-5173}
-            STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_51UY9Mu4XMiLKPyxPI7sxO4T0bkJVnLROaeFNcLnCA8iLuYtjbcA62xFoFkbNCf2xHawPcwZMPtv10qxgy5U7O9gG000fPOtcwM}
+            # Secret key: set it in your root .env (never commit it). Without it the app runs, but card payments fail.
+            STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
         ports:
             # Left side = the door on your computer, right side = the backend's port inside the container. check in .env
             # This is what lets your browser reach the backend at localhost:8080.
@@ -70,20 +71,19 @@ services:
     frontend:
         # here we tell our orchestrator, "hey dont use an image, use this build we setup for you, take a look at this path and find the
         #Dockerfile and build the image for me." The path is relative to the docker-compose.yml file.
-        build: ./app/frontend
-
-        environment:
-            #the addresses te frontend calls the backend at, this runs in your BROWSER, not inside docker.
-            # so its localhost and port is published for the backend, not the service name "backend"
-            VITE_API_URL: ${VITE_API_URL:-http://localhost:${BACKEND_PORT:-8080}/api}
-            VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY:-pk_test_51UY9Mu4XMiLKPyxP5H2SUexL0AS5t3vHtKJcN4UAl6l4VAmKsIGqqykn6sEcudtwg1K8p3FGUjkcZAyX0dFrCvaD00ynPblTtI}
+        # The image is a production build served by nginx (same image as the demo platform), and nginx passes /api to
+        # the backend, so the browser only talks to localhost:5173. For hot reload, run `npm run dev` instead.
+        build:
+            context: ./app/frontend
+            # VITE_ values are baked into the build. The publishable key is public by design (pk_test, test mode).
+            args:
+                VITE_STRIPE_PUBLISHABLE_KEY: ${VITE_STRIPE_PUBLISHABLE_KEY:-pk_test_51UY9Mu4XMiLKPyxP5H2SUexL0AS5t3vHtKJcN4UAl6l4VAmKsIGqqykn6sEcudtwg1K8p3FGUjkcZAyX0dFrCvaD00ynPblTtI}
 
         ports:
-            # Left side = the door on your computer, right side = the frontend's port inside the container.
-            # this is what lets ur browseer open the site at localhost:5173. Keep 5173 as the frontend port,
-            # because Vite (the frontend framework) is default to use that port. If you change it, you will
+            # Left side = the door on your computer, right side = nginx's port inside the container.
+            # this is what lets ur browseer open the site at localhost:5173. If you change it, you will
             # have to update the CORS settings
-            - '${FRONTEND_PORT:-5173}:5173'
+            - '${FRONTEND_PORT:-5173}:80'
         depends_on:
             # start backend before frontend.
             - backend

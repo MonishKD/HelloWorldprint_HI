@@ -1,0 +1,59 @@
+# FortunateGoods on the SOEN 343 demo platform. Images only: GitHub Actions builds them
+# (.github/workflows/publish-demo-images.yml). Replace each placeholder image line with the one the
+# workflow's run summary prints, then check this file with "Check compose file" on the platform.
+#   frontend  nginx: the built React app on port 80, proxies /api/ to backend (public)
+#   backend   Spring Boot API on 8080; creates its tables and loads the demo data on first start
+#   db        Postgres 17 with a named volume
+x-demo:
+  web: frontend
+  port: 80
+
+services:
+  frontend:
+    image: ghcr.io/monishkd/helloworldprint_hi-frontend:0123456789abcdef0123456789abcdef01234567
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  backend:
+    image: ghcr.io/monishkd/helloworldprint_hi-backend:0123456789abcdef0123456789abcdef01234567
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: fortunategoods
+      DB_USERNAME: fortunategoods
+      DB_PASSWORD: demo-password
+      # keep = seed only an empty database, so a restart never wipes what visitors did.
+      SEED_MODE: keep
+      # Trust the platform's X-Forwarded-* headers, so a POST from https://<group>.<demo-domain> counts as same-origin.
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50
+      # Card payments need Stripe's secret test key. Empty, the app runs but checkout is refused. To turn it on,
+      # save STRIPE_SECRET_KEY on the platform's Secrets page and write ${secret:STRIPE_SECRET_KEY} here instead.
+      STRIPE_SECRET_KEY: ""
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8080'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 15s
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: fortunategoods
+      POSTGRES_USER: fortunategoods
+      POSTGRES_PASSWORD: demo-password
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fortunategoods -d fortunategoods"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dbdata:

@@ -1,42 +1,23 @@
-#This file basically acts like the pc that builds frontend and evenutally runs it.
+# Frontend image: build the React app once, then serve the built files with nginx (demo platform and docker compose).
+# For hot reload while coding, run `npm run dev` on your machine instead.
 
-#YUP ROUND 2 BABY
-
-#BUILD & RUN SECTION (stage)
-
-#Fronend is a node project React+Vite so contained needs Node now.
-FROM node:22
-
-#folder in where everything will live in frontend files live.
+# BUILD stage: Node compiles the TypeScript and bundles the app into dist/.
+FROM node:22-alpine AS build
 WORKDIR /frontend
-
-# Copies package.json and package-lock.json to the container. This is important
-#because it allows us to install dependencies before copying the rest of the files,
-# which can help with caching and speed up the build process.
-COPY package*.json ./
-
-#Self explanatory, this is the command to install the dependencies defined in package.json.
-#It will create a node_modules folder in the container. no need for "npm build" since
-#"npm run dev" does the build and running in ONE at the RUN SECTION stage
-RUN npm install
-
-#COPY the rest of the frontend files to the container. This includes all the source code,
-#configuration files, and any other assets needed for the frontend application.
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 
-# Frontend has nothing to compile before it runs. Actually tbh, it does compile for Typescript but the Vite
-# dev server handles it automatically from the source files. So one image can do all that, install, copy and start.
+# VITE_* values are written into the bundle at build time, not read when the container starts.
+# /api is relative: the browser calls the same address that served the page, and nginx passes it to the backend.
+ARG VITE_API_URL=/api
+# Stripe's publishable key (pk_test_...). Empty by default: card payments then show a warning instead of the card field.
+ARG VITE_STRIPE_PUBLISHABLE_KEY=
+ENV VITE_API_URL=$VITE_API_URL VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
+RUN npm run build
 
-#So we go straight to giving ourselves a port note to our current image
-# Vite's dev server listens on port 5173. This line is only a note, like EXPOSE 8080 in the backend's
-# Dockerfile. The docker-compose.yml "ports:" line is what actually opens it.
-EXPOSE 5173
-
-#DONT BE SCARED
-# Starts the Vite dev server "--host" is needed. Thats what it accepts connection from (whatever that means) jk
-# vite listens to localhost by default, which in the container, means itself, but the browser cant reach it, so
-# --host makes it listen on all addresses, so the port you open with "port:" in docker-compose.yml can reach it.
-# Try it out without --host and you will see what I mean.
-
-#npm run dev just starts the dev server. U are familiar of this :D
-CMD ["npm","run", "dev","--","--host"]
+# RUN stage: nginx serves dist/ on port 80 and proxies /api/ to the backend (see nginx.conf).
+FROM nginx:1.27-alpine
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /frontend/dist /usr/share/nginx/html
+EXPOSE 80
