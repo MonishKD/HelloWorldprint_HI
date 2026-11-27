@@ -71,7 +71,7 @@ public class SeedLoader implements ApplicationRunner {
     record SeedCourier(String account, String name, Double latitude, Double longitude, CourierStatus status) {}
 
     // Empties every table and restarts the ids at 1, so the seeded rows always get the same ids.
-    private static final String WIPE_ALL_TABLES = "TRUNCATE TABLE command_log, assignments, ledger_entries, "
+    private static final String WIPE_ALL_TABLES = "TRUNCATE TABLE command_log, ratings, assignments, ledger_entries, "
             + "order_events, order_lines, orders, restaurant_personnel, operators, couriers, customers, users, "
             + "menu_items, menus, restaurants RESTART IDENTITY CASCADE";
 

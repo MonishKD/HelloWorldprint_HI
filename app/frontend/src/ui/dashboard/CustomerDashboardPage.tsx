@@ -11,6 +11,7 @@ import { cancelOrder, listRestaurants } from '../ord/ordApi';
 import RestaurantListPage from '../ord/RestaurantListPage';
 import HistoryTable from '../prc/HistoryTable';
 import OrderSummaryPanel from '../prc/OrderSummaryPanel';
+import { RateOrder } from '../rvw/RateOrder';
 import { errorMessage, getDashboardOrders, send } from './dashboardApi';
 import { Icon } from '../icons';
 import { DashboardLayout } from './DashboardRouter';
@@ -120,6 +121,7 @@ function MyOrders() {
       {o.status === 'placed' && (
         <ConfirmButton label="Cancel order" question={`Cancel order #${o.id}?`} variant="danger" onConfirm={() => cancel(o)} />
       )}
+      {o.status === 'delivered' && <RateOrder order={o} restaurantName={restaurantOf(o)?.name ?? o.restaurantName} onRated={reload} />}
     </OrderCard>
   );
 

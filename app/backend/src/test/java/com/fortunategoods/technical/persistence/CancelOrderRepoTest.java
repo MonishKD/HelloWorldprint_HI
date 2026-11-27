@@ -20,12 +20,13 @@ public class CancelOrderRepoTest {
     private OrderEventRepository events;
     private OrderRepository orders;
 
+    //new BeforeEach since the OrderRepository constructor was modified.
     @BeforeEach
     void setup() {
-        jdbc = mock(JdbcTemplate.class);
-        events = mock(OrderEventRepository.class);
+    jdbc = mock(JdbcTemplate.class);
+    events = mock(OrderEventRepository.class);
 
-        orders = new OrderRepository(jdbc, events, mock(MenuItemRepository.class));
+    orders = new OrderRepository(jdbc, events, mock(OrderQueryRepository.class), mock(OrderHydrator.class));
     }
 
     @Test

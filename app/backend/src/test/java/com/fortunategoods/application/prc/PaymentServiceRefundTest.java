@@ -42,8 +42,10 @@ class PaymentServiceRefundTest {
 
     private final OrderService orderService = new OrderService(restaurants, orders, events, users, mock(RegisterPreparationQueue.class),
         mock(ApplicationEventPublisher.class), mock(DispatchService.class));
+    private final OrderHistoryService orderHistoryService =
+        new OrderHistoryService(ledger, orders, restaurants, users);
     private final PaymentService service = new PaymentService(gateway, fares, orderService,
-        new LedgerService(ledger, orders, events, fares, restaurants, users), orders, restaurants);
+        new LedgerService(ledger, orders, events, fares, orderHistoryService), orders, restaurants);
 
     private void givenOrder(OrderStatus status) {
         when(orders.findById("100")).thenReturn(order("100", status));

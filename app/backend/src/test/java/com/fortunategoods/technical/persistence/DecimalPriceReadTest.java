@@ -50,7 +50,10 @@ public class DecimalPriceReadTest {
     void orderLinesKeepTheirDiscountAndCustomerOrdersComeBack() throws SQLException {
         MenuItemRepository menuItems = mock(MenuItemRepository.class);
         when(menuItems.findById("10")).thenReturn(new MenuItem("10", "1", "Quiche", MenuItemStatus.AVAILABLE, 3.0, 7.0));
-        OrderRepository orders = new OrderRepository(jdbc, mock(OrderEventRepository.class), menuItems);
+
+        OrderHydrator hydrator = new OrderHydrator(jdbc, menuItems);
+        OrderQueryRepository queries = new OrderQueryRepository(jdbc, hydrator);
+        OrderRepository orders = new OrderRepository(jdbc, mock(OrderEventRepository.class), queries, hydrator);
 
         ResultSet orderRow = mock(ResultSet.class);
         when(orderRow.getString("id")).thenReturn("100");
