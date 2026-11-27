@@ -1,5 +1,5 @@
 # FortunateGoods on the SOEN 343 demo platform. Images only: GitHub Actions builds them
-# (.github/workflows/publish-demo-images.yml). Replace each placeholder image line with the one the
+# (.github/workflows/publish-demo-images.yml). After a new build, replace each image line with the one the
 # workflow's run summary prints, then check this file with "Check compose file" on the platform.
 #   frontend  nginx: the built React app on port 80, proxies /api/ to backend (public)
 #   backend   Spring Boot API on 8080; creates its tables and loads the demo data on first start
@@ -10,13 +10,13 @@ x-demo:
 
 services:
   frontend:
-    image: ghcr.io/monishkd/helloworldprint_hi-frontend:0123456789abcdef0123456789abcdef01234567
+    image: ghcr.io/monishkd/helloworldprint_hi-frontend:e8b60ad3f62065ac28eebfe3ef0baa47b8e02121
     depends_on:
       backend:
         condition: service_healthy
 
   backend:
-    image: ghcr.io/monishkd/helloworldprint_hi-backend:0123456789abcdef0123456789abcdef01234567
+    image: ghcr.io/monishkd/helloworldprint_hi-backend:e8b60ad3f62065ac28eebfe3ef0baa47b8e02121
     depends_on:
       db:
         condition: service_healthy
