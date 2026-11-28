@@ -144,7 +144,7 @@ jobs:
           SHA: ${{ github.sha }}
           REPOSITORY: ${{ github.repository }}
           # Stripe's publishable key, built into the frontend bundle (the backend image ignores it). Empty if the repo secret is missing.
-          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY || secrets.VITE_STRIPE_PUBLISHABLEKEY }}
         run: |
           set -euo pipefail
           # The frontend image is public, so a secret Stripe key here would be published to everyone.
