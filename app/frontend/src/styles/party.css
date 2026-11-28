@@ -139,36 +139,38 @@
 .party-eaters .monogram { margin-left: -8px; box-shadow: 0 0 0 2px var(--surface-2); animation: party-pop 0.35s var(--ease) both; }
 .party-eaters .monogram:first-child { margin-left: 0; }
 @keyframes party-pop { from { transform: scale(0.3); opacity: 0; } }
-.party-claim { min-width: 8.5rem; }
+/* Each person's items, grouped under their name */
+.party-line.party-person { grid-template-columns: 1fr; gap: 0.4rem; } /* beats the small-screen .party-line columns */
+.party-person-head { display: flex; align-items: center; gap: 0.55rem; }
+.party-person-head strong { flex: 1; min-width: 0; }
+.party-person-items { display: grid; gap: 0.2rem; margin: 0; padding: 0 0 0 2.3rem; list-style: none; font-size: 0.9rem; }
+.party-person-items li { display: flex; justify-content: space-between; gap: 0.75rem; }
+.party-person-items li span:last-child { font-variant-numeric: tabular-nums; }
 
-/* Items with several pieces: a stepper for how many, and one tile per piece to share it */
-.party-stepper { justify-self: end; background: var(--surface); }
-.party-stepper > span { min-width: 3.2rem; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
-.party-pieces { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 0.45rem; }
-.party-piece {
-  display: inline-flex;
+/* The host's menu, with a stepper per item for how many I want */
+.party-menu { margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
+.party-menu-list { display: grid; gap: 0.45rem; margin: 0.75rem 0 0; padding: 0; list-style: none; max-height: 22rem; overflow-y: auto; }
+.party-menu-list li {
+  display: flex;
   align-items: center;
-  gap: 0.45rem;
-  min-height: 40px;
-  padding: 0.3rem 0.65rem 0.3rem 0.45rem;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
   border-radius: 12px;
   border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink-2);
-  font: inherit;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s var(--ease);
+  background: var(--surface-2);
 }
-.party-piece:hover:not(:disabled) { border-color: var(--party-1); transform: translateY(-1px); }
-.party-piece:active:not(:disabled) { transform: scale(0.97); }
-.party-piece:disabled { cursor: default; }
-.party-piece.is-free { border-style: dashed; }
-.party-piece.is-mine { border-color: var(--party-1); box-shadow: 0 0 0 2px color-mix(in srgb, var(--party-1) 30%, transparent); }
-.party-piece-label { font-family: var(--mono); font-weight: 700; color: var(--muted); }
-.party-piece .party-eaters .monogram { width: 24px; height: 24px; border-radius: 8px; font-size: 0.65rem; box-shadow: 0 0 0 2px var(--surface); }
+.party-menu-list li.is-mine { border-color: var(--party-1); }
+.party-stepper { justify-self: end; background: var(--surface); }
+.party-stepper > span { min-width: 2.4rem; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
 
-.party-share { display: grid; gap: 0.5rem; position: sticky; top: 1rem; }
+/* Share the party: copy the code or link, or show the link as a QR code */
+.party-share-buttons { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.4rem; }
+.party-qr { display: grid; justify-items: center; gap: 0.4rem; margin: 0.25rem 0 0; padding: 0.75rem; border-radius: 14px; background: #fff; color: #222; }
+.party-qr img, .party-qr-blank { display: block; width: 180px; height: 180px; }
+.party-qr figcaption { font-size: 0.75rem; font-weight: 600; }
+
+.party-share { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.5rem; position: sticky; top: 1rem; min-width: 0; }
 .party-share-amount {
   font-family: var(--display);
   font-size: 2.6rem;
@@ -183,8 +185,9 @@
 }
 .party-share-amount.is-paid { background: none; color: var(--ok-fg); }
 .party-members { display: grid; gap: 0.5rem; margin: 0.6rem 0; padding: 0.75rem 0; list-style: none; border-block: 1px solid var(--line); }
-.party-members li { display: flex; align-items: center; gap: 0.6rem; }
-.party-member-name { flex: 1; display: flex; align-items: center; gap: 0.4rem; min-width: 0; font-weight: 600; }
+/* Rows wrap instead of pushing the panel wider (name, Host chip, share, Ready/Paid chip) */
+.party-members li { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; }
+.party-member-name { flex: 1 1 7rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
 .party-member-share { font-variant-numeric: tabular-nums; }
 .party-chip { padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; background: var(--neutral-bg); color: var(--neutral-fg); }
 .party-chip.is-ok { background: var(--ok-bg); color: var(--ok-fg); }
@@ -316,12 +319,12 @@
 @media (max-width: 860px) {
   .party-hero { grid-template-columns: 1fr; padding: 1.25rem; }
   .party-code { justify-items: start; }
+  .party-share-buttons { justify-content: flex-start; }
   .party-grid, .party-lobby-grid { grid-template-columns: 1fr; }
   .party-share { position: static; }
 }
 @media (max-width: 520px) {
   .party-line { grid-template-columns: minmax(0, 1fr) auto; }
   .party-eaters { grid-column: 1; }
-  .party-claim { grid-column: 1 / -1; width: 100%; }
   .party-code-tiles b { width: 1.9rem; height: 2.5rem; font-size: 1.2rem; }
 }

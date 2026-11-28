@@ -7,9 +7,9 @@
 //   - several fields can be empty: restaurant coordinates and cuisine, original prices, names
 //   - orders come as `orderId` with `instructions`; customer and restaurant names and the placed time aren't sent
 //   - times come without a zone (`2026-11-07T22:04:35`) and are UTC: read through `time()`
-//   - money from the pricing routes (checkout, summary, history) is in cents (`totalCents`), dollars here
+//   - money from the pricing routes (checkout, summary, history, parties) is in cents (`totalCents`), dollars here
 // Adjust here, and only here, when a response changes.
-import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, Rating, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
+import type { Checkout, CityView, CourierDashboard, CourierDelivery, CourierJob, CourierState, Fare, HistoryRow, LedgerEntryType, MenuItem, MenuItemStatus, Order, OrderLine, OrderStatus, OrderSummary, Party, PartyCheckout, PartyStatus, PartyVote, Rating, ReadyOrder, Restaurant, RestaurantStatus, Role, StalledOrder, WaitingOrder } from '../domain';
 import type { SessionUser } from './reg/regApi';
 
 // Backend JSON isn't validated, so it is read loosely and every value is normalised here.
@@ -252,4 +252,43 @@ export function toHistoryRow(j: Raw): HistoryRow {
     finishedAt: time(j.finishedAt) ?? '',
     paymentId: optionalText(j.paymentReference),
   };
+}
+
+/** A party (party mode): money comes in cents, votes, statuses and modes UPPERCASE. */
+export function toParty(j: Raw): Party {
+  return {
+    code: text(j.code),
+    restaurantId: text(j.restaurantId),
+    restaurantName: text(j.restaurantName, 'Restaurant'),
+    hostId: text(j.hostId),
+    deliveryAddress: text(j.deliveryAddress),
+    status: lower<PartyStatus>(j.status),
+    members: (j.members ?? []).map((m: Raw) => ({
+      id: text(m.id),
+      name: text(m.name, 'Guest'),
+      host: Boolean(m.host),
+      ready: Boolean(m.ready),
+      vote: m.vote ? lower<PartyVote>(m.vote) : undefined,
+      share: dollars(m.shareCents),
+      paid: Boolean(m.paid),
+    })),
+    lines: (j.lines ?? []).map((l: Raw) => ({
+      memberId: text(l.memberId),
+      itemId: text(l.itemId),
+      name: text(l.name),
+      price: dollars(l.priceCents),
+      quantity: Number(l.quantity),
+      available: l.available !== false,
+    })),
+    fare: toFare(j),
+    mode: j.mode ? lower<PartyVote>(j.mode) : undefined,
+    roulettePayerId: optionalText(j.roulettePayerId),
+    orderId: optionalText(j.orderId),
+    orderStatus: j.orderStatus ? lower<OrderStatus>(j.orderStatus) : undefined,
+    cancelReason: optionalText(j.cancelReason),
+  };
+}
+
+export function toPartyCheckout(j: Raw): PartyCheckout {
+  return { amount: dollars(j.amountCents), clientSecret: text(j.clientSecret) };
 }
