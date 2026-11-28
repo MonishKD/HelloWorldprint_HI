@@ -251,6 +251,8 @@ export function toHistoryRow(j: Raw): HistoryRow {
     placedAt: time(j.placedAt) ?? '',
     finishedAt: time(j.finishedAt) ?? '',
     paymentId: optionalText(j.paymentReference),
+    partyCode: optionalText(j.partyCode),
+    partyShare: j.yourShareCents === null || j.yourShareCents === undefined ? undefined : dollars(j.yourShareCents),
   };
 }
 

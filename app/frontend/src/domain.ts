@@ -234,6 +234,9 @@ export interface LedgerRow {
   finishedAt: string;
   /** The Stripe PaymentIntent (pi_…) behind the order. Only set once the backend sends `paymentReference`, see prcApi. */
   paymentId?: string;
+  /** Party orders in a customer's history: the party code and what this customer paid (or got back) of the total. */
+  partyCode?: string;
+  partyShare?: number;
 }
 
 /** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */
