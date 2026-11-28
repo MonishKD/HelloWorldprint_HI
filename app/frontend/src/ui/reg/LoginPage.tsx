@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { dashboardPath, useSession } from '../../session';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { afterLoginPath, useSession, withNext } from '../../session';
 import { errorMessage, send } from '../dashboard/dashboardApi';
 import AuthShell from './AuthShell';
 import { login } from './regApi';
@@ -11,8 +11,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [params] = useSearchParams();
+  const next = params.get('next');
+  const invitedToParty = next?.startsWith('/customer/party/');
 
-  if (user) return <Navigate to={dashboardPath(user.role)} replace />;
+  if (user) return <Navigate to={afterLoginPath(user.role, next)} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,6 +36,12 @@ export default function LoginPage() {
           <h1>Welcome back</h1>
           <p className="muted">Log in to keep rescuing good food.</p>
         </div>
+
+        {invitedToParty && !notice && !error && (
+          <p className="alert alert-success" role="status">
+            Log in to join the party you were invited to.
+          </p>
+        )}
 
         {notice && !error && (
           <p className="alert alert-success" role="status">
@@ -59,7 +68,7 @@ export default function LoginPage() {
           {busy ? 'Logging in…' : 'Log in'}
         </button>
         <p className="muted center">
-          New here? <Link to="/register">Create an account</Link>
+          New here? <Link to={withNext('/register', next)}>Create an account</Link>
         </p>
       </form>
     </AuthShell>
