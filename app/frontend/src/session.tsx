@@ -58,7 +58,8 @@ export function dashboardPath(role: Role): string {
  * link or QR code), or their dashboard. Only paths inside this app count, so ?next= can't send anyone to another site.
  */
 export function afterLoginPath(role: Role, next: string | null): string {
-  return next && next.startsWith('/') && !next.startsWith('//') ? next : dashboardPath(role);
+  // "/x" only: "//site" and "/\site" (slash then backslash) are read by browsers as another website.
+  return next && /^\/(?![\/\\])/.test(next) ? next : dashboardPath(role);
 }
 
 /** "/register" or "/login", keeping ?next= so the user still lands on the page they opened. */
