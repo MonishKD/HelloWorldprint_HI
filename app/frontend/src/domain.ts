@@ -234,6 +234,9 @@ export interface LedgerRow {
   finishedAt: string;
   /** The Stripe PaymentIntent (pi_…) behind the order. Only set once the backend sends `paymentReference`, see prcApi. */
   paymentId?: string;
+  /** Party orders in a customer's history: the party code and what this customer paid (or got back) of the total. */
+  partyCode?: string;
+  partyShare?: number;
 }
 
 /** A history row: ledger rows with the fare, or a courier's deliveries with no money (R-PRC-04). */
@@ -241,35 +244,35 @@ export type HistoryRow = LedgerRow | CourierDelivery;
 
 // ---------- Party mode (phase4-party) ----------
 
-/** gathering: friends join and pick what they eat · roulette: everyone has to accept the card roulette · paying · placed. */
-export type PartyStatus = 'gathering' | 'roulette' | 'paying' | 'placed' | 'cancelled';
+/** gathering: friends join, add their own items and get ready · paying: the host locked it · placed · cancelled. */
+export type PartyStatus = 'gathering' | 'paying' | 'placed' | 'cancelled';
+
+/** How a member wants to pay: each their own items, or the card roulette (only if everyone votes for it). */
+export type PartyVote = 'ordinary' | 'roulette';
 
 export interface PartyMember {
   id: string;
   name: string;
   host: boolean;
-  /** What this member pays, set by the backend once the host locks the split or the roulette picks a payer. */
+  ready: boolean;
+  /** Set once they're ready. */
+  vote?: PartyVote;
+  /** What this member pays: an estimate while gathering, fixed once the host locks. */
   share: number;
   paid: boolean;
-  acceptedRoulette: boolean;
 }
 
-/**
- * One cart line. Each of its `quantity` pieces is split evenly between the members who claimed that piece, like
- * splitting a bill: in a party of n, a piece goes down to 1/n of its price. Nobody on a piece: the host pays it.
- */
+/** One item a member added from the host's restaurant. */
 export interface PartyLine {
+  memberId: string;
   itemId: string;
   name: string;
-  /** Price of one piece. */
+  /** Price of one: the menu's while gathering, fixed at the lock afterwards. */
   price: number;
   quantity: number;
-  /** Per piece (`quantity` of them), the ids of the members sharing it. */
-  pieces: string[][];
+  /** False when the item is sold out or no longer on the menu. */
+  available: boolean;
 }
-
-/** items: each pays for the pieces they picked · even: everyone pays the same. */
-export type PartySplit = 'items' | 'even';
 
 /** A shared order: placed under the host's name once every share is paid. */
 export interface Party {
@@ -282,17 +285,20 @@ export interface Party {
   members: PartyMember[];
   lines: PartyLine[];
   fare: Fare;
-  /** How the host locked the split; unset before the lock and for the roulette. */
-  split?: PartySplit;
+  /** How the host's lock went: ordinary, or the roulette when everyone voted for it. */
+  mode?: PartyVote;
   /** Set when the roulette picked who pays everything. */
   roulettePayerId?: string;
-  /** The order the backend placed once everyone paid. */
+  /** The order the backend placed once everyone paid, and where it is now (accepted, delivered, rejected...). */
   orderId?: string;
+  orderStatus?: OrderStatus;
+  /** Why a cancelled party ended: who cancelled it, or why the order could not be placed. */
+  cancelReason?: string;
 }
 
 /** The card step for one member's share. */
 export interface PartyCheckout {
   amount: number;
-  /** Stripe client secret for the share; the stub has none. */
-  clientSecret?: string;
+  /** Stripe client secret the card field confirms against. */
+  clientSecret: string;
 }

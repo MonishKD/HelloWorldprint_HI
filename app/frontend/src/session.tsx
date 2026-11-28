@@ -52,3 +52,15 @@ export function useUser(): SessionUser {
 export function dashboardPath(role: Role): string {
   return `/${role}`;
 }
+
+/**
+ * Where to go after logging in or signing up: the page a signed-out user tried to open (?next=, for example a party
+ * link or QR code), or their dashboard. Only paths inside this app count, so ?next= can't send anyone to another site.
+ */
+export function afterLoginPath(role: Role, next: string | null): string {
+  // "/x" only: "//site" and "/\site" (slash then backslash) are read by browsers as another website.
+  return next && /^\/(?![\/\\])/.test(next) ? next : dashboardPath(role);
+}
+
+/** "/register" or "/login", keeping ?next= so the user still lands on the page they opened. */
+export const withNext = (path: string, next: string | null) => (next ? `${path}?next=${encodeURIComponent(next)}` : path);

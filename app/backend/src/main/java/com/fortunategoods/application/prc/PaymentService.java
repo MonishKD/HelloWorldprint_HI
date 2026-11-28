@@ -1,5 +1,6 @@
 package com.fortunategoods.application.prc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import com.fortunategoods.domain.user.UserRole;
 import com.fortunategoods.technical.payment.Payment;
 import com.fortunategoods.technical.payment.PaymentGateway;
 import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.technical.persistence.PartyRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 
 import jakarta.transaction.Transactional;
@@ -34,6 +36,8 @@ import jakarta.transaction.Transactional;
       3. placePaidOrder: place the order only if the money is held for exactly that fare, and remember the payment
       4. onOrderFinished: delivered -> take the money, rejected or cancelled -> release it
       5. refundOrder: the operator's refund gives the money back
+    A party order (party mode) has one card hold per member instead of one on the order, so steps 4 and 5
+    do the same to each of them (paymentIdsOf).
 
     How much to charge comes from Kaue's FareCalculator (pricing-rule strategies), never from the browser.
     Moving the money goes through PaymentGateway, so nothing here knows it is Stripe.
@@ -49,15 +53,18 @@ public class PaymentService {
     private final LedgerService ledgerService;
     private final OrderRepository orderRepo;
     private final RestaurantRepository restaurantRepo;
+    private final PartyRepository partyRepo;
 
     public PaymentService(PaymentGateway paymentGateway, FareCalculator fareCalculator, OrderService orderService,
-            LedgerService ledgerService, OrderRepository orderRepo, RestaurantRepository restaurantRepo) {
+            LedgerService ledgerService, OrderRepository orderRepo, RestaurantRepository restaurantRepo,
+            PartyRepository partyRepo) {
         this.paymentGateway = paymentGateway;
         this.fareCalculator = fareCalculator;
         this.orderService = orderService;
         this.ledgerService = ledgerService;
         this.orderRepo = orderRepo;
         this.restaurantRepo = restaurantRepo;
+        this.partyRepo = partyRepo;
     }
 
     // Step 1: prices the cart and holds that amount on the card. Returns the fare's parts for the cart,
@@ -108,16 +115,13 @@ public class PaymentService {
     // the status change is rolled back too. Orders placed before card payment existed have no payment, nothing to do.
     @EventListener
     public void onOrderFinished(OrderFinished event) {
-        String paymentId = orderRepo.findPaymentId(event.getOrderId());
-        if (paymentId == null) {
-            return;
-        }
-
         OrderStatus status = event.getFinalStatus();
-        if (status == OrderStatus.DELIVERED) {
-            paymentGateway.capture(paymentId);
-        } else if (status == OrderStatus.REJECTED || status == OrderStatus.CANCELLED) {
-            paymentGateway.cancel(paymentId);
+        for (String paymentId : paymentIdsOf(event.getOrderId())) {
+            if (status == OrderStatus.DELIVERED) {
+                paymentGateway.capture(paymentId);
+            } else if (status == OrderStatus.REJECTED || status == OrderStatus.CANCELLED) {
+                paymentGateway.cancel(paymentId);
+            }
         }
     }
 
@@ -127,13 +131,26 @@ public class PaymentService {
         OrderServiceResult result = orderService.refundOrder(role, orderId);
         ledgerService.recordRefund(orderId);
 
-        String paymentId = orderRepo.findPaymentId(orderId);
-        if (paymentId == null) {
+        List<String> paymentIds = paymentIdsOf(orderId);
+        if (paymentIds.isEmpty()) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.CONFLICT, "This order was not paid by card, there is nothing to refund");
         }
         // Last on purpose: Stripe can't be rolled back, but a Stripe failure rolls back the two steps above.
-        paymentGateway.refund(paymentId);
+        for (String paymentId : paymentIds) {
+            paymentGateway.refund(paymentId);
+        }
         return result;
+    }
+
+    // The card payments of an order: its own (cart checkout), or one per member when it came from a party.
+    private List<String> paymentIdsOf(String orderId) {
+        List<String> paymentIds = new ArrayList<>();
+        String orderPayment = orderRepo.findPaymentId(orderId);
+        if (orderPayment != null) {
+            paymentIds.add(orderPayment);
+        }
+        paymentIds.addAll(partyRepo.findPaymentIdsByOrder(orderId));
+        return paymentIds;
     }
 
     // The fare of a cart, priced the same way as at placement: the lines take the menu's current prices (OrderVerify),

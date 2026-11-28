@@ -105,12 +105,26 @@ function LedgerRows({ rows, showRestaurant }: { rows: LedgerRow[]; showRestauran
               <td>
                 <StatusBadge status={r.finalStatus} />
               </td>
-              <td>{ENTRY_LABEL[r.entryType]}</td>
+              <td>
+                {ENTRY_LABEL[r.entryType]}
+                {r.partyCode && <small className="muted block">Party {r.partyCode}</small>}
+              </td>
               <td className="num">{money(r.fare.subtotal)}</td>
               <td className="num">{money(r.fare.deliveryFee)}</td>
               <td className="num">{money(r.fare.serviceFee)}</td>
               <td className="num">{money(r.fare.surcharge)}</td>
-              <td className="num">{money(r.fare.total)}</td>
+              <td className="num">
+                {r.partyShare === undefined ? (
+                  money(r.fare.total)
+                ) : (
+                  // A party order: what this customer paid (or got back), with the whole order's total under it.
+                  <>
+                    {money(r.partyShare)}
+                    <small className="muted block">your share</small>
+                    <small className="muted block">of {money(r.fare.total)}</small>
+                  </>
+                )}
+              </td>
             </tr>
           ))}
         </tbody>

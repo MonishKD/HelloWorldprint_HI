@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { dashboardPath, useSession } from '../../session';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
+import { afterLoginPath, useSession, withNext } from '../../session';
 import { errorMessage, send } from '../dashboard/dashboardApi';
 import { Icon, type IconName } from '../icons';
 import AuthShell from './AuthShell';
@@ -25,8 +25,10 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [params] = useSearchParams();
+  const next = params.get('next');
 
-  if (user) return <Navigate to={dashboardPath(user.role)} replace />;
+  if (user) return <Navigate to={afterLoginPath(user.role, next)} replace />;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function RegisterPage() {
       <form className="auth-form rise" onSubmit={onSubmit}>
         <div>
           <h1>Create your account</h1>
+          {next?.startsWith('/customer/party/') && <p className="alert alert-success">Sign up as a customer to join the party you were invited to.</p>}
           <p className="muted">Join the fight against food waste in under a minute.</p>
         </div>
 
@@ -128,7 +131,7 @@ export default function RegisterPage() {
           {busy ? 'Creating account…' : 'Create account'}
         </button>
         <p className="muted center">
-          Already have an account? <Link to="/login">Log in</Link>
+          Already have an account? <Link to={withNext('/login', next)}>Log in</Link>
         </p>
       </form>
     </AuthShell>

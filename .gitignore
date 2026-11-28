@@ -34,3 +34,6 @@ build/
 
 details.md
 *.png
+
+# Course demo-platform agent kit (kept locally, not part of the project)
+soen343-agent-kit.zip

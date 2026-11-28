@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
-import { Navigate, NavLink, useLocation } from 'react-router-dom';
+import { Link, Navigate, NavLink, useLocation } from 'react-router-dom';
 import type { Role } from '../../domain';
 import { dashboardPath, useSession, useUser } from '../../session';
 import { initials, Logo, ThemeToggle } from '../common';
+import AuthShell from '../reg/AuthShell';
 import { logout as logoutApi } from '../reg/regApi';
 import { send } from './dashboardApi';
 import InformationArea, { DashboardInfoProvider } from './InformationArea';
@@ -17,9 +18,31 @@ export default function DashboardRouter() {
 /** Guards a dashboard: signed-out users go to login, other roles go back to their own dashboard. */
 export function RequireRole({ role, children }: { role: Role; children: ReactNode }) {
   const { user } = useSession();
-  if (!user) return <Navigate to="/login" replace />;
+  const location = useLocation();
+  // Remember the page (a party link, for example) so login brings them back to it.
+  if (!user) return <Navigate to={`/login?next=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  // A restaurant, courier or operator who opens a party link (or QR code) is told why instead of being moved silently.
+  if (user.role !== role && location.pathname.startsWith('/customer/party')) return <PartyForCustomersOnly role={user.role} />;
   if (user.role !== role) return <Navigate to={dashboardPath(user.role)} replace />;
   return <>{children}</>;
+}
+
+function PartyForCustomersOnly({ role }: { role: Role }) {
+  return (
+    <AuthShell>
+      <div className="auth-form rise">
+        <div>
+          <h1>Party links are for customers</h1>
+          <p className="muted">
+            You're signed in with {role === 'operator' ? 'an' : 'a'} {role} account. To join this party, log out and sign in (or sign up) with a customer account, then open the link again.
+          </p>
+        </div>
+        <Link className="btn btn-primary btn-lg btn-block" to={dashboardPath(role)}>
+          Go to my dashboard
+        </Link>
+      </div>
+    </AuthShell>
+  );
 }
 
 export interface NavItem {
