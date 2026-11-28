@@ -151,15 +151,12 @@ public class PartyService {
     // 3. Sets how many of this menu item the member wants (0 removes it). Changing your items makes you not ready
     // again, so the host never locks an order someone is still changing.
     @Transactional
-    public PartyResponse setLine(String customerId, String code, String itemId, Integer quantity) {
+    public PartyResponse setLine(String customerId, String code, String itemId, BigDecimal requestedQuantity) {
         Party party = lockAndLoad(code);
         party.requireMember(customerId);
         party.requireStatus(PartyStatus.GATHERING, "The order is locked, items can't change anymore");
         OrderVerify.requireId(itemId, "Item ID");
-        if (quantity == null || quantity < 0 || quantity > MAX_QUANTITY_PER_ITEM) {
-            throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
-                    "Quantity must be between 0 and " + MAX_QUANTITY_PER_ITEM);
-        }
+        int quantity = wholeQuantity(requestedQuantity);
 
         if (quantity > 0) {
             // How many of this item the whole party would have, so the merged order stays under the limit.
@@ -457,6 +454,20 @@ public class PartyService {
             prices.put(item.getId(), Math.round(item.getPrice() * 100));
         }
         return prices;
+    }
+
+    // A whole number from 0 to the limit (1.5 or -1 are refused, not rounded).
+    private int wholeQuantity(BigDecimal quantity) {
+        try {
+            int whole = quantity.intValueExact();
+            if (whole >= 0 && whole <= MAX_QUANTITY_PER_ITEM) {
+                return whole;
+            }
+        } catch (NullPointerException | ArithmeticException notWhole) {
+            // falls through to the refusal below
+        }
+        throw new DomainRuleViolation(DomainRuleViolation.Reason.INVALID,
+                "Quantity must be a whole number between 0 and " + MAX_QUANTITY_PER_ITEM);
     }
 
     private PartyVote parseVote(String vote) {
