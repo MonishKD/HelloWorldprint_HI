@@ -24,6 +24,7 @@ import com.fortunategoods.technical.payment.PaymentGateway;
 import com.fortunategoods.technical.persistence.LedgerRepository;
 import com.fortunategoods.technical.persistence.OrderEventRepository;
 import com.fortunategoods.technical.persistence.OrderRepository;
+import com.fortunategoods.technical.persistence.PartyRepository;
 import com.fortunategoods.technical.persistence.RestaurantRepository;
 import com.fortunategoods.technical.persistence.UserRepository;
 
@@ -45,7 +46,7 @@ class PaymentServiceRefundTest {
     private final OrderHistoryService orderHistoryService =
         new OrderHistoryService(ledger, orders, restaurants, users);
     private final PaymentService service = new PaymentService(gateway, fares, orderService,
-        new LedgerService(ledger, orders, events, fares, orderHistoryService), orders, restaurants);
+        new LedgerService(ledger, orders, events, fares, orderHistoryService), orders, restaurants, mock(PartyRepository.class));
 
     private void givenOrder(OrderStatus status) {
         when(orders.findById("100")).thenReturn(order("100", status));
