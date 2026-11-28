@@ -147,6 +147,10 @@ jobs:
           VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
         run: |
           set -euo pipefail
+          # The frontend image is public, so a secret Stripe key here would be published to everyone.
+          case "$VITE_STRIPE_PUBLISHABLE_KEY" in
+            sk_*|rk_*) echo "::error::VITE_STRIPE_PUBLISHABLE_KEY holds a SECRET Stripe key (sk_/rk_). Put the publishable key (pk_test_...) there, and roll the secret key in Stripe."; exit 1 ;;
+          esac
           owner="${OWNER,,}"
           repo="${REPO,,}"
           {
