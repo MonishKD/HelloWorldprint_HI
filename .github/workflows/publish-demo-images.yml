@@ -143,6 +143,8 @@ jobs:
           REPO: ${{ github.event.repository.name }}
           SHA: ${{ github.sha }}
           REPOSITORY: ${{ github.repository }}
+          # Stripe's publishable key, built into the frontend bundle (the backend image ignores it). Empty if the repo secret is missing.
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
         run: |
           set -euo pipefail
           owner="${OWNER,,}"
@@ -163,6 +165,7 @@ jobs:
             docker buildx build \
               --platform linux/amd64 \
               --provenance=false \
+              --build-arg VITE_STRIPE_PUBLISHABLE_KEY \
               --label "org.opencontainers.image.source=https://github.com/${REPOSITORY}" \
               --tag "$image" \
               --push \

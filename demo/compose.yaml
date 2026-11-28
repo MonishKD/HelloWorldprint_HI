@@ -31,9 +31,10 @@ services:
       # Trust the platform's X-Forwarded-* headers, so a POST from https://<group>.<demo-domain> counts as same-origin.
       SERVER_FORWARD_HEADERS_STRATEGY: framework
       JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=50
-      # Card payments need Stripe's secret test key. Empty, the app runs but checkout is refused. To turn it on,
-      # save STRIPE_SECRET_KEY on the platform's Secrets page and write ${secret:STRIPE_SECRET_KEY} here instead.
-      STRIPE_SECRET_KEY: ""
+      # Stripe's secret test key, saved on the platform's Secrets page (never in this file). The publishable key is
+      # built into the frontend image by the publish workflow (repo secret VITE_STRIPE_PUBLISHABLE_KEY).
+      # To run without payments, write STRIPE_SECRET_KEY: "" instead: the app runs but checkout is refused.
+      STRIPE_SECRET_KEY: ${secret:STRIPE_SECRET_KEY}
     healthcheck:
       test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/8080'"]
       interval: 5s
