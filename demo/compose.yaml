@@ -10,13 +10,13 @@ x-demo:
 
 services:
   frontend:
-    image: ghcr.io/monishkd/helloworldprint_hi-frontend:84a7b17f9b039bc074fa771de4416c11000a0c55
+    image: ghcr.io/monishkd/helloworldprint_hi-frontend:e02eecb2c2b9a11533a6e0aac534ab9319b1502b
     depends_on:
       backend:
         condition: service_healthy
 
   backend:
-    image: ghcr.io/monishkd/helloworldprint_hi-backend:84a7b17f9b039bc074fa771de4416c11000a0c55
+    image: ghcr.io/monishkd/helloworldprint_hi-backend:e02eecb2c2b9a11533a6e0aac534ab9319b1502b
     depends_on:
       db:
         condition: service_healthy
