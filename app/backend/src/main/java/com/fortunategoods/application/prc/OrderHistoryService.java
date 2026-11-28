@@ -1,5 +1,7 @@
 package com.fortunategoods.application.prc;
 
+import com.fortunategoods.technical.persistence.PartyRepository;
+import com.fortunategoods.domain.party.PartyShare;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,18 +34,20 @@ public class OrderHistoryService {
     private final OrderRepository orderRepo;
     private final RestaurantRepository restaurantRepo;
     private final UserRepository userRepo;
+    private final PartyRepository partyRepo;
 
     public OrderHistoryService(LedgerRepository ledgerRepo, OrderRepository orderRepo,
-            RestaurantRepository restaurantRepo, UserRepository userRepo) {
+            RestaurantRepository restaurantRepo, UserRepository userRepo, PartyRepository partyRepo) {
         this.ledgerRepo = ledgerRepo;
         this.orderRepo = orderRepo;
         this.restaurantRepo = restaurantRepo;
         this.userRepo = userRepo;
+        this.partyRepo = partyRepo;
     }
 
     /*
         Each role only gets its own ledger rows, newest first:
-          CUSTOMER    the orders they placed
+          CUSTOMER    the orders they placed, and the party orders they were in (with their own share)
           RESTAURANT  the orders of the restaurant their account works for
           COURIER     the orders they delivered, without any money field
           OPERATOR    every row
@@ -54,7 +58,7 @@ public class OrderHistoryService {
 
         switch (session.getRole()) {
             case CUSTOMER:
-                return toLedgerRows(ledgerRepo.findByCustomer(userId));
+                return toCustomerRows(ledgerRepo.findByCustomer(userId), partyRepo.findPartySharesOf(userId));
             case RESTAURANT:
                 String restaurantId = userRepo.findRestaurantIdByUserId(userId);
                 if (restaurantId == null) {
@@ -77,6 +81,31 @@ public class OrderHistoryService {
         for (LedgerEntry entry : entries) {
             Order order = orderRepo.findById(entry.getOrderId());
             rows.add(new LedgerHistoryResponse(entry, restaurantName(order.getRestaurantId(), restaurantNames)));
+        }
+        return rows;
+    }
+
+    // A customer's rows. A party order shows what this customer paid (CHARGE) or got back (REFUND) of it;
+    // nothing was taken for a NO_CHARGE entry (rejected or cancelled), so their share there is 0.
+    private List<HistoryResponse> toCustomerRows(List<LedgerEntry> entries, Map<String, PartyShare> partyShares) {
+        Map<String, String> restaurantNames = new HashMap<>();
+        List<HistoryResponse> rows = new ArrayList<>();
+        for (LedgerEntry entry : entries) {
+            Order order = orderRepo.findById(entry.getOrderId());
+            String restaurantName = restaurantName(order.getRestaurantId(), restaurantNames);
+            PartyShare share = partyShares.get(entry.getOrderId());
+            if (share == null) {
+                rows.add(new LedgerHistoryResponse(entry, restaurantName));
+            } else {
+                // Same sign as the entry's amount: paid on a CHARGE, given back (negative) on a REFUND, 0 when nothing was taken.
+                long yourShare = share.shareCents();
+                if (entry.getType() == LedgerEntry.Type.NO_CHARGE) {
+                    yourShare = 0;
+                } else if (entry.getType() == LedgerEntry.Type.REFUND) {
+                    yourShare = -yourShare;
+                }
+                rows.add(new LedgerHistoryResponse(entry, restaurantName, share.partyCode(), yourShare));
+            }
         }
         return rows;
     }
@@ -122,7 +151,9 @@ public class OrderHistoryService {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.NOT_FOUND, "Order not found");
         }
 
-        boolean isOwnOrder = String.valueOf(session.getUserID()).equals(order.getCustomerId());
+        // A party order is placed under the host, but every member of the party may read it too.
+        String userId = String.valueOf(session.getUserID());
+        boolean isOwnOrder = userId.equals(order.getCustomerId()) || partyRepo.isMemberOfOrder(orderId, userId);
         if (session.getRole() == UserRole.CUSTOMER && !isOwnOrder) {
             throw new DomainRuleViolation(DomainRuleViolation.Reason.FORBIDDEN, "You can only see the summary of your own orders");
         }

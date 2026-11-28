@@ -8,6 +8,8 @@ import com.fortunategoods.domain.pricing.LedgerEntry;
     One ledger entry in a customer's, restaurant's or operator's history (#264).
     Same fields as LedgerEntry, plus the restaurant's name. Money is in cents, like the checkout (#259).
     entryType is CHARGE, NO_CHARGE or REFUND. A refunded order shows its CHARGE row and its REFUND row.
+    Party orders in a customer's history also have partyCode and yourShareCents: what this customer paid
+    (or got back) of the order's amount. Both are null for every other row.
 */
 public class LedgerHistoryResponse extends HistoryResponse {
     private final String entryType;
@@ -19,9 +21,17 @@ public class LedgerHistoryResponse extends HistoryResponse {
     private final long amountCents;
     private final LocalDateTime placedAt;
     private final LocalDateTime finishedAt;
+    private final String partyCode;
+    private final Long yourShareCents;
 
     public LedgerHistoryResponse(LedgerEntry entry, String restaurantName) {
+        this(entry, restaurantName, null, null);
+    }
+
+    public LedgerHistoryResponse(LedgerEntry entry, String restaurantName, String partyCode, Long yourShareCents) {
         super(entry.getOrderId(), restaurantName);
+        this.partyCode = partyCode;
+        this.yourShareCents = yourShareCents;
         this.entryType = entry.getType().name();
         this.finalStatus = entry.getFinalStatus().name();
         this.subtotalCents = entry.getSubtotalCents();
@@ -67,5 +77,13 @@ public class LedgerHistoryResponse extends HistoryResponse {
 
     public LocalDateTime getFinishedAt() {
         return finishedAt;
+    }
+
+    public String getPartyCode() {
+        return partyCode;
+    }
+
+    public Long getYourShareCents() {
+        return yourShareCents;
     }
 }

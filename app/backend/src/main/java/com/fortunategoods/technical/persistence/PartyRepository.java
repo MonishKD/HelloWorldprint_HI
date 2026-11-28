@@ -1,6 +1,7 @@
 package com.fortunategoods.technical.persistence;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.fortunategoods.domain.party.Party;
 import com.fortunategoods.domain.party.PartyLine;
 import com.fortunategoods.domain.party.PartyMember;
+import com.fortunategoods.domain.party.PartyShare;
 import com.fortunategoods.domain.party.PartyStatus;
 import com.fortunategoods.domain.party.PartyVote;
 import com.fortunategoods.domain.pricing.Fare;
@@ -78,6 +80,26 @@ public class PartyRepository {
                 + "JOIN parties ON parties.id = party_members.party_id "
                 + "WHERE parties.order_id = ? AND party_members.is_paid AND party_members.payment_intent_id IS NOT NULL",
                 String.class, Integer.parseInt(orderId));
+    }
+
+    // The placed party orders this customer was in (as host or member), by order id, with what they paid and the code.
+    // The history shows each member their own share of a party order (OrderHistoryService).
+    public Map<String, PartyShare> findPartySharesOf(String customerId) {
+        Map<String, PartyShare> shares = new HashMap<>();
+        jdbc.query("SELECT parties.order_id, parties.code, party_members.share_cents FROM parties "
+                + "JOIN party_members ON party_members.party_id = parties.id "
+                + "WHERE party_members.customer_id = ? AND parties.order_id IS NOT NULL",
+                row -> { shares.put(row.getString("order_id"), new PartyShare(row.getString("code"), row.getLong("share_cents"))); },
+                Integer.parseInt(customerId));
+        return shares;
+    }
+
+    // True when this customer was in the party that placed this order (so they may read its summary).
+    public boolean isMemberOfOrder(String orderId, String customerId) {
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM parties JOIN party_members ON party_members.party_id = parties.id "
+                + "WHERE parties.order_id = ? AND party_members.customer_id = ?", Integer.class,
+                Integer.parseInt(orderId), Integer.parseInt(customerId));
+        return count != null && count > 0;
     }
 
     // Members in the order they joined (the host joins first). The name is the customer's name, or their username.

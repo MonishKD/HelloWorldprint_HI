@@ -32,6 +32,7 @@ import com.fortunategoods.domain.restaurant.Restaurant;
 import com.fortunategoods.domain.restaurant.RestaurantStatus;
 import com.fortunategoods.domain.restaurant.menu.MenuItem;
 import com.fortunategoods.domain.user.UserRole;
+import com.fortunategoods.technical.persistence.PartyRepository;
 import com.fortunategoods.technical.persistence.*;
 
 // R2 characterization: protect historyOf(), summaryOf(), and the mapping/name lookups being extracted.
@@ -43,7 +44,7 @@ class LedgerServiceCharacterizationTest {
     private final RestaurantRepository restaurants = mock(RestaurantRepository.class);
     private final UserRepository users = mock(UserRepository.class);
     private final OrderHistoryService orderHistoryService =
-            new OrderHistoryService(ledger, orders, restaurants, users);
+            new OrderHistoryService(ledger, orders, restaurants, users, mock(PartyRepository.class));
     private final LedgerService service = new LedgerService(ledger, orders, mock(OrderEventRepository.class),
             mock(FareCalculator.class), orderHistoryService);
     private final LedgerEntry charge = new LedgerEntry("100", LedgerEntry.Type.CHARGE, OrderStatus.DELIVERED,

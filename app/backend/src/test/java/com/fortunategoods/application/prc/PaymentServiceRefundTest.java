@@ -44,7 +44,7 @@ class PaymentServiceRefundTest {
     private final OrderService orderService = new OrderService(restaurants, orders, events, users, mock(RegisterPreparationQueue.class),
         mock(ApplicationEventPublisher.class), mock(DispatchService.class));
     private final OrderHistoryService orderHistoryService =
-        new OrderHistoryService(ledger, orders, restaurants, users);
+        new OrderHistoryService(ledger, orders, restaurants, users, mock(PartyRepository.class));
     private final PaymentService service = new PaymentService(gateway, fares, orderService,
         new LedgerService(ledger, orders, events, fares, orderHistoryService), orders, restaurants, mock(PartyRepository.class));
 

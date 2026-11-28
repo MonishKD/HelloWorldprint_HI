@@ -45,9 +45,12 @@ public class LedgerRepository {
 
     // The entries of the orders this customer placed.
     public List<LedgerEntry> findByCustomer(String customerId) {
+        // Also the orders of the parties they were in: a party order is placed under the host, but each member paid a share.
         String sql = "SELECT ledger_entries.* FROM ledger_entries JOIN orders ON orders.id = ledger_entries.order_id "
-                + "WHERE orders.customer_id = ? ORDER BY ledger_entries.id DESC";
-        return jdbc.query(sql, (row, rowNumber) -> toLedgerEntry(row), Integer.parseInt(customerId));
+                + "WHERE orders.customer_id = ? OR orders.id IN (SELECT parties.order_id FROM parties "
+                + "JOIN party_members ON party_members.party_id = parties.id WHERE party_members.customer_id = ?) "
+                + "ORDER BY ledger_entries.id DESC";
+        return jdbc.query(sql, (row, rowNumber) -> toLedgerEntry(row), Integer.parseInt(customerId), Integer.parseInt(customerId));
     }
 
     // The entries of the orders placed at this restaurant.
